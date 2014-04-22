@@ -130,6 +130,9 @@ class PlyHeader(object):
         lines.append('end_header')
         return '\n'.join(lines)
 
+    def __repr__(self):
+        return str(self)
+
 
 class PlyElement(object):
 
@@ -191,14 +194,20 @@ class PlyElement(object):
         descr = arr.dtype.descr
 
         for t in descr:
-            if len(t) != 2:
-                raise ValueError("only scalar fields are supported")
+            if not isinstance(t[1], str):
+                raise ValueError("nested records not supported")
 
             if not t[0]:
                 raise ValueError("field with empty name")
 
-            if t[1][1] == 'O':
-                # object: this must be a list property.
+            if len(t) != 2 or t[1][1] == 'O':
+                # non-scalar field, which corresponds to a list
+                # property in PLY.
+
+                if t[1][1] == 'O':
+                    if len(t) != 2:
+                        raise ValueError("non-scalar object fields not "
+                                         "supported")
 
                 lt = tuple(byte_order + s
                            for s in list_types.get(t[0], ('u1', 'u4')))
@@ -383,8 +392,8 @@ def write_element_txt(stream, elt, data):
         fields = []
         for t in elt.dtype:
             if t[0] in list_props:
-                fields.append(len(rec[t[0]]))
-                fields.extend(rec[t[0]])
+                fields.append(rec[t[0]].size)
+                fields.extend(rec[t[0]].ravel())
             else:
                 fields.append(rec[t[0]])
 
@@ -425,7 +434,7 @@ def write_element_bin(stream, elt, data):
         for t in elt.dtype:
             if t[0] in list_props:
                 (len_type, val_type) = list_props[t[0]]
-                list_len = numpy.array(len(rec[t[0]]), dtype=len_type)
+                list_len = numpy.array(rec[t[0]].size, dtype=len_type)
                 list_vals = rec[t[0]].astype(val_type, copy=False)
 
                 list_len.tofile(stream)
