@@ -50,6 +50,13 @@ byte_order_reverse = {
 native_byte_order = '<' if sys.byteorder == 'little' else '>'
 
 
+def normalize_type(type_str):
+    if type_str not in data_type_reverse:
+        raise ValueError("unsupported field type: %s" % type_str)
+
+    return data_types[data_type_reverse[type_str]]
+
+
 class PlyHeader(object):
 
     '''
@@ -275,18 +282,19 @@ class PlyElement(object):
         return (PlyElement(name, count, properties), lines[a:])
 
     @staticmethod
-    def describe(arr, name, byte_order='=', list_types={}):
+    def describe(arr, name, byte_order='=', len_types={}):
         '''
         Construct a PlyElement from an array's metadata.
 
         A byte order other than native can be specified if desired.
 
-        list_types can be given as a mapping from list property names to
-        tuples (len_type, val_type), where each element of the tuple is
-        a supported numpy typestring (like 'u1', 'f4', etc.).  For any
-        list property not given as a key in list_types (or if list_types
-        is omitted), the mapping value will be treated as ('u1', 'u4').
-        The byte order should *not* be specified in the type string.
+        len_types can be given as a mapping from list property names to
+        type strings (like 'u1', 'i4', etc.), each of which will be
+        taken as the data type for the "length" field of the list
+        (relevant for binary PLY files).  For any list property not
+        given as a key in len_types (or if len_types is omitted), the
+        mapping value will be treated as 'u1'.  The byte order should
+        *not* be specified in the type string.
 
         '''
         if byte_order == '=':
@@ -320,15 +328,23 @@ class PlyElement(object):
                         raise ValueError("non-scalar object fields not "
                                          "supported")
 
-                lt = tuple(byte_order + s
-                           for s in list_types.get(t[0], ('u1', 'u4')))
+                len_type = byte_order + len_types.get(t[0], 'u1')
+                if t[1][1] == 'O':
+                    if count > 0:
+                        field_descr = arr[t[0]][0].dtype.descr
+                        if len(field_descr) > 1:
+                            raise ValueError("object fields must be "
+                                             "flat")
+                        val_str = normalize_type(field_descr[0][1][1:])
+                    else:
+                        val_str = 'u4'
+                else:
+                    val_str = normalize_type(t[1][1:])
 
-                prop = (t[0],) + lt
-            elif t[1][1:] in data_type_reverse:
-                type_str = data_types[data_type_reverse[t[1][1:]]]
-                prop = (t[0], byte_order + type_str)
+                prop = (t[0], len_type, byte_order + val_str)
             else:
-                raise ValueError("unsupported field type: %s" % t[1])
+                type_str = normalize_type(t[1][1:])
+                prop = (t[0], byte_order + type_str)
 
             properties.append(prop)
 
@@ -400,7 +416,7 @@ def read_ply(stream):
     return (header, data)
 
 
-def write_ply(stream, data, text=False, byte_order='=', list_types={},
+def write_ply(stream, data, text=False, byte_order='=', len_types={},
               comments=[]):
     '''
     Write a sequence of numpy arrays to file name or open file `stream'.
@@ -409,11 +425,11 @@ def write_ply(stream, data, text=False, byte_order='=', list_types={},
     the element_name to the array (in which case the order of the
     elements in the resulting file is unpredictable).
 
-    if `list_types' is given, it must be a mapping from element names to
-    mappings of list property names to tuples (len_type, val_type),
-    which will default to ('u1', 'u4') if omitted.   Each type should be
-    specified as a numpy type string (like 'u1', 'f4', etc.)  (Note:
-    this is all irrelevant if the PLY format is text.)
+    if `len_types' is given, it must be a mapping from element names to
+    mappings of list property names to length data types, which will
+    default to 'u1' if omitted.   Each type should be specified as a
+    numpy type string (like 'u1', 'i4', etc.)  (Note: this is all
+    irrelevant if the PLY format is text.)
 
     '''
     must_close = False
@@ -426,7 +442,7 @@ def write_ply(stream, data, text=False, byte_order='=', list_types={},
             data = data.items()
 
         elements = [PlyElement.describe(arr, name, byte_order,
-                                        list_types.get(name, {}))
+                                        len_types.get(name, {}))
                     for (name, arr) in data]
 
         header = PlyHeader(text, byte_order, elements, comments)
