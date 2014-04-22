@@ -55,6 +55,17 @@ class PlyHeader(object):
     '''
     PLY file header.
 
+    A client of this library doesn't normally need to instantiate this
+    directly, so the following is only for the sake of documenting the
+    internals.
+
+    There are two ways to create a PlyHeader.  The first is to call
+    __init__ with some metadata, including the format, byte order, and
+    list of all the element metadata.  This is necessary when a PLY file
+    is being created.  The second way is to call the static method
+    `read', which will read actual PLY-formatted metadata from a
+    file-like stream.
+
     '''
 
     def __init__(self, text=False, byte_order='=', elements=[],
@@ -71,6 +82,11 @@ class PlyHeader(object):
 
     @staticmethod
     def read(stream):
+        '''
+        Read (and consume) a PLY header from a readable file-like
+        object.
+
+        '''
         lines = []
         comments = []
         while True:
@@ -93,22 +109,31 @@ class PlyHeader(object):
         line = lines[a]
         a += 1
 
-        assert line == ['ply']
+        if line != ['ply']:
+            raise RuntimeError("expected 'ply'")
 
         line = lines[a]
         a += 1
 
-        assert line[0] == 'format'
-        assert line[2] == '1.0'
-        assert len(line) == 3
+        if line[0] != 'format':
+            raise RuntimeError("expected 'format'")
+
+        if line[2] != '1.0':
+            raise RuntimeError("expected version '1.0'")
+
+        if len(line) != 3:
+            raise RuntimeError("too many fields after 'format'")
+
         fmt = line[1]
 
-        assert fmt in byte_order_map
+        if fmt not in byte_order_map:
+            raise RuntimeError("don't understand format %r" % fmt)
+
         byte_order = byte_order_map[fmt]
         text = fmt == 'ascii'
 
         return PlyHeader(text, byte_order,
-                         ply_elements(lines[a:], byte_order),
+                         PlyElement.read_multi(lines[a:], byte_order),
                          comments)
 
     def __str__(self):
@@ -139,6 +164,20 @@ class PlyElement(object):
     '''
     PLY file element.
 
+    A client of this library doesn't normally need to instantiate this
+    directly, so the following is only for the sake of documenting the
+    internals.
+
+    There are basically two ways to create a PlyElement.  The first way
+    is to call the static method `describe' on a structured numpy array,
+    which will generate the necessary metadata needed to write the array
+    as an element of a PLY file.  This is necessary when creating a PLY
+    file.  The second way is to use the low-level read_multi and
+    read_one, which parse the metadata from preprocessed PLY-formatted
+    data.  (The preprocessing would strip comments from the header,
+    split the header into a list of lines, and further split the lines
+    on whitespace into fields.)
+
     '''
 
     def __init__(self, name, count, properties):
@@ -156,12 +195,84 @@ class PlyElement(object):
 
         for prop in properties:
             if len(prop) == 3:
-                assert prop[0] not in self.list_properties
                 self.list_properties[prop[0]] = (prop[1], prop[2])
                 self.dtype.append((prop[0], object))
             else:
                 assert len(prop) == 2
                 self.dtype.append(prop)
+
+        # Validation: the file might have done something silly like
+        # specify two fields with the same name, which will raise an
+        # exception below.
+        numpy.dtype(self.dtype)
+
+
+    @staticmethod
+    def read_multi(header_lines, byte_order):
+        '''
+        Parse a list of PLY element specifications.
+
+        '''
+        elements = []
+        while header_lines:
+            (elt, header_lines) = PlyElement.read_one(header_lines,
+                                                      byte_order)
+            elements.append(elt)
+
+        return elements
+
+    @staticmethod
+    def read_one(lines, byte_order):
+        '''
+        Consume one element specification.  The unconsumed input is
+        returned along with a PlyElement instance.
+
+        '''
+        a = 0
+        line = lines[a]
+
+        if line[0] != 'element':
+            raise RuntimeError("expected 'element'")
+        if len(line) > 3:
+            raise RuntimeError("too many fields after 'element'")
+        if len(line) < 3:
+            raise RuntimeError("too few fields after 'element'")
+
+        (name, count) = (line[1], int(line[2]))
+
+        properties = []
+        while True:
+            a += 1
+            if a >= len(lines):
+                break
+
+            line = lines[a]
+            if lines[a][0] != 'property':
+                break
+
+            if line[1] == 'list':
+                if len(line) > 5:
+                    raise RuntimeError("too many fields after "
+                                       "'property list'")
+                if len(line) < 5:
+                    raise RuntimeError("too few fields after "
+                                       "'property list'")
+
+                properties.append((line[4],
+                                   byte_order + data_types[line[2]],
+                                   byte_order + data_types[line[3]]))
+            else:
+                if len(line) > 3:
+                    raise RuntimeError("too many fields after "
+                                       "'property'")
+                if len(line) < 3:
+                    raise RuntimeError("too few fields after "
+                                       "'property'")
+
+                properties.append((line[2],
+                                   byte_order + data_types[line[1]]))
+
+        return (PlyElement(name, count, properties), lines[a:])
 
     @staticmethod
     def describe(arr, name, byte_order='=', list_types={}):
@@ -441,53 +552,3 @@ def write_element_bin(stream, elt, data):
                 list_vals.tofile(stream)
             else:
                 rec[t[0]].astype(t[1], copy=False).tofile(stream)
-
-
-def ply_elements(header_lines, byte_order):
-    '''
-    Parse a list of PLY element specifications.
-
-    '''
-    elements = []
-    while header_lines:
-        (elt, header_lines) = one_ply_element(header_lines,
-                                              byte_order)
-        elements.append(elt)
-
-    return elements
-
-
-def one_ply_element(lines, byte_order):
-    '''
-    Consume one element specification.  The unconsumed input is returned
-    along with a PlyElement instance.
-
-    '''
-    a = 0
-    line = lines[a]
-
-    assert line[0] == 'element'
-    assert len(line) == 3
-    (name, count) = (line[1], int(line[2]))
-
-    properties = []
-    while True:
-        a += 1
-        if a >= len(lines):
-            break
-
-        line = lines[a]
-        if lines[a][0] != 'property':
-            break
-
-        if line[1] == 'list':
-            assert len(line) == 5
-            properties.append((line[4],
-                               byte_order + data_types[line[2]],
-                               byte_order + data_types[line[3]]))
-        else:
-            assert len(line) == 3
-            properties.append((line[2],
-                               byte_order + data_types[line[1]]))
-
-    return (PlyElement(name, count, properties), lines[a:])
