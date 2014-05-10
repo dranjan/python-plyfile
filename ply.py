@@ -201,18 +201,19 @@ class PlyData(object):
         '''
         lines = ['ply']
 
-        # We didn't keep track of where in the header each comment came
-        # from, so the best we can do is just put them all after the
-        # initial 'ply'.  There are no current plans to remedy this.
-        for c in self.comments:
-            lines.append('comment ' + c)
-
         if self.text:
             lines.append('format ascii 1.0')
         else:
             lines.append('format ' +
                          byte_order_reverse[self.byte_order] +
                          ' 1.0')
+
+        # We didn't keep track of where in the header each comment came
+        # from, so the best we can do is just put them all after the
+        # 'format' line.  There are no current plans to remedy this.
+        for c in self.comments:
+            lines.append('comment ' + c)
+
         lines.extend(elt.header for elt in self.elements)
         lines.append('end_header')
         return '\n'.join(lines)
@@ -255,7 +256,7 @@ class PlyElement(object):
 
     '''
 
-    def __init__(self, name, properties, unread=None):
+    def __init__(self, name, properties, count):
         '''
         This is not part of the public interface.  The preferred methods
         of obtaining PlyElement instances are PlyData.read (to read from
@@ -264,11 +265,7 @@ class PlyElement(object):
 
         '''
         self.name = name
-        if unread is not None:
-            self._unread = unread
-            self._pending = []
-        else:
-            self.clear()
+        self.count = count
 
         # Mapping from list-property name to (count_type, value_type).
         self.list_properties = {}
@@ -286,52 +283,6 @@ class PlyElement(object):
             else:
                 assert len(prop) == 2
                 self.dtype.append(prop)
-
-    def _check_unread(self):
-        if hasattr(self, '_unread'):
-            raise RuntimeError("illegal operation on incomplete "
-                               "PlyElement instance")
-
-    @property
-    def count(self):
-        self._check_unread()
-        return len(self._data) + sum(map(len, self._pending))
-
-    @property
-    def data(self):
-        self._check_unread()
-        if self._pending:
-            self._data = numpy.concatenate([self._data] +
-                                            self._pending)
-            self._pending = []
-
-        return self._data
-
-    def __getitem__(self, *args, **kwargs):
-        return self.data.__getitem__(*args, **kwargs)
-
-    def add(self, a):
-        self._check_unread()
-        self._pending.append(a.astype(self.dtype, copy=False))
-
-    def clear(self):
-        self._check_unread()
-        self._pending = []
-        self._data = numpy.zeros(0, self.dtype)
-
-    def _records_nonconstructive(self):
-        for chunk in self._chunks_nonconstructive():
-            for rec in chunk:
-                yield rec
-
-    def _chunks_nonconstructive(self):
-        self._check_unread()
-        if len(self._data):
-            yield self._data
-
-        for chunk in self._pending:
-            if len(chunk):
-                yield chunk
 
     @staticmethod
     def _parse_multi(header_lines, byte_order):
@@ -407,13 +358,13 @@ class PlyElement(object):
 
         A byte order other than native can be specified if desired.
 
-        len_types and val_types can be given as a mapping from list property names to
-        type strings (like 'u1', 'f4', etc.). These can be used to
-        define the length and value types of list properties.  List
-        property lengths always default to type 'u1' (8-bit unsigned
-        integer), and value types are obtained from the array if
-        possible and default to 'u4' (32-bit unsigned integer) if the
-        array is empty.
+        len_types and val_types can be given as a mapping from list
+        property names to type strings (like 'u1', 'f4', etc.). These
+        can be used to define the length and value types of list
+        properties.  List property lengths always default to type 'u1'
+        (8-bit unsigned integer), and value types are obtained from the
+        array if possible and default to 'u4' (32-bit unsigned integer)
+        if the array is empty.
 
         '''
         if byte_order == '=':
@@ -467,8 +418,8 @@ class PlyElement(object):
 
             properties.append(prop)
 
-        elt = PlyElement(name, properties)
-        elt.add(arr)
+        elt = PlyElement(name, properties, count)
+        elt.data = arr
 
         return elt
 
@@ -477,8 +428,6 @@ class PlyElement(object):
         Read the actual data from a PLY file.
 
         '''
-        assert hasattr(self, '_unread')
-
         if len(self.list_properties):
             # There are list properties, so a simple load is
             # impossible.
@@ -490,14 +439,12 @@ class PlyElement(object):
             # There are no list properties, so loading the data is
             # much more straightforward.
             if text:
-                self._data = numpy.loadtxt(
-                    islice(iter(stream.readline, ''), self._unread),
+                self.data = numpy.loadtxt(
+                    islice(iter(stream.readline, ''), self.count),
                     self.dtype)
             else:
-                self._data = numpy.fromfile(
-                    stream, self.dtype, self._unread)
-
-        del self._unread
+                self.data = numpy.fromfile(
+                    stream, self.dtype, self.count)
 
     def _write(self, stream, text=False):
         '''
@@ -514,11 +461,10 @@ class PlyElement(object):
         else:
             # no list properties, so serialization is
             # straightforward.
-            for chunk in self._chunks_nonconstructive():
-                if text:
-                    numpy.savetxt(stream, chunk, '%.18g')
-                else:
-                    chunk.tofile(stream)
+            if text:
+                numpy.savetxt(stream, self.data, '%.18g')
+            else:
+                self.data.tofile(stream)
 
     def _read_txt(self, stream):
         '''
@@ -527,10 +473,10 @@ class PlyElement(object):
 
         '''
         list_props = self.list_properties
-        self._data = numpy.empty(self._unread, dtype=self.dtype)
+        self.data = numpy.empty(self.count, dtype=self.dtype)
 
         for (k, line) in enumerate(islice(iter(stream.readline, ''),
-                                          self._unread)):
+                                          self.count)):
             line = line.strip()
             for prop in self.dtype:
                 if prop[0] in list_props:
@@ -544,13 +490,13 @@ class PlyElement(object):
 
                     assert len(fields) == n + 1
 
-                    self._data[prop[0]][k] = numpy.loadtxt(
+                    self.data[prop[0]][k] = numpy.loadtxt(
                             fields[:-1], val_t, ndmin=1)
 
                     line = fields[-1]
                 else:
                     (val_str, line) = line.split(None, 1)
-                    self._data[prop[0]][k] = numpy.fromstring(
+                    self.data[prop[0]][k] = numpy.fromstring(
                             val_str, prop[1], ' ')
 
     def _write_txt(self, stream):
@@ -561,7 +507,7 @@ class PlyElement(object):
         '''
         list_props = self.list_properties
 
-        for rec in self._records_nonconstructive():
+        for rec in self.data:
             fields = []
             for t in self.dtype:
                 if t[0] in list_props:
@@ -579,18 +525,18 @@ class PlyElement(object):
 
         '''
         list_props = self.list_properties
-        self._data = numpy.empty(self._unread, dtype=self.dtype)
+        self.data = numpy.empty(self.count, dtype=self.dtype)
 
-        for k in xrange(self._unread):
+        for k in xrange(self.count):
             for prop in self.dtype:
                 if prop[0] in list_props:
                     (len_t, val_t) = list_props[prop[0]]
                     n = numpy.fromfile(stream, len_t, 1)[0]
 
-                    self._data[prop[0]][k] = numpy.fromfile(
+                    self.data[prop[0]][k] = numpy.fromfile(
                             stream, val_t, n)
                 else:
-                    self._data[prop[0]][k] = numpy.fromfile(
+                    self.data[prop[0]][k] = numpy.fromfile(
                             stream, prop[1], 1)[0]
 
     def _write_bin(self, stream):
@@ -601,7 +547,7 @@ class PlyElement(object):
         '''
         list_props = self.list_properties
 
-        for rec in self._records_nonconstructive():
+        for rec in self.data:
             for t in self.dtype:
                 if t[0] in list_props:
                     (len_type, val_type) = list_props[t[0]]
