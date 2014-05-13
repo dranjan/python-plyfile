@@ -153,8 +153,7 @@ class PlyData(object):
         byte_order = byte_order_map[fmt]
         text = fmt == 'ascii'
 
-        return PlyData(PlyElement._parse_multi(lines[a:],
-                                               byte_order),
+        return PlyData(PlyElement._parse_multi(lines[a:]),
                        text, byte_order, comments)
 
     @staticmethod
@@ -172,7 +171,7 @@ class PlyData(object):
             data = PlyData._parse_header(stream)
 
             for elt in data:
-                elt._read(stream, data.text)
+                elt._read(stream, data.text, data.byte_order)
 
         finally:
             if must_close:
@@ -194,7 +193,7 @@ class PlyData(object):
             print >> stream, self.header
 
             for elt in self:
-                elt._write(stream, self.text)
+                elt._write(stream, self.text, self.byte_order)
 
         finally:
             if must_close:
@@ -275,38 +274,54 @@ class PlyElement(object):
         self.count = count
 
         # Mapping from list-property name to (count_type, value_type).
-        self.list_properties = {}
+        self._list_md = {}
 
-        # Numpy dtype of in-memory representation.  (If there are no
-        # list properties, and the PLY format is binary, then this
-        # also accurately describes the on-disk representation of the
-        # element.)
-        self.dtype = []
+        self._prop_md = []
 
         for prop in properties:
             if len(prop) == 3:
-                self.list_properties[prop[0]] = (prop[1], prop[2])
-                self.dtype.append((prop[0], object))
+                self._list_md[prop[0]] = (prop[1], prop[2])
+                self._prop_md.append((prop[0], 'O'))
             else:
                 assert len(prop) == 2
-                self.dtype.append(prop)
+                self._prop_md.append(prop)
+
+    def dtype(self, byte_order='='):
+        '''
+        Return the numpy dtype of the in-memory representation of the
+        data.  (If there are no list properties, and the PLY format is
+        binary, then this also accurately describes the on-disk
+        representation of the element.)
+
+        '''
+        return [(name, byte_order + t)
+                for (name, t) in self._prop_md]
+
+    def list_dtype(self, name, byte_order='='):
+        '''
+        Return numpy dtypes of length and data for a list property,
+        given the name.
+
+        '''
+        (len_str, val_str) = self._list_md[name]
+
+        return (byte_order + len_str, byte_order + val_str)
 
     @staticmethod
-    def _parse_multi(header_lines, byte_order):
+    def _parse_multi(header_lines):
         '''
         Parse a list of PLY element definitions.
 
         '''
         elements = []
         while header_lines:
-            (elt, header_lines) = PlyElement._parse_one(header_lines,
-                                                        byte_order)
+            (elt, header_lines) = PlyElement._parse_one(header_lines)
             elements.append(elt)
 
         return elements
 
     @staticmethod
-    def _parse_one(lines, byte_order):
+    def _parse_one(lines):
         '''
         Consume one element definition.  The unconsumed input is
         returned along with a PlyElement instance.
@@ -343,8 +358,8 @@ class PlyElement(object):
                                        "'property list'")
 
                 properties.append((line[4],
-                                   byte_order + data_types[line[2]],
-                                   byte_order + data_types[line[3]]))
+                                   data_types[line[2]],
+                                   data_types[line[3]]))
             else:
                 if len(line) > 3:
                     raise RuntimeError("too many fields after "
@@ -354,16 +369,14 @@ class PlyElement(object):
                                        "'property'")
 
                 properties.append((line[2],
-                                   byte_order + data_types[line[1]]))
+                                   data_types[line[1]]))
 
         return (PlyElement(name, properties, count), lines[a:])
 
     @staticmethod
-    def describe(arr, name, byte_order='=', len_types={}, val_types={}):
+    def describe(arr, name, len_types={}, val_types={}):
         '''
         Construct a PlyElement from an array's metadata.
-
-        A byte order other than native can be specified if desired.
 
         len_types and val_types can be given as a mapping from list
         property names to type strings (like 'u1', 'f4', etc.). These
@@ -374,9 +387,6 @@ class PlyElement(object):
         if the array is empty.
 
         '''
-        if byte_order == '=':
-            byte_order = native_byte_order
-
         if not isinstance(arr, numpy.ndarray):
             raise TypeError("only numpy arrays are supported")
 
@@ -405,7 +415,7 @@ class PlyElement(object):
                         raise ValueError("non-scalar object fields not "
                                          "supported")
 
-                len_type = byte_order + len_types.get(t[0], 'u1')
+                len_type = len_types.get(t[0], 'u1')
                 if t[1][1] == 'O':
                     if count > 0 and t[0] not in val_types:
                         field_descr = arr[t[0]][0].dtype.descr
@@ -418,10 +428,10 @@ class PlyElement(object):
                 else:
                     val_str = normalize_type(t[1][1:])
 
-                prop = (t[0], len_type, byte_order + val_str)
+                prop = (t[0], len_type, val_str)
             else:
                 type_str = normalize_type(t[1][1:])
-                prop = (t[0], byte_order + type_str)
+                prop = (t[0], type_str)
 
             properties.append(prop)
 
@@ -430,64 +440,66 @@ class PlyElement(object):
 
         return elt
 
-    def _read(self, stream, text=False):
+    def _read(self, stream, text, byte_order):
         '''
         Read the actual data from a PLY file.
 
         '''
-        if len(self.list_properties):
+        if len(self._list_md):
             # There are list properties, so a simple load is
             # impossible.
             if text:
                 self._read_txt(stream)
             else:
-                self._read_bin(stream)
+                self._read_bin(stream, byte_order)
         else:
             # There are no list properties, so loading the data is
             # much more straightforward.
             if text:
                 self.data = numpy.loadtxt(
                     islice(iter(stream.readline, ''), self.count),
-                    self.dtype)
+                    self.dtype())
             else:
                 self.data = numpy.fromfile(
-                    stream, self.dtype, self.count)
+                    stream, self.dtype(byte_order), self.count)
 
-    def _write(self, stream, text=False):
+    def _write(self, stream, text, byte_order):
         '''
         Write the data to a PLY file.
 
         '''
-        if len(self.list_properties):
+        if len(self._list_md):
             # There are list properties, so serialization is
             # slightly complicated.
             if text:
                 self._write_txt(stream)
             else:
-                self._write_bin(stream)
+                self._write_bin(stream, byte_order)
         else:
             # no list properties, so serialization is
             # straightforward.
             if text:
                 numpy.savetxt(stream, self.data, '%.18g')
             else:
-                self.data.astype(self.dtype, copy=False).tofile(stream)
+                data = self.data.astype(self.dtype(byte_order),
+                                        copy=False)
+                data.tofile(stream)
 
     def _read_txt(self, stream):
         '''
-        Load a PLY element from an ASCII-format PLY file.  The element may
-        contain list properties.
+        Load a PLY element from an ASCII-format PLY file.  The element
+        may contain list properties.
 
         '''
-        list_props = self.list_properties
-        self.data = numpy.empty(self.count, dtype=self.dtype)
+        self.data = numpy.empty(self.count,
+                                dtype=self.dtype())
 
         for (k, line) in enumerate(islice(iter(stream.readline, ''),
                                           self.count)):
             line = line.strip()
-            for prop in self.dtype:
-                if prop[0] in list_props:
-                    (len_t, val_t) = list_props[prop[0]]
+            for prop in self._prop_md:
+                if prop[0] in self._list_md:
+                    (len_t, val_t) = self.list_dtype(prop[0])
                     (len_str, line) = split_line(line, 1)
                     n = int(len_str)
 
@@ -512,12 +524,10 @@ class PlyElement(object):
         contain list properties.
 
         '''
-        list_props = self.list_properties
-
         for rec in self.data:
             fields = []
-            for t in self.dtype:
-                if t[0] in list_props:
+            for t in self._prop_md:
+                if t[0] in self._list_md:
                     fields.append(rec[t[0]].size)
                     fields.extend(rec[t[0]].ravel())
                 else:
@@ -525,19 +535,19 @@ class PlyElement(object):
 
             numpy.savetxt(stream, [fields], '%.18g')
 
-    def _read_bin(self, stream):
+    def _read_bin(self, stream, byte_order):
         '''
-        Load a PLY element from an binary PLY file.  The element may
+        Load a PLY element from a binary PLY file.  The element may
         contain list properties.
 
         '''
-        list_props = self.list_properties
-        self.data = numpy.empty(self.count, dtype=self.dtype)
+        self.data = numpy.empty(self.count,
+                                dtype=self.dtype(byte_order))
 
         for k in xrange(self.count):
-            for prop in self.dtype:
-                if prop[0] in list_props:
-                    (len_t, val_t) = list_props[prop[0]]
+            for prop in self.dtype(byte_order):
+                if prop[0] in self._list_md:
+                    (len_t, val_t) = self.list_dtype(prop[0])
                     n = numpy.fromfile(stream, len_t, 1)[0]
 
                     self.data[prop[0]][k] = numpy.fromfile(
@@ -546,18 +556,16 @@ class PlyElement(object):
                     self.data[prop[0]][k] = numpy.fromfile(
                             stream, prop[1], 1)[0]
 
-    def _write_bin(self, stream):
+    def _write_bin(self, stream, byte_order):
         '''
         Save a PLY element to a binary PLY file.  The element may
         contain list properties.
 
         '''
-        list_props = self.list_properties
-
         for rec in self.data:
-            for t in self.dtype:
-                if t[0] in list_props:
-                    (len_type, val_type) = list_props[t[0]]
+            for t in self.dtype(byte_order):
+                if t[0] in self._list_md:
+                    (len_type, val_type) = self.list_dtype(t[0])
                     list_len = numpy.array(rec[t[0]].size,
                                            dtype=len_type)
                     list_vals = rec[t[0]].astype(val_type, copy=False)
@@ -575,16 +583,16 @@ class PlyElement(object):
 
         '''
         lines = ['element %s %d' % (self.name, self.count)]
-        for prop in self.dtype:
-            if prop[0] in self.list_properties:
-                (len_t, val_t) = self.list_properties[prop[0]]
+        for prop in self._prop_md:
+            if prop[0] in self._list_md:
+                (len_t, val_t) = self.list_dtype(prop[0])
                 lines.append('property list %s %s %s' %
                              (data_type_reverse[len_t[1:]],
                               data_type_reverse[val_t[1:]],
                               prop[0]))
             else:
                 lines.append('property %s %s' %
-                             (data_type_reverse[prop[1][1:]],
+                             (data_type_reverse[prop[1]],
                               prop[0]))
         return '\n'.join(lines)
 
