@@ -382,9 +382,8 @@ class PlyElement(object):
         property names to type strings (like 'u1', 'f4', etc.). These
         can be used to define the length and value types of list
         properties.  List property lengths always default to type 'u1'
-        (8-bit unsigned integer), and value types are obtained from the
-        array if possible and default to 'u4' (32-bit unsigned integer)
-        if the array is empty.
+        (8-bit unsigned integer), and value types default to 'i4'
+        (32-bit integer).
 
         '''
         if not isinstance(arr, numpy.ndarray):
@@ -417,14 +416,7 @@ class PlyElement(object):
 
                 len_type = len_types.get(t[0], 'u1')
                 if t[1][1] == 'O':
-                    if count > 0 and t[0] not in val_types:
-                        field_descr = arr[t[0]][0].dtype.descr
-                        if len(field_descr) > 1:
-                            raise ValueError("object fields must be "
-                                             "flat")
-                        val_str = normalize_type(field_descr[0][1][1:])
-                    else:
-                        val_str = val_types.get(t[0], 'u4')
+                    val_str = val_types.get(t[0], 'i4')
                 else:
                     val_str = normalize_type(t[1][1:])
 
