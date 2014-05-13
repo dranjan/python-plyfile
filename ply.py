@@ -57,6 +57,16 @@ def normalize_type(type_str):
     return data_types[data_type_reverse[type_str]]
 
 
+def split_line(line, n):
+    fields = line.split(None, n)
+    if len(fields) == n:
+        fields.append('')
+
+    assert len(fields) == n + 1
+
+    return fields
+
+
 class PlyData(object):
 
     '''
@@ -105,16 +115,13 @@ class PlyData(object):
         comments = []
         while True:
             line = stream.readline().strip()
-            fields = line.split(None, 1)
+            fields = split_line(line, 1)
 
             if fields[0] == 'end_header':
                 break
 
             elif fields[0] == 'comment':
-                if len(fields) > 1:
-                    comments.append(fields[1])
-                else:
-                    comments.append('')
+                comments.append('')
             else:
                 lines.append(line.split())
 
@@ -464,7 +471,7 @@ class PlyElement(object):
             if text:
                 numpy.savetxt(stream, self.data, '%.18g')
             else:
-                self.data.tofile(stream)
+                self.data.astype(self.dtype, copy=False).tofile(stream)
 
     def _read_txt(self, stream):
         '''
@@ -481,10 +488,10 @@ class PlyElement(object):
             for prop in self.dtype:
                 if prop[0] in list_props:
                     (len_t, val_t) = list_props[prop[0]]
-                    (len_str, line) = line.split(None, 1)
+                    (len_str, line) = split_line(line, 1)
                     n = int(len_str)
 
-                    fields = line.split(None, n)
+                    fields = split_line(line, n)
                     if len(fields) == n:
                         fields.append('')
 
@@ -495,9 +502,9 @@ class PlyElement(object):
 
                     line = fields[-1]
                 else:
-                    (val_str, line) = line.split(None, 1)
+                    (val_str, line) = split_line(line, 1)
                     self.data[prop[0]][k] = numpy.fromstring(
-                            val_str, prop[1], ' ')
+                            val_str, prop[1], sep=' ')
 
     def _write_txt(self, stream):
         '''
@@ -558,7 +565,7 @@ class PlyElement(object):
                     list_len.tofile(stream)
                     list_vals.tofile(stream)
                 else:
-                    rec[t[0]].astype(t[1], copy=False).tofile(stream)
+                    rec[t[0]].astype(t[1]).tofile(stream)
 
     @property
     def header(self):
