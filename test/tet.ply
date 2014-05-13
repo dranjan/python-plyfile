@@ -1,0 +1,21 @@
+ply
+format ascii 1.0
+comment single tetrahedron with colored faces.
+element vertex 4
+property float32 x
+property float32 y
+property float32 z
+element face 4
+property list uint8 int32 vertex_indices
+property uint8 red
+property uint8 green
+property uint8 blue
+end_header
+0 0 0
+0 1 1
+1 0 1
+1 1 0
+3 0 1 2 255 255 255
+3 0 2 3 255 0 0
+3 0 1 3 0 255 0
+3 1 2 3 0 0 255
