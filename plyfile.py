@@ -472,27 +472,9 @@ class PlyElement(object):
 
         for (k, line) in enumerate(islice(iter(stream.readline, ''),
                                           self.count)):
-            line = line.strip()
+            fields = iter(line.strip().split())
             for prop in self.properties:
-                if isinstance(prop, PlyListProperty):
-                    (len_t, val_t) = prop.list_dtype()
-                    (len_str, line) = split_line(line, 1)
-                    n = int(len_str)
-
-                    fields = split_line(line, n)
-                    if len(fields) == n:
-                        fields.append('')
-
-                    assert len(fields) == n + 1
-
-                    self.data[prop.name][k] = numpy.loadtxt(
-                            fields[:-1], val_t, ndmin=1)
-
-                    line = fields[-1]
-                else:
-                    (val_str, line) = split_line(line, 1)
-                    self.data[prop.name][k] = numpy.fromstring(
-                            val_str, prop.dtype(), sep=' ')
+                self.data[prop.name][k] = prop._from_fields(fields)
 
     def _write_txt(self, stream):
         '''
@@ -503,11 +485,7 @@ class PlyElement(object):
         for rec in self.data:
             fields = []
             for prop in self.properties:
-                if isinstance(prop, PlyListProperty):
-                    fields.append(rec[prop.name].size)
-                    fields.extend(rec[prop.name].ravel())
-                else:
-                    fields.append(rec[prop.name])
+                fields.extend(prop._to_fields(rec[prop.name]))
 
             numpy.savetxt(stream, [fields], '%.18g')
 
@@ -522,15 +500,8 @@ class PlyElement(object):
 
         for k in xrange(self.count):
             for prop in self.properties:
-                if isinstance(prop, PlyListProperty):
-                    (len_t, val_t) = prop.list_dtype(byte_order)
-                    n = numpy.fromfile(stream, len_t, 1)[0]
-
-                    self.data[prop.name][k] = numpy.fromfile(
-                            stream, val_t, n)
-                else:
-                    self.data[prop.name][k] = numpy.fromfile(
-                            stream, prop.dtype(byte_order), 1)[0]
+                self.data[prop.name][k] = prop._read_bin(stream,
+                                                         byte_order)
 
     def _write_bin(self, stream, byte_order):
         '''
@@ -540,17 +511,7 @@ class PlyElement(object):
         '''
         for rec in self.data:
             for prop in self.properties:
-                if isinstance(prop, PlyListProperty):
-                    (len_type, val_type) = prop.list_dtype(byte_order)
-                    list_len = numpy.array(rec[prop.name].size,
-                                           dtype=len_type)
-                    list_vals = rec[prop.name].astype(val_type,
-                                                      copy=False)
-
-                    list_len.tofile(stream)
-                    list_vals.tofile(stream)
-                else:
-                    rec[prop.name].astype(prop.dtype()).tofile(stream)
+                prop._write_bin(rec[prop.name], stream, byte_order)
 
     @property
     def header(self):
@@ -592,9 +553,37 @@ class PlyProperty(object):
         '''
         return byte_order + self.val_dtype
 
+    def _from_fields(self, fields):
+        '''
+        Parse one item from generator.
+
+        '''
+        return numpy.fromstring(next(fields), self.dtype(), sep=' ')
+
+    def _to_fields(self, data):
+        '''
+        Return generator over one item.
+
+        '''
+        yield data
+
+    def _read_bin(self, stream, byte_order):
+        '''
+        Read data from a binary stream.
+
+        '''
+        return numpy.fromfile(stream, self.dtype(byte_order), 1)[0]
+
+    def _write_bin(self, data, stream, byte_order):
+        '''
+        Write data to a binary stream.
+
+        '''
+        data.astype(self.dtype(byte_order)).tofile(stream)
+
     def __str__(self):
-        return 'property %s %s' % (data_type_reverse[self.val_dtype],
-                                   self.name)
+        val_str = data_type_reverse[self.val_dtype]
+        return 'property %s %s' % (val_str, self.name)
 
     def __repr__(self):
         return str(self)
@@ -627,6 +616,48 @@ class PlyListProperty(PlyProperty):
         '''
         return (byte_order + self.len_dtype,
                 byte_order + self.val_dtype)
+
+    def _from_fields(self, fields):
+        '''
+        Parse textual data from a generator.
+
+        '''
+        (len_t, val_t) = self.list_dtype()
+
+        n = int(next(fields))
+
+        return numpy.loadtxt(list(islice(fields, n)), val_t, ndmin=1)
+
+    def _to_fields(self, data):
+        '''
+        Return generator over the (numerical) PLY representation of the
+        list data (length followed by actual data).
+
+        '''
+        yield data.size
+        for x in data.ravel():
+            yield x
+
+    def _read_bin(self, stream, byte_order):
+        '''
+        Read data from a binary stream.
+
+        '''
+        (len_t, val_t) = self.list_dtype(byte_order)
+
+        n = numpy.fromfile(stream, len_t, 1)[0]
+
+        return numpy.fromfile(stream, val_t, n)
+
+    def _write_bin(self, data, stream, byte_order):
+        '''
+        Write data to a binary stream.
+
+        '''
+        (len_t, val_t) = self.list_dtype(byte_order)
+
+        numpy.array(data.size, dtype=len_t).tofile(stream)
+        data.astype(val_t, copy=False).tofile(stream)
 
     def __str__(self):
         len_str = data_type_reverse[self.len_dtype]
