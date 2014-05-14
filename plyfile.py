@@ -50,11 +50,11 @@ byte_order_reverse = {
 native_byte_order = '<' if sys.byteorder == 'little' else '>'
 
 
-def normalize_type(type_str):
+def lookup_type(type_str):
     if type_str not in data_type_reverse:
         raise ValueError("unsupported field type: %s" % type_str)
 
-    return data_types[data_type_reverse[type_str]]
+    return data_type_reverse[type_str]
 
 
 def split_line(line, n):
@@ -273,18 +273,11 @@ class PlyElement(object):
         self.name = name
         self.count = count
 
-        # Mapping from list-property name to (count_type, value_type).
-        self._list_md = {}
-
         self._prop_md = []
+        self.properties = properties
 
-        for prop in properties:
-            if len(prop) == 3:
-                self._list_md[prop[0]] = (prop[1], prop[2])
-                self._prop_md.append((prop[0], 'O'))
-            else:
-                assert len(prop) == 2
-                self._prop_md.append(prop)
+        self._have_list = any(isinstance(p, PlyListProperty)
+                              for p in self.properties)
 
     def dtype(self, byte_order='='):
         '''
@@ -294,18 +287,8 @@ class PlyElement(object):
         representation of the element.)
 
         '''
-        return [(name, byte_order + t)
-                for (name, t) in self._prop_md]
-
-    def list_dtype(self, name, byte_order='='):
-        '''
-        Return numpy dtypes of length and data for a list property,
-        given the name.
-
-        '''
-        (len_str, val_str) = self._list_md[name]
-
-        return (byte_order + len_str, byte_order + val_str)
+        return [(prop.name, prop.dtype(byte_order))
+                for prop in self.properties]
 
     @staticmethod
     def _parse_multi(header_lines):
@@ -357,9 +340,8 @@ class PlyElement(object):
                     raise RuntimeError("too few fields after "
                                        "'property list'")
 
-                properties.append((line[4],
-                                   data_types[line[2]],
-                                   data_types[line[3]]))
+                prop = PlyListProperty(line[4], line[2], line[3])
+
             else:
                 if len(line) > 3:
                     raise RuntimeError("too many fields after "
@@ -368,8 +350,9 @@ class PlyElement(object):
                     raise RuntimeError("too few fields after "
                                        "'property'")
 
-                properties.append((line[2],
-                                   data_types[line[1]]))
+                prop = PlyProperty(line[2], line[1])
+
+            properties.append(prop)
 
         return (PlyElement(name, properties, count), lines[a:])
 
@@ -414,16 +397,17 @@ class PlyElement(object):
                         raise ValueError("non-scalar object fields not "
                                          "supported")
 
-                len_type = len_types.get(t[0], 'u1')
+                len_str = data_type_reverse[len_types.get(t[0], 'u1')]
                 if t[1][1] == 'O':
-                    val_str = val_types.get(t[0], 'i4')
+                    val_type = val_types.get(t[0], 'i4')
+                    val_str = lookup_type(val_type)
                 else:
-                    val_str = normalize_type(t[1][1:])
+                    val_str = lookup_type(t[1][1:])
 
-                prop = (t[0], len_type, val_str)
+                prop = PlyListProperty(t[0], len_str, val_str)
             else:
-                type_str = normalize_type(t[1][1:])
-                prop = (t[0], type_str)
+                val_str = lookup_type(t[1][1:])
+                prop = PlyProperty(t[0], val_str)
 
             properties.append(prop)
 
@@ -437,7 +421,7 @@ class PlyElement(object):
         Read the actual data from a PLY file.
 
         '''
-        if len(self._list_md):
+        if self._have_list:
             # There are list properties, so a simple load is
             # impossible.
             if text:
@@ -460,7 +444,7 @@ class PlyElement(object):
         Write the data to a PLY file.
 
         '''
-        if len(self._list_md):
+        if self._have_list:
             # There are list properties, so serialization is
             # slightly complicated.
             if text:
@@ -489,9 +473,9 @@ class PlyElement(object):
         for (k, line) in enumerate(islice(iter(stream.readline, ''),
                                           self.count)):
             line = line.strip()
-            for prop in self._prop_md:
-                if prop[0] in self._list_md:
-                    (len_t, val_t) = self.list_dtype(prop[0])
+            for prop in self.properties:
+                if isinstance(prop, PlyListProperty):
+                    (len_t, val_t) = prop.list_dtype()
                     (len_str, line) = split_line(line, 1)
                     n = int(len_str)
 
@@ -501,14 +485,14 @@ class PlyElement(object):
 
                     assert len(fields) == n + 1
 
-                    self.data[prop[0]][k] = numpy.loadtxt(
+                    self.data[prop.name][k] = numpy.loadtxt(
                             fields[:-1], val_t, ndmin=1)
 
                     line = fields[-1]
                 else:
                     (val_str, line) = split_line(line, 1)
-                    self.data[prop[0]][k] = numpy.fromstring(
-                            val_str, prop[1], sep=' ')
+                    self.data[prop.name][k] = numpy.fromstring(
+                            val_str, prop.dtype(), sep=' ')
 
     def _write_txt(self, stream):
         '''
@@ -518,12 +502,12 @@ class PlyElement(object):
         '''
         for rec in self.data:
             fields = []
-            for t in self._prop_md:
-                if t[0] in self._list_md:
-                    fields.append(rec[t[0]].size)
-                    fields.extend(rec[t[0]].ravel())
+            for prop in self.properties:
+                if isinstance(prop, PlyListProperty):
+                    fields.append(rec[prop.name].size)
+                    fields.extend(rec[prop.name].ravel())
                 else:
-                    fields.append(rec[t[0]])
+                    fields.append(rec[prop.name])
 
             numpy.savetxt(stream, [fields], '%.18g')
 
@@ -537,16 +521,16 @@ class PlyElement(object):
                                 dtype=self.dtype(byte_order))
 
         for k in xrange(self.count):
-            for prop in self.dtype(byte_order):
-                if prop[0] in self._list_md:
-                    (len_t, val_t) = self.list_dtype(prop[0])
+            for prop in self.properties:
+                if isinstance(prop, PlyListProperty):
+                    (len_t, val_t) = prop.list_dtype(byte_order)
                     n = numpy.fromfile(stream, len_t, 1)[0]
 
-                    self.data[prop[0]][k] = numpy.fromfile(
+                    self.data[prop.name][k] = numpy.fromfile(
                             stream, val_t, n)
                 else:
-                    self.data[prop[0]][k] = numpy.fromfile(
-                            stream, prop[1], 1)[0]
+                    self.data[prop.name][k] = numpy.fromfile(
+                            stream, prop.dtype(byte_order), 1)[0]
 
     def _write_bin(self, stream, byte_order):
         '''
@@ -555,17 +539,18 @@ class PlyElement(object):
 
         '''
         for rec in self.data:
-            for t in self.dtype(byte_order):
-                if t[0] in self._list_md:
-                    (len_type, val_type) = self.list_dtype(t[0])
-                    list_len = numpy.array(rec[t[0]].size,
+            for prop in self.properties:
+                if isinstance(prop, PlyListProperty):
+                    (len_type, val_type) = prop.list_dtype(byte_order)
+                    list_len = numpy.array(rec[prop.name].size,
                                            dtype=len_type)
-                    list_vals = rec[t[0]].astype(val_type, copy=False)
+                    list_vals = rec[prop.name].astype(val_type,
+                                                      copy=False)
 
                     list_len.tofile(stream)
                     list_vals.tofile(stream)
                 else:
-                    rec[t[0]].astype(t[1]).tofile(stream)
+                    rec[prop.name].astype(prop.dtype()).tofile(stream)
 
     @property
     def header(self):
@@ -575,17 +560,8 @@ class PlyElement(object):
 
         '''
         lines = ['element %s %d' % (self.name, self.count)]
-        for prop in self._prop_md:
-            if prop[0] in self._list_md:
-                (len_t, val_t) = self.list_dtype(prop[0])
-                lines.append('property list %s %s %s' %
-                             (data_type_reverse[len_t[1:]],
-                              data_type_reverse[val_t[1:]],
-                              prop[0]))
-            else:
-                lines.append('property %s %s' %
-                             (data_type_reverse[prop[1]],
-                              prop[0]))
+        lines.extend(map(str, self.properties))
+
         return '\n'.join(lines)
 
     def __str__(self):
@@ -593,3 +569,66 @@ class PlyElement(object):
 
     def __repr__(self):
         return str(self)
+
+
+class PlyProperty(object):
+
+    '''
+    PLY property description.  This class is pure metadata; the data
+    itself is contained in PlyElement instances.
+
+    '''
+
+    def __init__(self, name, val_dtype):
+        self.name = name
+
+        self.val_dtype = data_types[val_dtype]
+
+    def dtype(self, byte_order='='):
+        '''
+        Return the numpy dtype description for this property (as a tuple
+        of strings).
+
+        '''
+        return byte_order + self.val_dtype
+
+    def __str__(self):
+        return 'property %s %s' % (data_type_reverse[self.val_dtype],
+                                   self.name)
+
+    def __repr__(self):
+        return str(self)
+
+
+class PlyListProperty(PlyProperty):
+
+    '''
+    PLY list property description.
+
+    '''
+
+    def __init__(self, name, len_dtype, val_dtype):
+        PlyProperty.__init__(self, name, val_dtype)
+
+        self.len_dtype = data_types[len_dtype]
+
+    def dtype(self, byte_order='='):
+        '''
+        List properties always have a numpy dtype of "object".
+
+        '''
+        return '|O'
+
+    def list_dtype(self, byte_order='='):
+        '''
+        Return the pair (len_dtype, val_dtype) (both numpy-friendly
+        strings).
+
+        '''
+        return (byte_order + self.len_dtype,
+                byte_order + self.val_dtype)
+
+    def __str__(self):
+        len_str = data_type_reverse[self.len_dtype]
+        val_str = data_type_reverse[self.val_dtype]
+        return 'property list %s %s %s' % (len_str, val_str, self.name)
