@@ -1,6 +1,6 @@
 import numpy
 
-from ply_format import PlyData, PlyElement
+from plyfile import PlyData, PlyElement
 
 
 def normalize_property(prop):
