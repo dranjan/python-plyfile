@@ -6,11 +6,12 @@ The PLY format is documented
 
 # Installation
 
-The installation/test script `test-all.sh` documents the procedure for
-installing `plyfile` and its dependencies in a virtualenv environment.
-One option is simply to run the test script and keep using the
-virtualenv it creates, or to read the script and adapt it to your needs.
-Or just keep reading:
+The installation/test shell script `test-all.sh` documents the procedure
+for installing `plyfile` and its dependencies in a virtualenv
+environment on a Unix-like system.  One option is simply to run the test
+script and keep using the virtualenv it creates, or to read the script
+and adapt it to your needs.  (You will need `virtualenv` and `pip` to
+run `test-all.sh`.)  Or just keep reading:
 
 ## Dependency: NumPy
 
@@ -268,7 +269,7 @@ down the real errors.  This is arguably a bug.
 
 # Credits
 
-Primary author: Darsh Ranjan
+Author: Darsh Ranjan
 
 # License
 

@@ -3,8 +3,7 @@
 set -e
 set -o pipefail
 
-mydir=$(dirname $(readlink -f $0))
-pushd "$mydir" > /dev/null
+cd $(dirname $0)
 
 echo "Creating virtualenv..."
 virtualenv plyfile-venv
@@ -24,10 +23,9 @@ python test.py
 popd > /dev/null
 
 deactivate
-popd > /dev/null
 
 echo
 echo "All OK!"
 echo "plyfile and numpy are installed in a virtualenv environment:"
-echo "   $(readlink -f plyfile-venv)"
+echo "   $(pwd)/plyfile-venv"
 echo "which you can safely delete or keep using."
