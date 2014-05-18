@@ -1,7 +1,8 @@
 ply
 format ascii 1.0
-comment single tetrahedron with colored faces.
+comment single tetrahedron with colored faces
 element vertex 4
+comment tetrahedron vertices
 property float32 x
 property float32 y
 property float32 z

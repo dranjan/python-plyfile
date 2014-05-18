@@ -88,10 +88,11 @@ face = numpy.array([([0, 1, 2], 255, 255, 255),
 
 
 print "Assembling initial PlyData instance..."
-ply0 = PlyData([PlyElement.describe(vertex, 'vertex'),
+ply0 = PlyData([PlyElement.describe(vertex, 'vertex',
+                                    comments=['tetrahedron vertices']),
                 PlyElement.describe(face, 'face')],
                text=True,
-               comments=['single tetrahedron with colored faces.'])
+               comments=['single tetrahedron with colored faces'])
 
 print "Writing test0.ply (ascii)..."
 ply0.write('test0.ply')

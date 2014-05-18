@@ -100,8 +100,8 @@ class PlyData(object):
         self.byte_order = byte_order
         self.text = text
 
-        self.comments = comments
-        self._elements = list(elements)
+        self.comments = list(comments)
+        self.elements = list(elements)
         self._element_lookup = dict((elt.name, elt) for elt in
                                     elements)
 
@@ -121,37 +121,40 @@ class PlyData(object):
                 break
 
             elif fields[0] == 'comment':
-                comments.append(fields[1])
+                lines.append(fields)
             else:
                 lines.append(line.split())
 
         a = 0
-
-        line = lines[a]
-        a += 1
-
-        if line != ['ply']:
+        if lines[a] != ['ply']:
             raise RuntimeError("expected 'ply'")
 
-        line = lines[a]
         a += 1
+        while lines[a][0] == 'comment':
+            comments.append(lines[a][1])
+            a += 1
 
-        if line[0] != 'format':
+        if lines[a][0] != 'format':
             raise RuntimeError("expected 'format'")
 
-        if line[2] != '1.0':
+        if lines[a][2] != '1.0':
             raise RuntimeError("expected version '1.0'")
 
-        if len(line) != 3:
+        if len(lines[a]) != 3:
             raise RuntimeError("too many fields after 'format'")
 
-        fmt = line[1]
+        fmt = lines[a][1]
 
         if fmt not in _byte_order_map:
             raise RuntimeError("don't understand format %r" % fmt)
 
         byte_order = _byte_order_map[fmt]
         text = fmt == 'ascii'
+
+        a += 1
+        while lines[a][0] == 'comment':
+            comments.append(lines[a][1])
+            a += 1
 
         return PlyData(PlyElement._parse_multi(lines[a:]),
                        text, byte_order, comments)
@@ -214,19 +217,14 @@ class PlyData(object):
                          _byte_order_reverse[self.byte_order] +
                          ' 1.0')
 
-        # We didn't keep track of where in the header each comment came
-        # from, so the best we can do is just put them all after the
-        # 'format' line.  There are no current plans to remedy this.
+        # Some information is lost here, since all comments are placed
+        # between the 'format' line and the first element.
         for c in self.comments:
             lines.append('comment ' + c)
 
         lines.extend(elt.header for elt in self.elements)
         lines.append('end_header')
         return '\n'.join(lines)
-
-    @property
-    def elements(self):
-        return self._elements
 
     def __iter__(self):
         return iter(self.elements)
@@ -264,7 +262,7 @@ class PlyElement(object):
 
     '''
 
-    def __init__(self, name, properties, count):
+    def __init__(self, name, properties, count, comments=[]):
         '''
         This is not part of the public interface.  The preferred methods
         of obtaining PlyElement instances are PlyData.read (to read from
@@ -276,6 +274,7 @@ class PlyElement(object):
         self.count = count
 
         self.properties = properties
+        self.comments = list(comments)
 
         self._have_list = any(isinstance(p, PlyListProperty)
                               for p in self.properties)
@@ -323,21 +322,26 @@ class PlyElement(object):
 
         (name, count) = (line[1], int(line[2]))
 
+        comments = []
         properties = []
         while True:
             a += 1
             if a >= len(lines):
                 break
 
-            if lines[a][0] != 'property':
+            if lines[a][0] == 'comment':
+                comments.append(lines[a][1])
+            elif lines[a][0] == 'property':
+                properties.append(PlyProperty._parse_one(lines[a]))
+            else:
                 break
 
-            properties.append(PlyProperty._parse_one(lines[a]))
-
-        return (PlyElement(name, properties, count), lines[a:])
+        return (PlyElement(name, properties, count, comments),
+                lines[a:])
 
     @staticmethod
-    def describe(data, name, len_types={}, val_types={}):
+    def describe(data, name, len_types={}, val_types={},
+                 comments=[]):
         '''
         Construct a PlyElement from an array's metadata.
 
@@ -391,7 +395,7 @@ class PlyElement(object):
 
             properties.append(prop)
 
-        elt = PlyElement(name, properties, count)
+        elt = PlyElement(name, properties, count, comments)
         elt.data = data
 
         return elt
@@ -501,6 +505,12 @@ class PlyElement(object):
 
         '''
         lines = ['element %s %d' % (self.name, self.count)]
+
+        # Some information is lost here, since all comments are placed
+        # between the 'element' line and the first property definition.
+        for c in self.comments:
+            lines.append('comment ' + c)
+
         lines.extend(map(str, self.properties))
 
         return '\n'.join(lines)
@@ -509,8 +519,9 @@ class PlyElement(object):
         return self.header
 
     def __repr__(self):
-        return ('PlyElement(%r, %r, count=%d)' %
-                (self.name, self.properties, self.count))
+        return ('PlyElement(%r, %r, count=%d, comments=%r)' %
+                (self.name, self.properties, self.count,
+                 self.comments))
 
 
 class PlyProperty(object):
