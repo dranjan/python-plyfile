@@ -215,17 +215,24 @@ maintainable interface at least for the first usable version.)
 ## Interpretation issues
 
 There doesn't seem to be a single complete and consistent description of
-the PLY format.  Even the "authoritative" 
+the PLY format.  Even the "authoritative"
 [Ply.txt](http://www.cs.virginia.edu/~gfx/Courses/2001/Advanced.spring.01/plylib/Ply.txt)
-by Greg Turk is incomplete and inconsistent.  For example,
-where can comments appear in the header?  At least one popular reader of
+by Greg Turk has some issues.
+
+### Comment placement
+
+Where can comments appear in the header?  It appears that in all the
+"official" examples, all comments immediately follow the "format" line,
+but the language of the document neither places any such restrictions
+nor explicitly allows comments to be placed anywhere else.  Thus, it
+isn't clear whether comments can appear anywhere in the header or must
+immediately follow the "format" line.  At least one popular reader of
 PLY files chokes on comments before the "format" line.  `plyfile`
 accepts comments anywhere in the header in input but only places them in
 a few limited places in output, namely immediately after "format" and
-"element" lines.  It appears that in all the "official" examples, all
-comments immediately follow the "format" line, but the language of the
-specification neither places any such restrictions nor explicitly allows
-comments to be placed anywhere else.
+"element" lines.
+
+### Element and property names
 
 Another ambiguity is names: what strings are allowed as PLY element and
 property names?  `plyfile` accepts as input any name that doesn't
@@ -233,6 +240,8 @@ contain spaces, but this is surely too generous.  This may not be such
 a big deal, though: although names are theoretically arbitrary, in
 practice, the majority of PLY element and property names probably come
 from a small finite set ("face", "x", "nx", "green", etc.).
+
+### Property syntax
 
 A more serious problem is that the PLY format specification appears to
 be inconsistent regarding the syntax of property definitions.  In
