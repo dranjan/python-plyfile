@@ -263,10 +263,7 @@ facto_.
 Although some validation is done, malformed data may silently give
 strange results instead of raising errors.  It would be better if
 `plyfile` completely validated that input satisfied the PLY
-specification (modulo the ambiguities mentioned above).  Also, `plyfile`
-can silently write invalid PLY files for some badly formed input, for
-example, if element or property names contain spaces or newlines.  This
-is really a bug.
+specification (modulo the ambiguities mentioned above).
 
 ## Error messages
 

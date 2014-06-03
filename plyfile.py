@@ -296,6 +296,18 @@ class PlyElement(object):
         self._have_list = any(isinstance(p, PlyListProperty)
                               for p in self.properties)
 
+    def _get_name(self):
+        return self._name
+
+    def _set_name(self, name):
+        if any(c.isspace() for c in name):
+            msg = "element name %r contains spaces" % name
+            raise RuntimeError(msg)
+
+        self._name = name
+
+    name = property(_get_name, _set_name)
+
     def dtype(self, byte_order='='):
         '''
         Return the numpy dtype of the in-memory representation of the
@@ -552,6 +564,18 @@ class PlyProperty(object):
     def __init__(self, name, val_dtype):
         self.name = name
         self.val_dtype = _data_types[val_dtype]
+
+    def _get_name(self):
+        return self._name
+
+    def _set_name(self, name):
+        if any(c.isspace() for c in name):
+            msg = "Error: property name %r contains spaces" % name
+            raise RuntimeError(msg)
+
+        self._name = name
+
+    name = property(_get_name, _set_name)
 
     @staticmethod
     def _parse_one(line):
