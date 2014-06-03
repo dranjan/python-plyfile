@@ -210,7 +210,8 @@ class PlyData(object):
                 stream = open(stream, 'wb')
                 must_close = True
 
-            print >> stream, self.header
+            stream.write(self.header)
+            stream.write('\r\n')
 
             for elt in self:
                 elt._write(stream, self.text, self.byte_order)
@@ -241,7 +242,7 @@ class PlyData(object):
 
         lines.extend(elt.header for elt in self.elements)
         lines.append('end_header')
-        return '\n'.join(lines)
+        return '\r\n'.join(lines)
 
     def __iter__(self):
         return iter(self.elements)
@@ -468,7 +469,7 @@ class PlyElement(object):
             # no list properties, so serialization is
             # straightforward.
             if text:
-                _np.savetxt(stream, self.data, '%.18g')
+                _np.savetxt(stream, self.data, '%.18g', newline='\r\n')
             else:
                 data = self.data.astype(self.dtype(byte_order),
                                         copy=False)
@@ -484,7 +485,7 @@ class PlyElement(object):
                                 dtype=self.dtype())
 
         for (k, line) in enumerate(_islice(iter(stream.readline, ''),
-                                          self.count)):
+                                           self.count)):
             fields = iter(line.strip().split())
             for prop in self.properties:
                 self.data[prop.name][k] = prop._from_fields(fields)
@@ -500,7 +501,7 @@ class PlyElement(object):
             for prop in self.properties:
                 fields.extend(prop._to_fields(rec[prop.name]))
 
-            _np.savetxt(stream, [fields], '%.18g')
+            _np.savetxt(stream, [fields], '%.18g', newline='\r\n')
 
     def _read_bin(self, stream, byte_order):
         '''
@@ -542,7 +543,7 @@ class PlyElement(object):
 
         lines.extend(map(str, self.properties))
 
-        return '\n'.join(lines)
+        return '\r\n'.join(lines)
 
     def __str__(self):
         return self.header
@@ -722,6 +723,7 @@ class PlyListProperty(PlyProperty):
         return 'property list %s %s %s' % (len_str, val_str, self.name)
 
     def __repr__(self):
-        return 'PlyListProperty(%r, %r, %r)' % (self.name,
-                                                _lookup_type(self.len_dtype),
-                                                _lookup_type(self.val_dtype))
+        return ('PlyListProperty(%r, %r, %r)' %
+                (self.name,
+                 _lookup_type(self.len_dtype),
+                 _lookup_type(self.val_dtype)))
