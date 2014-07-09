@@ -113,7 +113,9 @@ be represented as an `object`-typed field, each of whose values is an
 array of type `'i4'` and length 3.  The reason is simply that the PLY
 format provides no way to find out that each "vertex_indices" field has
 length 3 without actually reading all the data, so `plyfile` has to
-assume that this is a variable-length property.
+assume that this is a variable-length property.  However, see below (and
+`examples/plot.py`) for an easy way to recover a two-dimensional array
+from a list property.
 
 For example, if we wanted to create the "vertex" and "face" PLY elements
 of the `tet.ply` data directly as `numpy` arrays for the purpose of
@@ -174,11 +176,35 @@ Comments can be added:
 
     >>> PlyData([el], comments=['header comment']).write('some.ply')
 
+## Getting a two-dimensional array from a list property
+
+The PLY format provides no way to assert that all the data for a given
+list property is of the same length, yet this is a relatively common
+occurrence.  For example, all the "vertex_indices" data on a "face"
+element will have length three for a triangular mesh.  In such cases,
+it's usually much more convenient to have the data in a two-dimensional
+array, as opposed to a one-dimensional array of type `object`.  Here's a
+pretty easy way to obtain a two dimensional array, assuming we know the
+row length in advance:
+
+    >>> plydata = PlyData.read('tet.ply')
+    >>> tri_data = plydata['face'].data['vertex_indices']
+    >>> triangles = numpy.fromiter(tri_data,
+    ...                            [('data', tri_data[0].dtype, (3,))],
+    ...                            count=len(tri_data))['data']
+
+A terser but less efficient alternative for the last line is
+
+    >>> triangles = numpy.array(list(tri_data))
+
+(In this example, we happen to know that the "vertex_indices" property
+always has length 3.)
+
 # Design philosophy and rationale
 
 At the time that I wrote this, I didn't know of any simple and
 self-contained Python PLY file module using `numpy` as its data
-representation medium.  Considering the increasing prevalance of Python
+representation medium.  Considering the increasing prevalence of Python
 as a tool for scientific programming with NumPy as the _lingua franca_
 for numerical data, such a module seemed desirable; hence, `plyfile` was
 born.
