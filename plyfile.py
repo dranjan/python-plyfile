@@ -64,7 +64,7 @@ _byte_order_reverse = {
 }
 
 
-_native_byte_order = {'little':'<', 'big':'>'}[_byteorder]
+_native_byte_order = {'little': '<', 'big': '>'}[_byteorder]
 
 
 def _lookup_type(type_str):
@@ -482,7 +482,7 @@ class PlyElement(object):
 
         '''
         self.data = _np.empty(self.count,
-                                dtype=self.dtype())
+                              dtype=self.dtype())
 
         for (k, line) in enumerate(_islice(iter(stream.readline, ''),
                                            self.count)):
@@ -510,7 +510,7 @@ class PlyElement(object):
 
         '''
         self.data = _np.empty(self.count,
-                                dtype=self.dtype(byte_order))
+                              dtype=self.dtype(byte_order))
 
         for k in xrange(self.count):
             for prop in self.properties:
