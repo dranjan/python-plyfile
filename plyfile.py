@@ -131,7 +131,7 @@ class PlyData(object):
         lines = []
         comments = []
         while True:
-            line = stream.readline().strip()
+            line = stream.readline().decode('ascii').strip()
             fields = _split_line(line, 1)
 
             if fields[0] == 'end_header':
