@@ -512,7 +512,7 @@ class PlyElement(object):
         self.data = _np.empty(self.count,
                               dtype=self.dtype(byte_order))
 
-        for k in xrange(self.count):
+        for k in range(self.count):
             for prop in self.properties:
                 self.data[prop.name][k] = prop._read_bin(stream,
                                                          byte_order)
@@ -541,7 +541,7 @@ class PlyElement(object):
         for c in self.comments:
             lines.append('comment ' + c)
 
-        lines.extend(map(str, self.properties))
+        lines.extend(list(map(str, self.properties)))
 
         return '\r\n'.join(lines)
 
