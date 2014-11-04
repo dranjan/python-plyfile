@@ -210,8 +210,8 @@ class PlyData(object):
                 stream = open(stream, 'wb')
                 must_close = True
 
-            stream.write(self.header)
-            stream.write('\r\n')
+            stream.write(self.header.encode('ascii'))
+            stream.write(b'\r\n')
 
             for elt in self:
                 elt._write(stream, self.text, self.byte_order)
