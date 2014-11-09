@@ -570,6 +570,8 @@ class PlyProperty(object):
         return self._name
 
     def _set_name(self, name):
+        name = str(name)
+
         if any(c.isspace() for c in name):
             msg = "Error: property name %r contains spaces" % name
             raise RuntimeError(msg)
