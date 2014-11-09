@@ -21,6 +21,12 @@ import numpy as _np
 from sys import byteorder as _byteorder
 
 
+try:
+    range = xrange
+except:
+    pass
+
+
 _data_types = {
     'int8': 'i1',
     'char': 'i1',
