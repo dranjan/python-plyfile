@@ -1,6 +1,14 @@
+from __future__ import print_function
+
 import numpy
 
 from plyfile import PlyData, PlyElement
+
+
+try:
+    range = xrange
+except:
+    pass
 
 
 def normalize_property(prop):
@@ -10,7 +18,7 @@ def normalize_property(prop):
     n = len(prop)
 
     arr = numpy.empty(n, dtype='O')
-    for k in xrange(n):
+    for k in range(n):
         arr[k] = prop[k]
 
     return arr
@@ -27,7 +35,7 @@ def verify(ply0, ply1):
     num_elements = len(el0)
     assert len(el1) == num_elements
 
-    for k in xrange(num_elements):
+    for k in range(num_elements):
         assert el0[k].name == el1[k].name
 
         data0 = el0[k].data
@@ -39,7 +47,7 @@ def verify(ply0, ply1):
         num_properties = len(dtype0)
         assert len(dtype1) == num_properties
 
-        for j in xrange(num_properties):
+        for j in range(num_properties):
             prop_name = dtype0[j][0]
             assert dtype1[j][0] == prop_name
 
@@ -65,7 +73,7 @@ def verify_1d(prop0, prop1):
     s = s0[0]
 
     if s == 'O':
-        for k in xrange(n):
+        for k in range(n):
             assert len(prop0[k]) == len(prop1[k])
             assert (prop0[k] == prop1[k]).all()
     else:
@@ -87,43 +95,43 @@ face = numpy.array([([0, 1, 2], 255, 255, 255),
                           ('blue', 'u1')])
 
 
-print "Assembling initial PlyData instance..."
+print("Assembling initial PlyData instance...")
 ply0 = PlyData([PlyElement.describe(vertex, 'vertex',
                                     comments=['tetrahedron vertices']),
                 PlyElement.describe(face, 'face')],
                text=True,
                comments=['single tetrahedron with colored faces'])
 
-print "Writing test0.ply (ascii)..."
+print("Writing test0.ply (ascii)...")
 ply0.write('test0.ply')
 
-print "Reading test0.ply..."
+print("Reading test0.ply...")
 ply1 = PlyData.read('test0.ply')
 
-print "(verifying result...)"
+print("(verifying result...)")
 verify(ply0, ply1)
 
-print "Writing test1.ply (binary_little_endian)..."
+print("Writing test1.ply (binary_little_endian)...")
 ply1.text = False
 ply1.byte_order = '<'
 ply1.write('test1.ply')
 
-print "Reading test1.ply..."
+print("Reading test1.ply...")
 ply2 = PlyData.read('test1.ply')
 
-print "(verifying result...)"
+print("(verifying result...)")
 assert ply2.byte_order == '<'
 verify(ply0, ply2)
 
-print "Writing test2.ply (binary_big_endian)..."
+print("Writing test2.ply (binary_big_endian)...")
 ply2.byte_order = '>'
 ply2.write('test2.ply')
 
-print "Reading test2.ply..."
+print("Reading test2.ply...")
 ply3 = PlyData.read('test2.ply')
 
-print "(verifying result...)"
+print("(verifying result...)")
 assert ply3.byte_order == '>'
 verify(ply0, ply3)
 
-print "All tests passed!"
+print("All tests passed!")
