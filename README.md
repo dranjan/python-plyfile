@@ -8,28 +8,26 @@ The PLY format is documented
 
 The installation/test shell script `test-all.sh` documents the procedure
 for installing `plyfile` and its dependencies in a virtualenv
-environment on a Unix-like system.  One option is simply to run the test
-script and keep using the virtualenv it creates, or to read the script
-and adapt it to your needs.  (You will need `virtualenv` and `pip` to
-run `test-all.sh`.)  Or just keep reading:
+environment on a Unix-like system.  (You will need `virtualenv` and `pip`
+to run the test script.)
 
-## Dependency: NumPy
+## Dependencies
 
-The only dependency is the ubiquitous `numpy`, but you'll need a fairly
-recent version.  Version 1.8 is known to be sufficient.  While this is
-listed as a dependency in `setup.py`, the automatic installation doesn't
-seem to work well, so you may need to install it manually.  But this is
-quite easy:
+- python2 >= 2.6 or python3
+- numpy >= 1.8
+- setuptools (only for installation)
 
-    pip install numpy
-
-(Or just use your package manager's NumPy if it isn't too old.)
+**Note:** `numpy` 1.9 has a bug that breaks byte swapping by
+manipulating the `byte_order` field of a `PlyData` instance.  As a
+workaround, you can manually byte-swap your arrays using 
+`el.data = el.data.byteswap().newbyteorder()` in addition to
+changing the `byte_order` attribute.
 
 ## Installing plyfile
 
     python setup.py install
 
-(Or just copy `plyfile.py` into your project.)
+(Or just copy `plyfile.py` into your GPL-compatible project.)
 
 # Usage
 
@@ -299,7 +297,7 @@ In many cases, exceptions raised from `numpy` routines will simply
 propagate through `plyfile`, and the user will have the task of hunting
 down the real errors.  This is arguably a bug.
 
-## More examples
+# More examples
 
 Examples beyond the scope of this document and the tests are in the
 `examples` directory.
