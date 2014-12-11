@@ -3,14 +3,14 @@ format ascii 1.0
 comment single tetrahedron with colored faces
 element vertex 4
 comment tetrahedron vertices
-property float32 x
-property float32 y
-property float32 z
+property float x
+property float y
+property float z
 element face 4
-property list uint8 int32 vertex_indices
-property uint8 red
-property uint8 green
-property uint8 blue
+property list uchar int vertex_indices
+property uchar red
+property uchar green
+property uchar blue
 end_header
 0 0 0
 0 1 1

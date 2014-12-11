@@ -47,15 +47,15 @@ _data_types = {
 }
 
 _data_type_reverse = {
-    'i1': 'int8',
-    'b1': 'uint8',
-    'u1': 'uint8',
-    'i2': 'int16',
-    'u2': 'uint16',
-    'i4': 'int32',
-    'u4': 'uint32',
-    'f4': 'float32',
-    'f8': 'float64'
+    'i1': 'char',
+    'b1': 'uchar',
+    'u1': 'uchar',
+    'i2': 'short',
+    'u2': 'ushort',
+    'i4': 'int',
+    'u4': 'uint',
+    'f4': 'float',
+    'f8': 'double'
 }
 
 _byte_order_map = {
