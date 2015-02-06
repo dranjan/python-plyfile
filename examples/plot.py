@@ -40,14 +40,15 @@ def plot(ply):
 
     mlab.points3d(x, y, z, color=(1, 1, 1), mode='point')
 
-    tri_idx = ply['face'].data['vertex_indices']
-    idx_dtype = tri_idx[0].dtype
+    if 'face' in ply:
+        tri_idx = ply['face'].data['vertex_indices']
+        idx_dtype = tri_idx[0].dtype
 
-    triangles = numpy.fromiter(tri_idx, [('data', idx_dtype, (3,))],
-                               count=len(tri_idx))['data']
+        triangles = numpy.fromiter(tri_idx, [('data', idx_dtype, (3,))],
+                                   count=len(tri_idx))['data']
 
-    mlab.triangular_mesh(x, y, z, triangles,
-                         color=(1, 0, 0.4), opacity=0.5)
+        mlab.triangular_mesh(x, y, z, triangles,
+                             color=(1, 0, 0.4), opacity=0.5)
 
 
 main()
