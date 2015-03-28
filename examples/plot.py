@@ -34,14 +34,14 @@ def plot(ply):
             'vertex_indices', all of whose elements have length 3.
 
     '''
-    vertex = ply['vertex'].data
+    vertex = ply['vertex']
 
     (x, y, z) = (vertex[t] for t in ('x', 'y', 'z'))
 
     mlab.points3d(x, y, z, color=(1, 1, 1), mode='point')
 
     if 'face' in ply:
-        tri_idx = ply['face'].data['vertex_indices']
+        tri_idx = ply['face']['vertex_indices']
         idx_dtype = tri_idx[0].dtype
 
         triangles = numpy.fromiter(tri_idx, [('data', idx_dtype, (3,))],
