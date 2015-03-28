@@ -71,10 +71,18 @@ Concretely:
     >>> plydata['face'].data['vertex_indices'][0]
     array([0, 1, 2], dtype=int32)
 
-For convenience, elements can be looked up by name:
+For convenience, elements and properties can be looked up by name:
 
-    >>> plydata['vertex'].data['x']
+    >>> plydata['vertex']['x']
     array([ 0.,  0.,  1.,  1.], dtype=float32)
+
+and elements can be indexed directly without explicitly going through
+the `data` attribute:
+
+    >>> plydata['vertex'][0]
+    (0.0, 0.0, 0.0)
+
+The above expression is equivalent to `plydata['vertex'].data[0]`.
 
 `PlyElement` instances also contain metadata:
 
