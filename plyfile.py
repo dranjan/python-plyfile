@@ -475,11 +475,10 @@ class PlyElement(object):
         else:
             # no list properties, so serialization is
             # straightforward.
+            data = self.data.astype(self.dtype(byte_order), copy=False)
             if text:
-                _np.savetxt(stream, self.data, '%.18g', newline='\r\n')
+                _np.savetxt(stream, data, '%.18g', newline='\r\n')
             else:
-                data = self.data.astype(self.dtype(byte_order),
-                                        copy=False)
                 data.tofile(stream)
 
     def _read_txt(self, stream):
@@ -637,7 +636,7 @@ class PlyProperty(object):
         Return generator over one item.
 
         '''
-        yield data
+        yield _np.dtype(self.dtype()).type(data)
 
     def _read_bin(self, stream, byte_order):
         '''
@@ -651,7 +650,7 @@ class PlyProperty(object):
         Write data to a binary stream.
 
         '''
-        data.astype(self.dtype(byte_order)).tofile(stream)
+        _np.dtype(self.dtype(byte_order)).type(data).tofile(stream)
 
     def __str__(self):
         val_str = _data_type_reverse[self.val_dtype]
@@ -707,8 +706,10 @@ class PlyListProperty(PlyProperty):
         list data (length followed by actual data).
 
         '''
-        yield data.size
-        for x in data.ravel():
+        (len_t, val_t) = self.list_dtype()
+
+        yield _np.dtype(len_t).type(data.size)
+        for x in data.astype(val_t, copy=False).ravel():
             yield x
 
     def _read_bin(self, stream, byte_order):
