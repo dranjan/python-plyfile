@@ -6,16 +6,10 @@ The PLY format is documented
 
 # Installation
 
-The installation/test shell script `test-all.sh` documents the procedure
-for installing `plyfile` and its dependencies in a virtualenv
-environment on a Unix-like system.  (You will need `virtualenv` and `pip`
-to run the test script.)
-
 ## Dependencies
 
 - python2 >= 2.6 or python3
 - numpy >= 1.8
-- setuptools (only for installation)
 
 **Note:** `numpy` 1.9 before version 1.9.2 has a bug that breaks byte
 swapping by manipulating the `byte_order` field of a `PlyData` instance.
@@ -23,16 +17,29 @@ As a workaround, you can manually byte-swap your arrays using `el.data =
 el.data.byteswap().newbyteorder()` in addition to changing the
 `byte_order` attribute.
 
+### Optional dependencies
+
+- setuptools (for installation via setup.py)
+- tox (for test suite)
+- py.test and py (for test suite)
+
 ## Installing plyfile
 
     python setup.py install
 
-(Or just copy `plyfile.py` into your GPL-compatible project.)
+Or just copy `plyfile.py` into your GPL-compatible project.
+
+## Running test suite
+
+Preferred (more comprehensive; requires tox and setuptools):
+
+    tox -v
+
+Alternate (requires py.test and py):
+
+    py.test test -v
 
 # Usage
-
-The test script `test.py` documents the basic usage.  A more fleshed-out
-description is also given here.
 
 The following code examples refer to the file `tet.ply`, which can be
 found in the `test` directory.
