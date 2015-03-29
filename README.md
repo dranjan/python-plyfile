@@ -17,11 +17,11 @@ to run the test script.)
 - numpy >= 1.8
 - setuptools (only for installation)
 
-**Note:** `numpy` 1.9 has a bug that breaks byte swapping by
-manipulating the `byte_order` field of a `PlyData` instance.  As a
-workaround, you can manually byte-swap your arrays using 
-`el.data = el.data.byteswap().newbyteorder()` in addition to
-changing the `byte_order` attribute.
+**Note:** `numpy` 1.9 before version 1.9.2 has a bug that breaks byte
+swapping by manipulating the `byte_order` field of a `PlyData` instance.
+As a workaround, you can manually byte-swap your arrays using `el.data =
+el.data.byteswap().newbyteorder()` in addition to changing the
+`byte_order` attribute.
 
 ## Installing plyfile
 
