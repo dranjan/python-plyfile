@@ -120,14 +120,116 @@ mydir = py.path.local(__file__).dirpath()
 tet_ply_ascii = mydir.join('tet.ply').read('rb')
 
 
+np_types = ['i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'f4', 'f8']
+
+
+@pytest.mark.parametrize('np_type', np_types)
+def test_property_type(tmpdir, np_type):
+    dtype = [('x', np_type), ('y', np_type), ('z', np_type)]
+    a = numpy.array([(1, 2, 3), (4, 5, 6)], dtype=dtype)
+
+    ply0 = PlyData([PlyElement.describe(a, 'test')])
+
+    assert ply0.elements[0].name == 'test'
+    assert ply0.elements[0].properties[0].name == 'x'
+    assert ply0.elements[0].properties[0].val_dtype == np_type
+    assert ply0.elements[0].properties[1].name == 'y'
+    assert ply0.elements[0].properties[1].val_dtype == np_type
+    assert ply0.elements[0].properties[2].name == 'z'
+    assert ply0.elements[0].properties[2].val_dtype == np_type
+
+    test_file = tmpdir.join('test.ply')
+    ply0.write(str(test_file))
+    ply1 = PlyData.read(str(test_file))
+
+    assert ply1.elements[0].name == 'test'
+    assert ply1.elements[0].data.dtype == dtype
+    verify(ply0, ply1)
+
+
+@pytest.mark.parametrize('np_type', np_types)
+def test_list_property_type(tmpdir, np_type):
+    a = numpy.array([([0],), ([1, 2, 3],)], dtype=[('x', object)])
+
+    ply0 = PlyData([PlyElement.describe(a, 'test',
+                                        val_types={'x': np_type})])
+
+    assert ply0.elements[0].name == 'test'
+    assert ply0.elements[0].properties[0].name == 'x'
+    assert ply0.elements[0].properties[0].val_dtype == np_type
+
+    test_file = tmpdir.join('test.ply')
+    ply0.write(str(test_file))
+    ply1 = PlyData.read(str(test_file))
+
+    assert ply1.elements[0].name == 'test'
+    assert ply1.elements[0].data[0]['x'].dtype == numpy.dtype(np_type)
+    verify(ply0, ply1)
+
+
+@pytest.mark.parametrize('len_type',
+                         ['i1', 'u1', 'i2', 'u2', 'i4', 'u4'])
+def test_list_property_len_type(tmpdir, len_type):
+    a = numpy.array([([0],), ([1, 2, 3],)], dtype=[('x', object)])
+
+    ply0 = PlyData([PlyElement.describe(a, 'test',
+                                        len_types={'x': len_type})])
+
+    assert ply0.elements[0].name == 'test'
+    assert ply0.elements[0].properties[0].name == 'x'
+    assert ply0.elements[0].properties[0].val_dtype == 'i4'
+    assert ply0.elements[0].properties[0].len_dtype == len_type
+
+    test_file = tmpdir.join('test.ply')
+    ply0.write(str(test_file))
+    ply1 = PlyData.read(str(test_file))
+
+    assert ply1.elements[0].name == 'test'
+    assert ply1.elements[0].data[0]['x'].dtype == numpy.dtype('i4')
+    verify(ply0, ply1)
+
+
+def test_write_stream(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    test_file = tmpdir.join('test.ply')
+
+    with test_file.open('wb') as f:
+        tet_ply_txt.write(f)
+
+    ply1 = PlyData.read(str(test_file))
+    verify(ply0, ply1)
+
+
+def tet_read_stream(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    test_file = tmpdir.join('test.ply')
+
+    tet_ply_txt.write(str(test_file))
+
+    with test_file.open('rb') as f:
+        ply1 = PlyData.read(f)
+
+    verify(ply0, ply1)
+
+
 def test_ascii(tet_ply_txt, tmpdir):
-    test = tmpdir.join('tet.ply')
+    test_file = tmpdir.join('test.ply')
 
-    tet_ply_txt.write(str(test))
-    assert test.read('rb') == tet_ply_ascii
+    tet_ply_txt.write(str(test_file))
+    assert test_file.read('rb') == tet_ply_ascii
 
 
-def test_round_trip(tet_ply_txt, tmpdir):
+@pytest.mark.parametrize('text,byte_order', 
+                         [(True, '='), (False, '<'), (False, '>')])
+def test_write_read(tet_ply_txt, tmpdir, text, byte_order):
+    ply0 = PlyData(tet_ply_txt.elements, text, byte_order, tet_ply_txt.comments)
+    test_file = tmpdir.join('test.ply')
+    ply0.write(str(test_file))
+    ply1 = PlyData.read(str(test_file))
+    verify(ply0, ply1)
+
+
+def test_switch_format(tet_ply_txt, tmpdir):
     ply0 = tet_ply_txt
     test0 = tmpdir.join('test0.ply')
 
