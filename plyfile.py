@@ -708,8 +708,10 @@ class PlyListProperty(PlyProperty):
         '''
         (len_t, val_t) = self.list_dtype()
 
+        data = _np.asarray(data, dtype=val_t).ravel()
+
         yield _np.dtype(len_t).type(data.size)
-        for x in data.astype(val_t, copy=False).ravel():
+        for x in data:
             yield x
 
     def _read_bin(self, stream, byte_order):
@@ -730,8 +732,10 @@ class PlyListProperty(PlyProperty):
         '''
         (len_t, val_t) = self.list_dtype(byte_order)
 
+        data = _np.asarray(data, dtype=val_t).ravel()
+
         _np.array(data.size, dtype=len_t).tofile(stream)
-        data.astype(val_t, copy=False).tofile(stream)
+        data.tofile(stream)
 
     def __str__(self):
         len_str = _data_type_reverse[self.len_dtype]
