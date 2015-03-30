@@ -5,7 +5,7 @@ import pytest
 
 import numpy
 
-from plyfile import PlyData, PlyElement
+from plyfile import PlyData, PlyElement, make2d
 
 
 try:
@@ -290,3 +290,12 @@ def test_obj_info(tmpdir):
     ply1 = PlyData.read(str(test_file))
     assert len(ply1.obj_info) == 1
     assert ply1.obj_info[0] == 'test obj_info'
+
+
+def test_make2d():
+    a = numpy.empty(2, dtype=object)
+    a[:] = [numpy.array([0, 1, 2]), numpy.array([3, 4, 5])]
+
+    b = make2d(a)
+    assert b.shape == (2, 3)
+    assert (b == [[0, 1, 2], [3, 4, 5]]).all()

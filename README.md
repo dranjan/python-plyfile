@@ -219,12 +219,10 @@ row length in advance:
     ...                            [('data', tri_data[0].dtype, (3,))],
     ...                            count=len(tri_data))['data']
 
-A terser but less efficient alternative for the last line is
+As of version 0.3, you can use the `make2d` function:
 
-    >>> triangles = numpy.array(list(tri_data))
-
-(In this example, we happen to know that the "vertex_indices" property
-always has length 3.)
+    >>> from plyfile import make2d
+    >>> triangles = make2d(triangles)
 
 # Design philosophy and rationale
 

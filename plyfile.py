@@ -91,6 +91,26 @@ def _split_line(line, n):
     return fields
 
 
+def make2d(array, cols=None, dtype=None):
+    '''
+    Make a 2D array from an array of arrays.  The `cols' and `dtype'
+    arguments can be omitted if the array is not empty.
+
+    '''
+    if (cols is None or dtype is None) and not len(array):
+        raise RuntimeError("cols and dtype must be specified for empty "
+                           "array")
+
+    if cols is None:
+        cols = len(array[0])
+
+    if dtype is None:
+        dtype = array[0].dtype
+
+    return _np.fromiter(array, [('_', dtype, (cols,))],
+                        count=len(array))['_']
+
+
 class PlyData(object):
 
     '''
