@@ -257,3 +257,22 @@ def test_switch_format(tet_ply_txt, tmpdir):
 
     assert ply3.byte_order == '>'
     verify(ply0, ply3)
+
+
+def test_element_lookup(tet_ply_txt):
+    assert tet_ply_txt['vertex'].name == 'vertex'
+    assert tet_ply_txt['face'].name == 'face'
+
+
+def test_property_lookup(tet_ply_txt):
+    vertex = tet_ply_txt['vertex'].data
+    assert (tet_ply_txt.elements[0]['x'] == vertex['x']).all()
+    assert (tet_ply_txt.elements[0]['y'] == vertex['y']).all()
+    assert (tet_ply_txt.elements[0]['z'] == vertex['z']).all()
+
+    face = tet_ply_txt['face'].data
+    assert (tet_ply_txt.elements[1]['vertex_indices'] ==
+            face['vertex_indices']).all()
+    assert (tet_ply_txt.elements[1]['red'] == face['red']).all()
+    assert (tet_ply_txt.elements[1]['green'] == face['green']).all()
+    assert (tet_ply_txt.elements[1]['blue'] == face['blue']).all()
