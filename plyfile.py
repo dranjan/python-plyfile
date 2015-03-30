@@ -104,7 +104,7 @@ class PlyData(object):
     '''
 
     def __init__(self, elements=[], text=False, byte_order='=',
-                 comments=[]):
+                 comments=[], obj_info=[]):
         '''
         elements: sequence of PlyElement instances.
 
@@ -117,6 +117,9 @@ class PlyData(object):
         comments: sequence of strings that will be placed in the header
             between the 'ply' and 'format ...' lines.
 
+        obj_info: like comments, but will be placed in the header with 
+            "obj_info ..." instead of "comment ...".
+
         '''
         if byte_order == '=' and not text:
             byte_order = _native_byte_order
@@ -125,6 +128,7 @@ class PlyData(object):
         self.text = text
 
         self.comments = list(comments)
+        self.obj_info = list(obj_info)
         self.elements = list(elements)
         self._element_lookup = dict((elt.name, elt) for elt in
                                     elements)
@@ -136,7 +140,7 @@ class PlyData(object):
 
         '''
         lines = []
-        comments = []
+        comments = {'comment': [], 'obj_info': []}
         while True:
             line = stream.readline().decode('ascii').strip()
             fields = _split_line(line, 1)
@@ -144,7 +148,7 @@ class PlyData(object):
             if fields[0] == 'end_header':
                 break
 
-            elif fields[0] == 'comment':
+            elif fields[0] in comments.keys():
                 lines.append(fields)
             else:
                 lines.append(line.split())
@@ -154,8 +158,8 @@ class PlyData(object):
             raise RuntimeError("expected 'ply'")
 
         a += 1
-        while lines[a][0] == 'comment':
-            comments.append(lines[a][1])
+        while lines[a][0] in comments.keys():
+            comments[lines[a][0]].append(lines[a][1])
             a += 1
 
         if lines[a][0] != 'format':
@@ -176,12 +180,13 @@ class PlyData(object):
         text = fmt == 'ascii'
 
         a += 1
-        while lines[a][0] == 'comment':
-            comments.append(lines[a][1])
+        while a < len(lines) and lines[a][0] in comments.keys():
+            comments[lines[a][0]].append(lines[a][1])
             a += 1
 
         return PlyData(PlyElement._parse_multi(lines[a:]),
-                       text, byte_order, comments)
+                       text, byte_order,
+                       comments['comment'], comments['obj_info'])
 
     @staticmethod
     def read(stream):
@@ -247,6 +252,9 @@ class PlyData(object):
         for c in self.comments:
             lines.append('comment ' + c)
 
+        for c in self.obj_info:
+            lines.append('obj_info ' + c)
+
         lines.extend(elt.header for elt in self.elements)
         lines.append('end_header')
         return '\r\n'.join(lines)
@@ -267,9 +275,10 @@ class PlyData(object):
         return self.header
 
     def __repr__(self):
-        return ('PlyData(%r, text=%r, byte_order=%r, comments=%r)' %
+        return ('PlyData(%r, text=%r, byte_order=%r, '
+                'comments=%r, obj_info=%r)' %
                 (self.elements, self.text, self.byte_order,
-                 self.comments))
+                 self.comments, self.obj_info))
 
 
 class PlyElement(object):

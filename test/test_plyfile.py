@@ -276,3 +276,17 @@ def test_property_lookup(tet_ply_txt):
     assert (tet_ply_txt.elements[1]['red'] == face['red']).all()
     assert (tet_ply_txt.elements[1]['green'] == face['green']).all()
     assert (tet_ply_txt.elements[1]['blue'] == face['blue']).all()
+
+
+def test_obj_info(tmpdir):
+    ply0 = PlyData([], text=True, obj_info=['test obj_info'])
+    test_file = tmpdir.join('test.ply')
+    ply0.write(str(test_file))
+
+    ply0_str = str(test_file.read('rb'))
+    assert ply0_str.startswith('ply\r\nformat ascii 1.0\r\n'
+                               'obj_info test obj_info\r\n')
+
+    ply1 = PlyData.read(str(test_file))
+    assert len(ply1.obj_info) == 1
+    assert ply1.obj_info[0] == 'test obj_info'
