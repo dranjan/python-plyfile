@@ -185,9 +185,22 @@ Now you can instantiate `PlyData` and serialize:
 In the last example, the byte order of the output was forced to
 big-endian, independently of the machine's native byte order.
 
-Comments can be added:
+## Comments
 
-    >>> PlyData([el], comments=['header comment']).write('some.ply')
+Header comments are supported:
+
+    >>> ply = PlyData([el], comments=['header comment'])
+    >>> ply.comments
+    ['header comment']
+
+As of version 0.3, "obj_info" comments are supported as well:
+
+    >>> ply = PlyData([el], obj_info=['obj_info1', 'obj_info2'])
+    >>> ply.obj_info
+    ['obj_info1', 'obj_info2']
+
+When written, they will be placed after regular comments after the
+"format" line.
 
 ## Getting a two-dimensional array from a list property
 
