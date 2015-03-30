@@ -283,7 +283,7 @@ def test_obj_info(tmpdir):
     test_file = tmpdir.join('test.ply')
     ply0.write(str(test_file))
 
-    ply0_str = str(test_file.read('rb'))
+    ply0_str = test_file.read('rb').decode('ascii')
     assert ply0_str.startswith('ply\r\nformat ascii 1.0\r\n'
                                'obj_info test obj_info\r\n')
 
