@@ -222,7 +222,7 @@ row length in advance:
 As of version 0.3, you can use the `make2d` function:
 
     >>> from plyfile import make2d
-    >>> triangles = make2d(triangles)
+    >>> triangles = make2d(tri_data)
 
 # Design philosophy and rationale
 
