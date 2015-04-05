@@ -70,7 +70,7 @@ def verify_1d(prop0, prop1):
     assert len(prop1) == n
 
     s0 = prop0.dtype.descr[0][1][1:]
-    s1 = prop0.dtype.descr[0][1][1:]
+    s1 = prop1.dtype.descr[0][1][1:]
 
     assert s0 == s1
     s = s0[0]
