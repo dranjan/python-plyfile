@@ -370,7 +370,8 @@ class PlyElement(object):
         array).
 
         '''
-        self.name = name
+        self._name = str(name)
+        self._check_name()
         self._count = count
 
         self.properties = properties
@@ -398,17 +399,14 @@ class PlyElement(object):
             if prop.name not in self._data.dtype.fields:
                 raise ValueError("dangling property %r" % prop.name)
 
-    def _get_name(self):
+    @property
+    def name(self):
         return self._name
 
-    def _set_name(self, name):
-        if any(c.isspace() for c in name):
-            msg = "element name %r contains spaces" % name
+    def _check_name(self):
+        if any(c.isspace() for c in self._name):
+            msg = "element name %r contains spaces" % self._name
             raise RuntimeError(msg)
-
-        self._name = str(name)
-
-    name = property(_get_name, _set_name)
 
     def dtype(self, byte_order='='):
         '''
@@ -688,22 +686,18 @@ class PlyProperty(object):
     '''
 
     def __init__(self, name, val_dtype):
-        self.name = name
+        self._name = str(name)
+        self._check_name()
         self.val_dtype = _data_types[val_dtype]
 
-    def _get_name(self):
+    @property
+    def name(self):
         return self._name
 
-    def _set_name(self, name):
-        name = str(name)
-
-        if any(c.isspace() for c in name):
-            msg = "Error: property name %r contains spaces" % name
+    def _check_name(self):
+        if any(c.isspace() for c in self._name):
+            msg = "Error: property name %r contains spaces" % self._name
             raise RuntimeError(msg)
-
-        self._name = name
-
-    name = property(_get_name, _set_name)
 
     @staticmethod
     def _parse_one(line):
