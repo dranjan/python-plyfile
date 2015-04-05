@@ -111,6 +111,39 @@ def make2d(array, cols=None, dtype=None):
                         count=len(array))['_']
 
 
+class PlyParseError(Exception):
+
+    '''
+    Raised when a PLY file cannot be parsed.
+
+    The attributes `element', `row', `property', and `message' give
+    additional information.
+
+    '''
+
+    def __init__(self, message, element=None, row=None, prop=None):
+        self.message = message
+        self.element = element
+        self.row = row
+        self.prop = prop
+
+    def __str__(self):
+        s = ''
+        if self.element:
+            s += 'element %r: ' % self.element.name
+        if self.row is not None:
+            s += 'row %d: ' % self.row
+        if self.prop:
+            s += 'property %r: ' % self.prop.name
+        s += self.message
+
+        return s
+
+    def __repr__(self):
+        return ('PlyParseError(%r, element=%r, row=%r, prop=%r)' %
+                self.message, self.element, self.row, self.prop)
+
+
 class PlyData(object):
 
     '''
@@ -175,7 +208,7 @@ class PlyData(object):
 
         a = 0
         if lines[a] != ['ply']:
-            raise RuntimeError("expected 'ply'")
+            raise PlyParseError("expected 'ply'")
 
         a += 1
         while lines[a][0] in comments.keys():
@@ -183,18 +216,18 @@ class PlyData(object):
             a += 1
 
         if lines[a][0] != 'format':
-            raise RuntimeError("expected 'format'")
+            raise PlyParseError("expected 'format'")
 
         if lines[a][2] != '1.0':
-            raise RuntimeError("expected version '1.0'")
+            raise PlyParseError("expected version '1.0'")
 
         if len(lines[a]) != 3:
-            raise RuntimeError("too many fields after 'format'")
+            raise PlyParseError("too many fields after 'format'")
 
         fmt = lines[a][1]
 
         if fmt not in _byte_order_map:
-            raise RuntimeError("don't understand format %r" % fmt)
+            raise PlyParseError("don't understand format %r" % fmt)
 
         byte_order = _byte_order_map[fmt]
         text = fmt == 'ascii'
@@ -341,7 +374,7 @@ class PlyElement(object):
             msg = "element name %r contains spaces" % name
             raise RuntimeError(msg)
 
-        self._name = name
+        self._name = str(name)
 
     name = property(_get_name, _set_name)
 
@@ -380,11 +413,11 @@ class PlyElement(object):
         line = lines[a]
 
         if line[0] != 'element':
-            raise RuntimeError("expected 'element'")
+            raise PlyParseError("expected 'element'")
         if len(line) > 3:
-            raise RuntimeError("too many fields after 'element'")
+            raise PlyParseError("too many fields after 'element'")
         if len(line) < 3:
-            raise RuntimeError("too few fields after 'element'")
+            raise PlyParseError("too few fields after 'element'")
 
         (name, count) = (line[1], int(line[2]))
 
@@ -487,8 +520,7 @@ class PlyElement(object):
         if len(self.data) < self.count:
             k = len(self.data)
             del self.data
-            raise RuntimeError("element %s: row %d: early end-of-file" %
-                               (self.name, k))
+            raise PlyParseError("early end-of-file", self, k)
 
     def _write(self, stream, text, byte_order):
         '''
@@ -523,29 +555,22 @@ class PlyElement(object):
                 try:
                     self.data[prop.name][k] = prop._from_fields(fields)
                 except StopIteration:
-                    raise RuntimeError(
-                        "element %s: row %d: property %s: "
-                        "early end-of-line" %
-                        (self.name, k, prop.name)
-                    )
+                    raise PlyParseError("early end-of-line",
+                                        self, k,  prop)
                 except ValueError:
-                    raise RuntimeError(
-                        "element %s: row %d: property %s: "
-                        "malformed input" %
-                        (self.name, k, prop.name)
-                    )
+                    raise PlyParseError("malformed input",
+                                        self, k,  prop)
             try:
                 next(fields)
             except StopIteration:
                 pass
             else:
-                raise RuntimeError("element %s: row %d: expected end-of-line" %
-                                   (self.name, k))
+                raise PlyParseError("expected end-of-line", self, k)
             k += 1
 
         if k < self.count:
-            raise RuntimeError("element %s: row %d: early end-of-file" %
-                               (self.name, k))
+            del self.data
+            raise PlyParseError("early end-of-file", self, k)
 
     def _write_txt(self, stream):
         '''
@@ -574,11 +599,8 @@ class PlyElement(object):
                     self.data[prop.name][k] = \
                             prop._read_bin(stream, byte_order)
                 except StopIteration:
-                    raise RuntimeError(
-                        "element %s: row %d: property %s: "
-                        "early end-of-file" %
-                        (self.name, k, prop.name)
-                    )
+                    raise PlyParseError("early end-of-file",
+                                        self, k, prop)
 
     def _write_bin(self, stream, byte_order):
         '''
@@ -655,21 +677,21 @@ class PlyProperty(object):
 
         if line[1] == 'list':
             if len(line) > 5:
-                raise RuntimeError("too many fields after "
-                                   "'property list'")
+                raise PlyParseError("too many fields after "
+                                    "'property list'")
             if len(line) < 5:
-                raise RuntimeError("too few fields after "
-                                   "'property list'")
+                raise PlyParseError("too few fields after "
+                                    "'property list'")
 
             return PlyListProperty(line[4], line[2], line[3])
 
         else:
             if len(line) > 3:
-                raise RuntimeError("too many fields after "
-                                   "'property'")
+                raise PlyParseError("too many fields after "
+                                    "'property'")
             if len(line) < 3:
-                raise RuntimeError("too few fields after "
-                                   "'property'")
+                raise PlyParseError("too few fields after "
+                                    "'property'")
 
             return PlyProperty(line[2], line[1])
 

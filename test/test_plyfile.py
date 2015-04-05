@@ -5,7 +5,7 @@ import pytest
 
 import numpy
 
-from plyfile import PlyData, PlyElement, make2d
+from plyfile import PlyData, PlyElement, make2d, PlyParseError
 
 
 try:
@@ -429,29 +429,29 @@ def ply_list_a(fmt, n, data):
 
 invalid_cases = [
     (ply_abc('ascii', 1, b'1 2 3.3'),
-     "row 0: property c: malformed input"),
+     "row 0: property 'c': malformed input"),
 
     (ply_list_a('ascii', 1, b''),
-     "row 0: property a: early end-of-line"),
+     "row 0: property 'a': early end-of-line"),
 
     (ply_list_a('ascii', 1, b'3 2 3'),
-     "row 0: property a: early end-of-line"),
+     "row 0: property 'a': early end-of-line"),
 
     (ply_abc('ascii', 1, b'1 2 3 4'),
      "row 0: expected end-of-line"),
 
     (ply_abc('ascii', 1, b'1'),
-     "row 0: property b: early end-of-line"),
+     "row 0: property 'b': early end-of-line"),
 
     (ply_abc('ascii', 2, b'1 2 3'),
      "row 1: early end-of-file"),
 
     (ply_list_a('binary_little_endian', 1,
                 b'\x03\x01\x00\x00\x00\x02\x00\x00\x00'),
-     "row 0: property a: early end-of-file"),
+     "row 0: property 'a': early end-of-file"),
 
     (ply_list_a('binary_little_endian', 1, b'\x01\x02'),
-     "row 0: property a: early end-of-file"),
+     "row 0: property 'a': early end-of-file"),
 
     (ply_abc('binary_little_endian', 2, b'\x01\x02\x03'),
      "row 1: early end-of-file")
@@ -465,5 +465,5 @@ def test_invalid(tmpdir, s, error_string):
     try:
         ply = read_str(s, tmpdir)
         assert False
-    except RuntimeError as e:
-        assert str(e) == "element test: " + error_string
+    except PlyParseError as e:
+        assert str(e) == "element 'test': " + error_string

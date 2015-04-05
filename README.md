@@ -129,6 +129,11 @@ convenient intermediate representation of PLY element properties that
 can easily be serialized to a PLY header (using `str`) or converted to
 `numpy`-compatible type descriptions (via the `dtype` method).
 
+Many (but not necessarily all) types of malformed input files will raise
+`PlyParseError` when `PlyData.read` is called.  The string value of the
+`PlyParseError` instance (as well as attributes `element`, `row`, and
+`prop`) provides additional context for the error if applicable.
+
 ## Creating a PLY file
 
 The first step is to get your data into `numpy` structured arrays.  Note
