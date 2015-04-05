@@ -129,10 +129,6 @@ convenient intermediate representation of PLY element properties that
 can easily be serialized to a PLY header (using `str`) or converted to
 `numpy`-compatible type descriptions (via the `dtype` method).
 
-In theory, the `properties` attribute of a `PlyElement` instance could
-be manipulated before serializing the data to perform some types of
-coercions, but this isn't well tested or documented.
-
 ## Creating a PLY file
 
 The first step is to get your data into `numpy` structured arrays.  Note
