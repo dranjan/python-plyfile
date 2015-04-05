@@ -13,7 +13,7 @@
 #   General Public License for more details.
 #
 #   You should have received a copy of the GNU General Public License
-#   along with python-plyfile.  If not, see 
+#   along with python-plyfile.  If not, see
 #       <http://www.gnu.org/licenses/>.
 
 from itertools import islice as _islice
@@ -170,7 +170,7 @@ class PlyData(object):
         comments: sequence of strings that will be placed in the header
             between the 'ply' and 'format ...' lines.
 
-        obj_info: like comments, but will be placed in the header with 
+        obj_info: like comments, but will be placed in the header with
             "obj_info ..." instead of "comment ...".
 
         '''

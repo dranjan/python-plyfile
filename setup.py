@@ -6,8 +6,8 @@ mydir = os.path.dirname(__file__)
 if mydir:
     os.chdir(mydir)
 
-setup(name = 'plyfile',
-      version = '0.3',
-      install_requires = ['numpy>=1.8'],
-      description = 'PLY file reader/writer',
-      py_modules = ['plyfile'])
+setup(name='plyfile',
+      version='0.3',
+      install_requires=['numpy>=1.8'],
+      description='PLY file reader/writer',
+      py_modules=['plyfile'])

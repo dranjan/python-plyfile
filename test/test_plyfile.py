@@ -259,7 +259,8 @@ def test_ascii(tet_ply_txt, tmpdir):
 @pytest.mark.parametrize('text,byte_order',
                          [(True, '='), (False, '<'), (False, '>')])
 def test_write_read(tet_ply_txt, tmpdir, text, byte_order):
-    ply0 = PlyData(tet_ply_txt.elements, text, byte_order, tet_ply_txt.comments)
+    ply0 = PlyData(tet_ply_txt.elements, text, byte_order,
+                   tet_ply_txt.comments)
     ply1 = write_read(ply0, tmpdir)
     verify(ply0, ply1)
 
