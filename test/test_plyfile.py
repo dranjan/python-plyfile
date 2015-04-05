@@ -405,117 +405,65 @@ def test_cast_property(tet_ply_txt, tmpdir, text, byte_order):
               normalize_property(face['vertex_indices']))
 
 
-invalid00 = b'''\
-ply
-format ascii 1.0
-element test 1
-property uchar a
-property uchar b
-property uchar c
-end_header
-1 2 3.3
-'''
+def ply_abc(fmt, n, data):
+    string = (b"ply\nformat " + fmt.encode() + b" 1.0\nelement test " +
+              str(n).encode() + b"\n"
+              b"property uchar a\nproperty uchar b\n property uchar c\n"
+              b"end_header\n")
+    if fmt == 'ascii':
+        return string + data + b'\n'
+    else:
+        return string + data
 
-invalid01 = b'''\
-ply
-format ascii 1.0
-element test 1
-property list uchar int a
-end_header
 
-'''
+def ply_list_a(fmt, n, data):
+    string = (b"ply\nformat " + fmt.encode() + b" 1.0\nelement test " +
+              str(n).encode() + b"\n"
+              b"property list uchar int a\n"
+              b"end_header\n")
+    if fmt == 'ascii':
+        return string + data + b'\n'
+    else:
+        return string + data
 
-invalid02 = b'''\
-ply
-format ascii 1.0
-element test 1
-property list uchar int a
-end_header
-3 2 3
-'''
-
-invalid03 = b'''\
-ply
-format ascii 1.0
-element test 1
-property uchar a
-property uchar b
-property uchar c
-end_header
-1 2 3 4
-'''
-
-invalid04 = b'''\
-ply
-format ascii 1.0
-element test 1
-property uchar a
-property uchar b
-property uchar c
-end_header
-1 2
-'''
-
-invalid05 = b'''\
-ply
-format ascii 1.0
-element test 2
-property uchar a
-property uchar b
-property uchar c
-end_header
-1 2 3
-'''
-
-invalid06 = b'''\
-ply
-format binary_little_endian 1.0
-element test 1
-property list uchar int a
-end_header
-\x03\x01\x00\x00\x00\x02\x00\x00\x00'''
-
-invalid07 = b'''\
-ply
-format binary_little_endian 1.0
-element test 1
-property uchar a
-property uchar b
-property uchar c
-end_header
-\x01\x02'''
-
-invalid08 = b'''\
-ply
-format binary_little_endian 1.0
-element test 2
-property uchar a
-property uchar b
-property uchar c
-end_header
-\x01\x02\x03'''
 
 invalid_cases = [
-    (invalid00, ValueError),
-    (invalid01, RuntimeError),
-    (invalid02, RuntimeError),
-    (invalid03, RuntimeError),
-    (invalid04, RuntimeError),
-    (invalid05, RuntimeError),
-    (invalid06, RuntimeError),
-    (invalid07, RuntimeError), 
-    (invalid08, RuntimeError)
+    (ply_abc('ascii', 1, b'1 2 3.3'),
+     "row 0: property c: malformed input"),
+
+    (ply_list_a('ascii', 1, b''),
+     "row 0: property a: early end-of-line"),
+
+    (ply_list_a('ascii', 1, b'3 2 3'),
+     "row 0: property a: early end-of-line"),
+
+    (ply_abc('ascii', 1, b'1 2 3 4'),
+     "row 0: expected end-of-line"),
+
+    (ply_abc('ascii', 1, b'1'),
+     "row 0: property b: early end-of-line"),
+
+    (ply_abc('ascii', 2, b'1 2 3'),
+     "row 1: early end-of-file"),
+
+    (ply_list_a('binary_little_endian', 1,
+                b'\x03\x01\x00\x00\x00\x02\x00\x00\x00'),
+     "row 0: property a: early end-of-file"),
+
+    (ply_list_a('binary_little_endian', 1, b'\x01\x02'),
+     "row 0: property a: early end-of-file"),
+
+    (ply_abc('binary_little_endian', 2, b'\x01\x02\x03'),
+     "row 1: early end-of-file")
 ]
 
 
-@pytest.mark.parametrize('string,error_type', invalid_cases,
-                         ids=list(map(str, range(9))))
-def test_invalid(tmpdir, string, error_type):
+
+@pytest.mark.parametrize('s,error_string', invalid_cases,
+                         ids=list(map(str, range(len(invalid_cases)))))
+def test_invalid(tmpdir, s, error_string):
     try:
-        ply = read_str(string, tmpdir)
+        ply = read_str(s, tmpdir)
         assert False
-    except Exception as e:
-        if isinstance(e, error_type):
-            assert str(e).startswith("element test: ")
-        else:
-            raise
+    except RuntimeError as e:
+        assert str(e) == "element test: " + error_string

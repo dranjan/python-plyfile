@@ -529,11 +529,11 @@ class PlyElement(object):
                         (self.name, k, prop.name)
                     )
                 except ValueError:
-                    raise ValueError("element %s: row %d: property %s: "
-                                     "malformed input" %
-                                     (self.name, k, prop.name))
-            k += 1
-
+                    raise RuntimeError(
+                        "element %s: row %d: property %s: "
+                        "malformed input" %
+                        (self.name, k, prop.name)
+                    )
             try:
                 next(fields)
             except StopIteration:
@@ -541,6 +541,7 @@ class PlyElement(object):
             else:
                 raise RuntimeError("element %s: row %d: expected end-of-line" %
                                    (self.name, k))
+            k += 1
 
         if k < self.count:
             raise RuntimeError("element %s: row %d: early end-of-file" %
