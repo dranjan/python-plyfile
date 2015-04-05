@@ -83,6 +83,17 @@ def verify_1d(prop0, prop1):
         assert (prop0 == prop1).all()
 
 
+def write_read(ply, tmpdir, name='test.ply'):
+    '''
+    Utility: serialize/deserialize a PlyData instance through a
+    temporary file.
+
+    '''
+    filename = tmpdir.join(name)
+    ply.write(str(filename))
+    return PlyData.read(str(filename))
+
+
 def tet_ply(text, byte_order):
     vertex = numpy.array([(0, 0, 0),
                           (0, 1, 1),
@@ -159,9 +170,7 @@ def test_property_type(tmpdir, np_type):
     assert ply0.elements[0].properties[2].name == 'z'
     assert ply0.elements[0].properties[2].val_dtype == np_type
 
-    test_file = tmpdir.join('test.ply')
-    ply0.write(str(test_file))
-    ply1 = PlyData.read(str(test_file))
+    ply1 = write_read(ply0, tmpdir)
 
     assert ply1.elements[0].name == 'test'
     assert ply1.elements[0].data.dtype == dtype
@@ -179,9 +188,7 @@ def test_list_property_type(tmpdir, np_type):
     assert ply0.elements[0].properties[0].name == 'x'
     assert ply0.elements[0].properties[0].val_dtype == np_type
 
-    test_file = tmpdir.join('test.ply')
-    ply0.write(str(test_file))
-    ply1 = PlyData.read(str(test_file))
+    ply1 = write_read(ply0, tmpdir)
 
     assert ply1.elements[0].name == 'test'
     assert ply1.elements[0].data[0]['x'].dtype == numpy.dtype(np_type)
@@ -201,9 +208,7 @@ def test_list_property_len_type(tmpdir, len_type):
     assert ply0.elements[0].properties[0].val_dtype == 'i4'
     assert ply0.elements[0].properties[0].len_dtype == len_type
 
-    test_file = tmpdir.join('test.ply')
-    ply0.write(str(test_file))
-    ply1 = PlyData.read(str(test_file))
+    ply1 = write_read(ply0, tmpdir)
 
     assert ply1.elements[0].name == 'test'
     assert ply1.elements[0].data[0]['x'].dtype == numpy.dtype('i4')
@@ -244,38 +249,21 @@ def test_ascii(tet_ply_txt, tmpdir):
                          [(True, '='), (False, '<'), (False, '>')])
 def test_write_read(tet_ply_txt, tmpdir, text, byte_order):
     ply0 = PlyData(tet_ply_txt.elements, text, byte_order, tet_ply_txt.comments)
-    test_file = tmpdir.join('test.ply')
-    ply0.write(str(test_file))
-    ply1 = PlyData.read(str(test_file))
+    ply1 = write_read(ply0, tmpdir)
     verify(ply0, ply1)
 
 
 def test_switch_format(tet_ply_txt, tmpdir):
     ply0 = tet_ply_txt
-    test0 = tmpdir.join('test0.ply')
-
-    ply0.write(str(test0))
-
-    ply1 = PlyData.read(str(test0))
+    ply1 = write_read(ply0, tmpdir, 'test0.ply')
     verify(ply0, ply1)
-
-    test1 = tmpdir.join('test1.ply')
-
     ply1.text = False
     ply1.byte_order = '<'
-    ply1.write(str(test1))
-
-    ply2 = PlyData.read(str(test1))
+    ply2 = write_read(ply1, tmpdir, 'test1.ply')
     assert ply2.byte_order == '<'
     verify(ply0, ply2)
-
-    test2 = tmpdir.join('test2.ply')
-
     ply2.byte_order = '>'
-    ply2.write(str(test2))
-
-    ply3 = PlyData.read(str(test2))
-
+    ply3 = write_read(ply2, tmpdir, 'test2.ply')
     assert ply3.byte_order == '>'
     verify(ply0, ply3)
 
