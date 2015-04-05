@@ -41,13 +41,38 @@ Alternate (requires py.test and py):
 
 # Usage
 
-The following code examples refer to the file `tet.ply`, which can be
-found in the `test` directory.
+Both deserialization and serialization of PLY file data is done through
+`PlyData` and `PlyElement` instances.
 
     >>> from plyfile import PlyData, PlyElement
 
-Both deserialization and serialization of PLY file data is done through
-`PlyData` and `PlyElement` instances.
+For the code examples that follow, assume the file `tet.ply` contains
+the following text:
+
+    ply
+    format ascii 1.0
+    comment single tetrahedron with colored faces
+    element vertex 4
+    comment tetrahedron vertices
+    property float x
+    property float y
+    property float z
+    element face 4
+    property list uchar int vertex_indices
+    property uchar red
+    property uchar green
+    property uchar blue
+    end_header
+    0 0 0
+    0 1 1
+    1 0 1
+    1 1 0
+    3 0 1 2 255 255 255
+    3 0 2 3 255 0 0
+    3 0 1 3 0 255 0
+    3 1 2 3 0 0 255
+
+(This file is available under the `examples` directory.)
 
 ## Reading a PLY file
 

@@ -116,9 +116,30 @@ def tet_ply_txt():
     return tet_ply(True, '=')
 
 
-mydir = py.path.local(__file__).dirpath()
-tet_ply_ascii = mydir.join('tet.ply').read('rb')
-
+tet_ply_ascii = '''\
+ply\r\n\
+format ascii 1.0\r\n\
+comment single tetrahedron with colored faces\r\n\
+element vertex 4\r\n\
+comment tetrahedron vertices\r\n\
+property float x\r\n\
+property float y\r\n\
+property float z\r\n\
+element face 4\r\n\
+property list uchar int vertex_indices\r\n\
+property uchar red\r\n\
+property uchar green\r\n\
+property uchar blue\r\n\
+end_header\r\n\
+0 0 0\r\n\
+0 1 1\r\n\
+1 0 1\r\n\
+1 1 0\r\n\
+3 0 1 2 255 255 255\r\n\
+3 0 2 3 255 0 0\r\n\
+3 0 1 3 0 255 0\r\n\
+3 1 2 3 0 0 255\r\n\
+'''.encode('ascii')
 
 np_types = ['i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'f4', 'f8']
 
