@@ -260,34 +260,40 @@ metadata in place, and write the result to a new file.  This pattern is
 partially supported.  As of version 0.4, the following in-place
 mutations are **supported**:
 
-- Modifying numerical array data only
-- Assigning directly to `PlyData.elements`
-- Switching format by changing `PlyData.text` and `PlyData.byte_order`
-  (will switch between `ascii`, `binary_little_endian`, and
-  `binary_big_endian` PLY formats)
-- Modifying `PlyData.comments`, `PlyData.obj_info`, and
-  `PlyElement.comments`
+- Modifying numerical array data only.
+- Assigning directly to a `PlyData` instance's `elements`.
+- Switching format by changing the `text` and `byte_order` attributes of
+  a `PlyData` instance.
+  This will switch between `ascii`, `binary_little_endian`, and
+  `binary_big_endian` PLY formats.
+- Modifying a `PlyData` instance's `comments` and `obj_info`, and
+  modifying a `PlyElement` instance's `comments`.
+- Assigning to an element's `data`.  For every property in the `properties`
+  list of the `PlyElement` instance, the `data` array must have a field
+  with the same name (but possibly different type, and possibly in
+  different order).  The array can have additional fields as well, but
+  they won't be output when writing the element to a PLY file.  The
+  properties in the output file will appear as they are in the
+  `properties` list.
 
 The following metadata mutations are also **supported**, with the caveat
 that the `numpy` array wrapped by the `PlyElement` instance will not be
 modified in any way: the mutation only modifies the metadata (and
 possibly data) that gets written  by `PlyData.write`.
 
-- Permuting `PlyElement.properties` (will change order of properties
-  in output file without changing property data)
-- Removing elements from `PlyElement.properties` (will remove those
-  properties from the output file)
-- Changing `PlyProperty.val_dtype`, `PlyListProperty.val_dtype`, and
-  `PlyListProperty.len_dtype` (will perform casting when writing)
+- Permuting an element's `properties`,  which will change order of properties
+  in the output file without changing property data.
+- Removing elements from an element's `properties`, which will remove those
+  properties from the output file.
+- Changing a `PlyProperty` or `PlyListProperty` instance's `val_dtype`
+  or a `PlyListProperty` instance's `len_dtype`, which will perform
+  casting when writing.
 
-Most other mutations are not supported and are likely to leave objects
-in an inconsistent state.  For example, the following are
-**unsupported**:
+The following are **unsupported** and will leave objects in an
+inconsistent state:
 
-- Modifying `PlyElement.name`, `PlyProperty.name`, or
-  `PlyListProperty.name`
-- Changing the size of a `PlyElement` by assigning directly to
-  `PlyElement.data`
+- Modifying the `name` of an element or `PlyProperty` or
+  `PlyListProperty` instance.
 
 Note that it is always safe to create a new `PlyElement` or `PlyData`
 instance instead of modifying one in place, and this is the recommended

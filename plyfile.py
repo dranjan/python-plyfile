@@ -371,13 +371,32 @@ class PlyElement(object):
 
         '''
         self.name = name
-        self.count = count
+        self._count = count
 
         self.properties = properties
         self.comments = list(comments)
 
         self._have_list = any(isinstance(p, PlyListProperty)
                               for p in self.properties)
+
+    @property
+    def count(self):
+        return self._count
+
+    def _get_data(self):
+        return self._data
+
+    def _set_data(self, data):
+        self._data = data
+        self._count = len(data)
+        self._check_sanity()
+
+    data = property(_get_data, _set_data)
+
+    def _check_sanity(self):
+        for prop in self.properties:
+            if prop.name not in self._data.dtype.fields:
+                raise ValueError("dangling property %r" % prop.name)
 
     def _get_name(self):
         return self._name
@@ -527,13 +546,15 @@ class PlyElement(object):
             else:
                 # There are no list properties, so loading the data is
                 # much more straightforward.
-                self.data = _np.fromfile(stream, self.dtype(byte_order),
-                                         self.count)
+                self._data = _np.fromfile(stream, self.dtype(byte_order),
+                                          self.count)
 
-        if len(self.data) < self.count:
-            k = len(self.data)
-            del self.data
+        if len(self._data) < self.count:
+            k = len(self._data)
+            del self._data
             raise PlyParseError("early end-of-file", self, k)
+
+        self._check_sanity()
 
     def _write(self, stream, text, byte_order):
         '''
@@ -559,14 +580,14 @@ class PlyElement(object):
         may contain list properties.
 
         '''
-        self.data = _np.empty(self.count, dtype=self.dtype())
+        self._data = _np.empty(self.count, dtype=self.dtype())
 
         k = 0
         for line in _islice(iter(stream.readline, b''), self.count):
             fields = iter(line.strip().split())
             for prop in self.properties:
                 try:
-                    self.data[prop.name][k] = prop._from_fields(fields)
+                    self._data[prop.name][k] = prop._from_fields(fields)
                 except StopIteration:
                     raise PlyParseError("early end-of-line",
                                         self, k,  prop)
@@ -582,7 +603,7 @@ class PlyElement(object):
             k += 1
 
         if k < self.count:
-            del self.data
+            del self._data
             raise PlyParseError("early end-of-file", self, k)
 
     def _write_txt(self, stream):
@@ -604,12 +625,12 @@ class PlyElement(object):
         contain list properties.
 
         '''
-        self.data = _np.empty(self.count, dtype=self.dtype(byte_order))
+        self._data = _np.empty(self.count, dtype=self.dtype(byte_order))
 
         for k in range(self.count):
             for prop in self.properties:
                 try:
-                    self.data[prop.name][k] = \
+                    self._data[prop.name][k] = \
                             prop._read_bin(stream, byte_order)
                 except StopIteration:
                     raise PlyParseError("early end-of-file",

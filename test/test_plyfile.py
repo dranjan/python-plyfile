@@ -482,3 +482,19 @@ def test_assign_elements(tet_ply_txt):
     for (k, elt) in enumerate(tet_ply_txt):
         assert elt.name == 'test'
         assert k == 0
+
+
+def test_assign_data(tet_ply_txt):
+    face = tet_ply_txt['face']
+    face.data = face.data[:1]
+
+    assert face.count == 1
+
+
+def test_assign_data_error(tet_ply_txt):
+    vertex = tet_ply_txt['vertex']
+
+    try:
+        vertex.data = vertex[['x', 'z', 'red', 'green', 'blue']]
+    except ValueError as e:
+        assert str(e) == "dangling property 'y'"
