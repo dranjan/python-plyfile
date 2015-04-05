@@ -210,7 +210,9 @@ Now you can instantiate `PlyData` and serialize:
 In the last example, the byte order of the output was forced to
 big-endian, independently of the machine's native byte order.
 
-## Comments
+## Miscellaneous
+
+### Comments
 
 Header comments are supported:
 
@@ -227,7 +229,7 @@ As of version 0.3, "obj_info" comments are supported as well:
 When written, they will be placed after regular comments after the
 "format" line.
 
-## Getting a two-dimensional array from a list property
+### Getting a two-dimensional array from a list property
 
 The PLY format provides no way to assert that all the data for a given
 list property is of the same length, yet this is a relatively common
@@ -248,6 +250,67 @@ As of version 0.3, you can use the `make2d` function:
 
     >>> from plyfile import make2d
     >>> triangles = make2d(tri_data)
+
+### Instance mutability
+
+A plausible code pattern is to read a PLY file into a `PlyData`
+instance, perform some operations on it, possibly modifying data and
+metadata in place, and write the result to a new file.  This pattern is
+partially supported.  As of version 0.3, the following in-place
+mutations are **supported**:
+
+- Modifying numerical array data only
+- Permuting `PlyData.elements` (will change order of elements in
+  output file)
+- Switching format by changing `PlyData.text` and `PlyData.byte_order`
+  (will switch between `ascii`, `binary_little_endian`, and
+  `binary_big_endian` PLY formats)
+- Modifying `PlyData.comments`, `PlyData.obj_info`, and
+  `PlyElement.comments`
+
+The following metadata mutations are also **supported**, with the caveat
+that the `numpy` array wrapped by the `PlyElement` instance will not be
+modified in any way: the mutation only modifies the metadata (and
+possibly data) that gets written  by `PlyData.write`.
+
+- Permuting `PlyElement.properties` (will change order of properties
+  in output file without changing property data)
+- Removing elements from `PlyElement.properties` (will remove those
+  properties from the output file)
+- Changing `PlyProperty.val_dtype`, `PlyListProperty.val_dtype`, and
+  `PlyListProperty.len_dtype` (will perform casting when writing)
+
+Most other mutations are not supported and are likely to leave objects
+in an inconsistent state.  For example, the following are
+**unsupported**:
+
+- Modifying `PlyElement.name`, `PlyProperty.name`, or
+  `PlyListProperty.name`
+- Removing elements from `PlyData.elements`
+- Changing the size of a `PlyElement` by assigning directly to
+  `PlyElement.data`
+
+Note that it is always safe to create a new `PlyElement` or `PlyData`
+instance instead of modifying one in place, and this is the recommended
+style:
+
+    >>> # Recommended:
+    >>> plydata = PlyData([plydata['face'], plydata['vertex']],
+                          text=False, byte_order='<')
+
+    >>> # Also supported:
+    >>> plydata.elements = [plydata['face'], plydata['vertex']
+    >>> plydata.text = False
+    >>> plydata.byte_order = '<'
+    >>> plydata.comments = []
+    >>> plydata.obj_info = []
+
+Objects created by this library don't claim ownership of the other
+objects they refer to, which has implications for both styles (creating
+new instances and modifying in place).  For example, a single
+`PlyElement` instance can be contained by multiple `PlyData` instances,
+but modifying that instance will then affect all of those containing
+`PlyData` instances.
 
 # Design philosophy and rationale
 
