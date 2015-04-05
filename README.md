@@ -394,23 +394,6 @@ and in others,
 `plyfile` only supports the former, which appears to be standard _de
 facto_.
 
-# Deficiencies
-
-## Validation
-
-Although some validation is done, malformed data may silently give
-strange results instead of raising errors.  It would be better if
-`plyfile` completely validated that input satisfied the PLY
-specification (modulo the ambiguities mentioned above).
-
-## Error messages
-
-Error messages aren't necessarily as helpful as they could be, although
-we do make an attempt at describing the nature of errors encountered.
-In many cases, exceptions raised from `numpy` routines will simply
-propagate through `plyfile`, and the user will have the task of hunting
-down the real errors.  This is arguably a bug.
-
 # More examples
 
 Examples beyond the scope of this document and the tests are in the

@@ -94,6 +94,17 @@ def write_read(ply, tmpdir, name='test.ply'):
     return PlyData.read(str(filename))
 
 
+def read_str(string, tmpdir, name='test.ply'):
+    '''
+    Utility: create a PlyData instance from a string.
+
+    '''
+    filename = tmpdir.join(name)
+    with filename.open('wb') as f:
+        f.write(string)
+    return PlyData.read(str(filename))
+
+
 def tet_ply(text, byte_order):
     vertex = numpy.array([(0, 0, 0),
                           (0, 1, 1),
@@ -392,3 +403,119 @@ def test_cast_property(tet_ply_txt, tmpdir, text, byte_order):
 
     verify_1d(normalize_property(ply1['face']['vertex_indices']),
               normalize_property(face['vertex_indices']))
+
+
+invalid00 = b'''\
+ply
+format ascii 1.0
+element test 1
+property uchar a
+property uchar b
+property uchar c
+end_header
+1 2 3.3
+'''
+
+invalid01 = b'''\
+ply
+format ascii 1.0
+element test 1
+property list uchar int a
+end_header
+
+'''
+
+invalid02 = b'''\
+ply
+format ascii 1.0
+element test 1
+property list uchar int a
+end_header
+3 2 3
+'''
+
+invalid03 = b'''\
+ply
+format ascii 1.0
+element test 1
+property uchar a
+property uchar b
+property uchar c
+end_header
+1 2 3 4
+'''
+
+invalid04 = b'''\
+ply
+format ascii 1.0
+element test 1
+property uchar a
+property uchar b
+property uchar c
+end_header
+1 2
+'''
+
+invalid05 = b'''\
+ply
+format ascii 1.0
+element test 2
+property uchar a
+property uchar b
+property uchar c
+end_header
+1 2 3
+'''
+
+invalid06 = b'''\
+ply
+format binary_little_endian 1.0
+element test 1
+property list uchar int a
+end_header
+\x03\x01\x00\x00\x00\x02\x00\x00\x00'''
+
+invalid07 = b'''\
+ply
+format binary_little_endian 1.0
+element test 1
+property uchar a
+property uchar b
+property uchar c
+end_header
+\x01\x02'''
+
+invalid08 = b'''\
+ply
+format binary_little_endian 1.0
+element test 2
+property uchar a
+property uchar b
+property uchar c
+end_header
+\x01\x02\x03'''
+
+invalid_cases = [
+    (invalid00, ValueError),
+    (invalid01, RuntimeError),
+    (invalid02, RuntimeError),
+    (invalid03, RuntimeError),
+    (invalid04, RuntimeError),
+    (invalid05, RuntimeError),
+    (invalid06, RuntimeError),
+    (invalid07, RuntimeError), 
+    (invalid08, RuntimeError)
+]
+
+
+@pytest.mark.parametrize('string,error_type', invalid_cases,
+                         ids=list(map(str, range(9))))
+def test_invalid(tmpdir, string, error_type):
+    try:
+        ply = read_str(string, tmpdir)
+        assert False
+    except Exception as e:
+        if isinstance(e, error_type):
+            assert str(e).startswith("element test: ")
+        else:
+            raise

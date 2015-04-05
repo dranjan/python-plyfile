@@ -471,44 +471,42 @@ class PlyElement(object):
         Read the actual data from a PLY file.
 
         '''
-        if self._have_list:
-            # There are list properties, so a simple load is
-            # impossible.
-            if text:
-                self._read_txt(stream)
-            else:
-                self._read_bin(stream, byte_order)
+        if text:
+            self._read_txt(stream)
         else:
-            # There are no list properties, so loading the data is
-            # much more straightforward.
-            if text:
-                self.data = _np.loadtxt(
-                    _islice(iter(stream.readline, ''), self.count),
-                    self.dtype())
+            if self._have_list:
+                # There are list properties, so a simple load is
+                # impossible.
+                self._read_bin(stream, byte_order)
             else:
-                self.data = _np.fromfile(
-                    stream, self.dtype(byte_order), self.count)
+                # There are no list properties, so loading the data is
+                # much more straightforward.
+                self.data = _np.fromfile(stream, self.dtype(byte_order),
+                                         self.count)
+
+        if len(self.data) < self.count:
+            k = len(self.data)
+            del self.data
+            raise RuntimeError("element %s: row %d: early end-of-file" %
+                               (self.name, k))
 
     def _write(self, stream, text, byte_order):
         '''
         Write the data to a PLY file.
 
         '''
-        if self._have_list:
-            # There are list properties, so serialization is
-            # slightly complicated.
-            if text:
-                self._write_txt(stream)
-            else:
-                self._write_bin(stream, byte_order)
+        if text:
+            self._write_txt(stream)
         else:
-            # no list properties, so serialization is
-            # straightforward.
-            data = self.data.astype(self.dtype(byte_order), copy=False)
-            if text:
-                _np.savetxt(stream, data, '%.18g', newline='\r\n')
+            if self._have_list:
+                # There are list properties, so serialization is
+                # slightly complicated.
+                self._write_bin(stream, byte_order)
             else:
-                data.tofile(stream)
+                # no list properties, so serialization is
+                # straightforward.
+                self.data.astype(self.dtype(byte_order),
+                                 copy=False).tofile(stream)
 
     def _read_txt(self, stream):
         '''
@@ -516,14 +514,37 @@ class PlyElement(object):
         may contain list properties.
 
         '''
-        self.data = _np.empty(self.count,
-                              dtype=self.dtype())
+        self.data = _np.empty(self.count, dtype=self.dtype())
 
-        for (k, line) in enumerate(_islice(iter(stream.readline, ''),
-                                           self.count)):
+        k = 0
+        for line in _islice(iter(stream.readline, ''), self.count):
             fields = iter(line.strip().split())
             for prop in self.properties:
-                self.data[prop.name][k] = prop._from_fields(fields)
+                try:
+                    self.data[prop.name][k] = prop._from_fields(fields)
+                except StopIteration:
+                    raise RuntimeError(
+                        "element %s: row %d: property %s: "
+                        "early end-of-line" %
+                        (self.name, k, prop.name)
+                    )
+                except ValueError:
+                    raise ValueError("element %s: row %d: property %s: "
+                                     "malformed input" %
+                                     (self.name, k, prop.name))
+            k += 1
+
+            try:
+                next(fields)
+            except StopIteration:
+                pass
+            else:
+                raise RuntimeError("element %s: row %d: expected end-of-line" %
+                                   (self.name, k))
+
+        if k < self.count:
+            raise RuntimeError("element %s: row %d: early end-of-file" %
+                               (self.name, k))
 
     def _write_txt(self, stream):
         '''
@@ -544,13 +565,19 @@ class PlyElement(object):
         contain list properties.
 
         '''
-        self.data = _np.empty(self.count,
-                              dtype=self.dtype(byte_order))
+        self.data = _np.empty(self.count, dtype=self.dtype(byte_order))
 
         for k in range(self.count):
             for prop in self.properties:
-                self.data[prop.name][k] = prop._read_bin(stream,
-                                                         byte_order)
+                try:
+                    self.data[prop.name][k] = \
+                            prop._read_bin(stream, byte_order)
+                except StopIteration:
+                    raise RuntimeError(
+                        "element %s: row %d: property %s: "
+                        "early end-of-file" %
+                        (self.name, k, prop.name)
+                    )
 
     def _write_bin(self, stream, byte_order):
         '''
@@ -655,10 +682,11 @@ class PlyProperty(object):
 
     def _from_fields(self, fields):
         '''
-        Parse one item from generator.
+        Parse from generator.  Raise StopIteration if the property could
+        not be read.
 
         '''
-        return _np.fromstring(next(fields), self.dtype(), sep=' ')
+        return _np.dtype(self.dtype()).type(next(fields))
 
     def _to_fields(self, data):
         '''
@@ -669,10 +697,14 @@ class PlyProperty(object):
 
     def _read_bin(self, stream, byte_order):
         '''
-        Read data from a binary stream.
+        Read data from a binary stream.  Raise StopIteration if the
+        property could not be read.
 
         '''
-        return _np.fromfile(stream, self.dtype(byte_order), 1)[0]
+        try:
+            return _np.fromfile(stream, self.dtype(byte_order), 1)[0]
+        except IndexError:
+            raise StopIteration
 
     def _write_bin(self, data, stream, byte_order):
         '''
@@ -719,15 +751,15 @@ class PlyListProperty(PlyProperty):
                 byte_order + self.val_dtype)
 
     def _from_fields(self, fields):
-        '''
-        Parse textual data from a generator.
-
-        '''
         (len_t, val_t) = self.list_dtype()
 
-        n = int(next(fields))
+        n = int(_np.dtype(len_t).type(next(fields)))
 
-        return _np.loadtxt(list(_islice(fields, n)), val_t, ndmin=1)
+        data = _np.loadtxt(list(_islice(fields, n)), val_t, ndmin=1)
+        if len(data) < n:
+            raise StopIteration
+
+        return data
 
     def _to_fields(self, data):
         '''
@@ -744,15 +776,18 @@ class PlyListProperty(PlyProperty):
             yield x
 
     def _read_bin(self, stream, byte_order):
-        '''
-        Read data from a binary stream.
-
-        '''
         (len_t, val_t) = self.list_dtype(byte_order)
 
-        n = _np.fromfile(stream, len_t, 1)[0]
+        try:
+            n = _np.fromfile(stream, len_t, 1)[0]
+        except IndexError:
+            raise StopIteration
 
-        return _np.fromfile(stream, val_t, n)
+        data = _np.fromfile(stream, val_t, n)
+        if len(data) < n:
+            raise StopIteration
+
+        return data
 
     def _write_bin(self, data, stream, byte_order):
         '''
