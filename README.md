@@ -257,12 +257,11 @@ As of version 0.3, you can use the `make2d` function:
 A plausible code pattern is to read a PLY file into a `PlyData`
 instance, perform some operations on it, possibly modifying data and
 metadata in place, and write the result to a new file.  This pattern is
-partially supported.  As of version 0.3, the following in-place
+partially supported.  As of version 0.4, the following in-place
 mutations are **supported**:
 
 - Modifying numerical array data only
-- Permuting `PlyData.elements` (will change order of elements in
-  output file)
+- Assigning directly to `PlyData.elements`
 - Switching format by changing `PlyData.text` and `PlyData.byte_order`
   (will switch between `ascii`, `binary_little_endian`, and
   `binary_big_endian` PLY formats)
@@ -287,7 +286,6 @@ in an inconsistent state.  For example, the following are
 
 - Modifying `PlyElement.name`, `PlyProperty.name`, or
   `PlyListProperty.name`
-- Removing elements from `PlyData.elements`
 - Changing the size of a `PlyElement` by assigning directly to
   `PlyElement.data`
 
@@ -300,7 +298,7 @@ style:
                           text=False, byte_order='<')
 
     >>> # Also supported:
-    >>> plydata.elements = [plydata['face'], plydata['vertex']
+    >>> plydata.elements = [plydata['face'], plydata['vertex']]
     >>> plydata.text = False
     >>> plydata.byte_order = '<'
     >>> plydata.comments = []

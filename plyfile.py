@@ -182,9 +182,22 @@ class PlyData(object):
 
         self.comments = list(comments)
         self.obj_info = list(obj_info)
-        self.elements = list(elements)
+        self.elements = elements
+
+    def _get_elements(self):
+        return self._elements
+
+    def _set_elements(self, elements):
+        self._elements = tuple(elements)
+        self._index()
+
+    elements = property(_get_elements, _set_elements)
+
+    def _index(self):
         self._element_lookup = dict((elt.name, elt) for elt in
-                                    elements)
+                                    self._elements)
+        if len(self._element_lookup) != len(self._elements):
+            raise ValueError("two elements with same name")
 
     @staticmethod
     def _parse_header(stream):

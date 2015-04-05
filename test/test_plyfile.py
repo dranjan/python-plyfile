@@ -133,7 +133,7 @@ def tet_ply(text, byte_order):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def tet_ply_txt():
     return tet_ply(True, '=')
 
@@ -467,3 +467,18 @@ def test_invalid(tmpdir, s, error_string):
         assert False
     except PlyParseError as e:
         assert str(e) == "element 'test': " + error_string
+
+
+def test_assign_elements(tet_ply_txt):
+    test = PlyElement.describe(numpy.zeros(1, dtype=[('a', 'i4')]),
+                               'test')
+    tet_ply_txt.elements = [test]
+    assert len(tet_ply_txt.elements) == 1
+    assert len(tet_ply_txt) == 1
+    assert 'vertex' not in tet_ply_txt
+    assert 'face' not in tet_ply_txt
+    assert 'test' in tet_ply_txt
+
+    for (k, elt) in enumerate(tet_ply_txt):
+        assert elt.name == 'test'
+        assert k == 0
