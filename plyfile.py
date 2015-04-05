@@ -517,7 +517,7 @@ class PlyElement(object):
         self.data = _np.empty(self.count, dtype=self.dtype())
 
         k = 0
-        for line in _islice(iter(stream.readline, ''), self.count):
+        for line in _islice(iter(stream.readline, b''), self.count):
             fields = iter(line.strip().split())
             for prop in self.properties:
                 try:
