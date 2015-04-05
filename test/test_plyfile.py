@@ -458,7 +458,6 @@ invalid_cases = [
 ]
 
 
-
 @pytest.mark.parametrize('s,error_string', invalid_cases,
                          ids=list(map(str, range(len(invalid_cases)))))
 def test_invalid(tmpdir, s, error_string):
