@@ -308,3 +308,87 @@ def test_make2d():
     b = make2d(a)
     assert b.shape == (2, 3)
     assert (b == [[0, 1, 2], [3, 4, 5]]).all()
+
+
+def test_reorder_elements(tet_ply_txt, tmpdir):
+    ply0 = tet_ply_txt
+    (vertex, face) = ply0.elements
+    ply0.elements = [face, vertex]
+
+    ply1 = write_read(ply0, tmpdir)
+
+    assert ply1.elements[0].name == 'face'
+    assert ply1.elements[1].name == 'vertex'
+
+
+def test_reorder_properties(tet_ply_txt, tmpdir):
+    ply0 = tet_ply_txt
+    vertex = ply0.elements[0]
+    (x, y, z) = vertex.properties
+    vertex.properties = [y, z, x]
+
+    ply1 = write_read(ply0, tmpdir)
+
+    assert ply1.elements[0].properties[0].name == 'y'
+    assert ply1.elements[0].properties[1].name == 'z'
+    assert ply1.elements[0].properties[2].name == 'x'
+
+    verify_1d(ply0['vertex']['x'], ply1['vertex']['x'])
+    verify_1d(ply0['vertex']['y'], ply1['vertex']['y'])
+    verify_1d(ply0['vertex']['z'], ply1['vertex']['z'])
+
+
+@pytest.mark.parametrize('text,byte_order',
+                         [(True, '='), (False, '<'), (False, '>')])
+def test_remove_property(tet_ply_txt, tmpdir, text, byte_order):
+    ply0 = tet_ply_txt
+    face = ply0.elements[1]
+    (vertex_indices, r, g, b) = face.properties
+    face.properties = [vertex_indices]
+
+    ply0.text = text
+    ply0.byte_order = byte_order
+
+    ply1 = write_read(ply0, tmpdir)
+
+    assert ply1.text == text
+    assert ply1.byte_order == byte_order
+
+    assert len(ply1.elements[1].properties) == 1
+    assert ply1.elements[1].properties[0].name == 'vertex_indices'
+
+    verify_1d(normalize_property(ply1['face']['vertex_indices']),
+              normalize_property(face['vertex_indices']))
+
+
+@pytest.mark.parametrize('text,byte_order',
+                         [(True, '='), (False, '<'), (False, '>')])
+def test_cast_property(tet_ply_txt, tmpdir, text, byte_order):
+    ply0 = tet_ply_txt
+    (vertex, face) = ply0.elements
+    vertex.properties[0].val_dtype = 'f8'
+    vertex.properties[2].val_dtype = 'u1'
+
+    assert face.properties[0].len_dtype == 'u1'
+    face.properties[0].len_dtype = 'i4'
+
+    ply0.text = text
+    ply0.byte_order = byte_order
+
+    ply1 = write_read(ply0, tmpdir)
+
+    assert ply1.text == text
+    assert ply1.byte_order == byte_order
+
+    assert ply1['vertex']['x'].dtype.descr[0][1][1:] == 'f8'
+    assert ply1['vertex']['y'].dtype.descr[0][1][1:] == 'f4'
+    assert ply1['vertex']['z'].dtype.descr[0][1][1:] == 'u1'
+
+    assert(ply1['vertex']['x'] == vertex['x']).all()
+    assert(ply1['vertex']['y'] == vertex['y']).all()
+    assert(ply1['vertex']['z'] == vertex['z']).all()
+
+    assert ply1['face'].properties[0].len_dtype == 'i4'
+
+    verify_1d(normalize_property(ply1['face']['vertex_indices']),
+              normalize_property(face['vertex_indices']))
