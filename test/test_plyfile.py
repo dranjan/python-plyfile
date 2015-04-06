@@ -5,7 +5,8 @@ import pytest
 
 import numpy
 
-from plyfile import PlyData, PlyElement, make2d, PlyParseError
+from plyfile import (PlyData, PlyElement, make2d, PlyParseError,
+                     PlyProperty)
 
 
 try:
@@ -379,6 +380,26 @@ def test_remove_property(tet_ply_txt, tmpdir, text, byte_order):
 
     verify_1d(normalize_property(ply1['face']['vertex_indices']),
               normalize_property(face['vertex_indices']))
+
+
+def test_assign_properties_error(tet_ply_txt):
+    vertex = tet_ply_txt['vertex']
+    try:
+        vertex.properties = (vertex.properties +
+                             (PlyProperty('xx', 'i4'),))
+        assert False
+    except ValueError as e:
+        assert str(e) == "dangling property 'xx'"
+
+
+def test_assign_properties_duplicate(tet_ply_txt):
+    vertex = tet_ply_txt['vertex']
+    try:
+        vertex.properties = (vertex.ply_property('x'),
+                             vertex.ply_property('x'))
+        assert False
+    except ValueError as e:
+        assert str(e) == "two properties with same name"
 
 
 @pytest.mark.parametrize('text,byte_order',

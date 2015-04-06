@@ -392,7 +392,9 @@ class PlyElement(object):
         self._check_name()
         self._count = count
 
-        self.properties = properties
+        self._properties = tuple(properties)
+        self._index()
+
         self.comments = list(comments)
 
         self._have_list = any(isinstance(p, PlyListProperty)
@@ -417,6 +419,25 @@ class PlyElement(object):
             if prop.name not in self._data.dtype.fields:
                 raise ValueError("dangling property %r" % prop.name)
 
+    def _get_properties(self):
+        return self._properties
+
+    def _set_properties(self, properties):
+        self._properties = tuple(properties)
+        self._check_sanity()
+        self._index()
+
+    properties = property(_get_properties, _set_properties)
+
+    def _index(self):
+        self._property_lookup = dict((prop.name, prop)
+                                     for prop in self._properties)
+        if len(self._property_lookup) != len(self._properties):
+            raise ValueError("two properties with same name")
+
+    def ply_property(self, name):
+        return self._property_lookup[name]
+
     @property
     def name(self):
         return self._name
@@ -424,7 +445,7 @@ class PlyElement(object):
     def _check_name(self):
         if any(c.isspace() for c in self._name):
             msg = "element name %r contains spaces" % self._name
-            raise RuntimeError(msg)
+            raise ValueError(msg)
 
     def dtype(self, byte_order='='):
         '''
