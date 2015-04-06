@@ -512,5 +512,6 @@ def test_assign_data_error(tet_ply_txt):
 
     try:
         vertex.data = vertex[['x', 'z', 'red', 'green', 'blue']]
+        assert False
     except ValueError as e:
         assert str(e) == "dangling property 'y'"
