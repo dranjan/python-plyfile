@@ -7,7 +7,7 @@ if mydir:
     os.chdir(mydir)
 
 setup(name='plyfile',
-      version='0.3',
+      version='0.4',
       install_requires=['numpy>=1.8'],
       description='PLY file reader/writer',
       py_modules=['plyfile'])
