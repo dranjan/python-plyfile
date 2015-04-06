@@ -15,6 +15,30 @@ except:
     pass
 
 
+class Raises(object):
+
+    '''
+    Utility: use as a context manager for code that is expected to raise
+    an exception.
+
+    '''
+    def __init__(self, *exc_types):
+        self._exc_types = set(exc_types)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, traceback):
+        assert exc_type in self._exc_types
+        self.exc_type = exc_type
+        self.exc_val = exc_val
+        self.traceback = traceback
+        return True
+
+    def __str__(self):
+        return str(self.exc_val)
+
+
 def normalize_property(prop):
     if prop.ndim == 1:
         return prop
@@ -89,7 +113,7 @@ def write_read(ply, tmpdir, name='test.ply'):
     Utility: serialize/deserialize a PlyData instance through a
     temporary file.
 
-    '''
+     '''
     filename = tmpdir.join(name)
     ply.write(str(filename))
     return PlyData.read(str(filename))
@@ -282,11 +306,8 @@ def test_switch_format(tet_ply_txt, tmpdir):
 
 
 def test_invalid_byte_order(tet_ply_txt):
-    try:
+    with Raises(ValueError):
         tet_ply_txt.byte_order = 'xx'
-        assert False
-    except ValueError:
-        pass
 
 
 def test_element_lookup(tet_ply_txt):
@@ -343,12 +364,10 @@ def test_reorder_elements(tet_ply_txt, tmpdir):
 
 
 def test_assign_elements_duplicate(tet_ply_txt):
-    try:
+    with Raises(ValueError) as e:
         tet_ply_txt.elements = [tet_ply_txt['vertex'],
                                 tet_ply_txt['vertex']]
-        assert False
-    except ValueError as e:
-        assert str(e) == "two elements with same name"
+    assert str(e) == "two elements with same name"
 
 
 def test_reorder_properties(tet_ply_txt, tmpdir):
@@ -393,22 +412,18 @@ def test_remove_property(tet_ply_txt, tmpdir, text, byte_order):
 
 def test_assign_properties_error(tet_ply_txt):
     vertex = tet_ply_txt['vertex']
-    try:
+    with Raises(ValueError) as e:
         vertex.properties = (vertex.properties +
                              (PlyProperty('xx', 'i4'),))
-        assert False
-    except ValueError as e:
-        assert str(e) == "dangling property 'xx'"
+    assert str(e) == "dangling property 'xx'"
 
 
 def test_assign_properties_duplicate(tet_ply_txt):
     vertex = tet_ply_txt['vertex']
-    try:
+    with Raises(ValueError) as e:
         vertex.properties = (vertex.ply_property('x'),
                              vertex.ply_property('x'))
-        assert False
-    except ValueError as e:
-        assert str(e) == "two properties with same name"
+    assert str(e) == "two properties with same name"
 
 
 @pytest.mark.parametrize('text,byte_order',
@@ -445,19 +460,15 @@ def test_cast_property(tet_ply_txt, tmpdir, text, byte_order):
 
 
 def test_cast_val_error(tet_ply_txt):
-    try:
+    with Raises(ValueError) as e:
         tet_ply_txt['vertex'].properties[0].val_dtype = 'xx'
-        assert False
-    except ValueError as e:
-        assert str(e).startswith("field type 'xx' not in")
+    assert str(e).startswith("field type 'xx' not in")
 
 
 def test_cast_len_error(tet_ply_txt):
-    try:
+    with Raises(ValueError) as e:
         tet_ply_txt['face'].properties[0].len_dtype = 'xx'
-        assert False
-    except ValueError as e:
-        assert str(e).startswith("field type 'xx' not in")
+    assert str(e).startswith("field type 'xx' not in")
 
 
 def ply_abc(fmt, n, data):
@@ -516,11 +527,9 @@ invalid_cases = [
 @pytest.mark.parametrize('s,error_string', invalid_cases,
                          ids=list(map(str, range(len(invalid_cases)))))
 def test_invalid(tmpdir, s, error_string):
-    try:
+    with Raises(PlyParseError) as e:
         ply = read_str(s, tmpdir)
-        assert False
-    except PlyParseError as e:
-        assert str(e) == "element 'test': " + error_string
+    assert str(e) == "element 'test': " + error_string
 
 
 def test_assign_elements(tet_ply_txt):
@@ -548,8 +557,6 @@ def test_assign_data(tet_ply_txt):
 def test_assign_data_error(tet_ply_txt):
     vertex = tet_ply_txt['vertex']
 
-    try:
+    with Raises(ValueError) as e:
         vertex.data = vertex[['x', 'z', 'red', 'green', 'blue']]
-        assert False
-    except ValueError as e:
-        assert str(e) == "dangling property 'y'"
+    assert str(e) == "dangling property 'y'"
