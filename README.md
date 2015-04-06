@@ -302,12 +302,12 @@ property to `properties` with the new name by creating a new
 
     >>> from plyfile import PlyProperty, PlyListProperty
     >>> face = plydata['face']
-    >>> face.properties = (,)
-    >>> face.data.dtype.names = [('idx', 'r', 'g', 'b')]
-    >>> vertex.properties = (PlyListProperty('idx', 'uchar', 'int'),
-    ...                      PlyProperty('r', 'uchar'),
-    ...                      PlyProperty('g', 'uchar'),
-    ...                      PlyProperty('b', 'uchar'))
+    >>> face.properties = ()
+    >>> face.data.dtype.names = ['idx', 'r', 'g', 'b']
+    >>> face.properties = (PlyListProperty('idx', 'uchar', 'int'),
+    ...                    PlyProperty('r', 'uchar'),
+    ...                    PlyProperty('g', 'uchar'),
+    ...                    PlyProperty('b', 'uchar'))
 
 Note that it is always safe to create a new `PlyElement` or `PlyData`
 instance instead of modifying one in place, and this is the recommended
