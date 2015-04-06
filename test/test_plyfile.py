@@ -342,6 +342,15 @@ def test_reorder_elements(tet_ply_txt, tmpdir):
     assert ply1.elements[1].name == 'vertex'
 
 
+def test_assign_elements_duplicate(tet_ply_txt):
+    try:
+        tet_ply_txt.elements = [tet_ply_txt['vertex'],
+                                tet_ply_txt['vertex']]
+        assert False
+    except ValueError as e:
+        assert str(e) == "two elements with same name"
+
+
 def test_reorder_properties(tet_ply_txt, tmpdir):
     ply0 = tet_ply_txt
     vertex = ply0.elements[0]
