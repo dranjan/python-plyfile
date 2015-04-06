@@ -406,6 +406,22 @@ def test_cast_property(tet_ply_txt, tmpdir, text, byte_order):
               normalize_property(face['vertex_indices']))
 
 
+def test_cast_val_error(tet_ply_txt):
+    try:
+        tet_ply_txt['vertex'].properties[0].val_dtype = 'xx'
+        assert False
+    except ValueError as e:
+        assert str(e).startswith("field type 'xx' not in")
+
+
+def test_cast_len_error(tet_ply_txt):
+    try:
+        tet_ply_txt['face'].properties[0].len_dtype = 'xx'
+        assert False
+    except ValueError as e:
+        assert str(e).startswith("field type 'xx' not in")
+
+
 def ply_abc(fmt, n, data):
     string = (b"ply\nformat " + fmt.encode() + b" 1.0\nelement test " +
               str(n).encode() + b"\n"

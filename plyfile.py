@@ -28,36 +28,40 @@ except:
     pass
 
 
-_data_types = {
-    'int8': 'i1',
-    'char': 'i1',
-    'uint8': 'u1',
-    'uchar': 'u1',
-    'int16': 'i2',
-    'short': 'i2',
-    'uint16': 'u2',
-    'ushort': 'u2',
-    'int32': 'i4',
-    'int': 'i4',
-    'uint32': 'u4',
-    'uint': 'u4',
-    'float32': 'f4',
-    'float': 'f4',
-    'float64': 'f8',
-    'double': 'f8'
-}
+# Many-many relation
+_data_type_relation = [
+    ('int8', 'i1'),
+    ('char', 'i1'),
+    ('uint8', 'u1'),
+    ('uchar', 'b1'),
+    ('uchar', 'u1'),
+    ('int16', 'i2'),
+    ('short', 'i2'),
+    ('uint16', 'u2'),
+    ('ushort', 'u2'),
+    ('int32', 'i4'),
+    ('int', 'i4'),
+    ('uint32', 'u4'),
+    ('uint', 'u4'),
+    ('float32', 'f4'),
+    ('float', 'f4'),
+    ('float64', 'f8'),
+    ('double', 'f8')
+]
 
-_data_type_reverse = {
-    'i1': 'char',
-    'b1': 'uchar',
-    'u1': 'uchar',
-    'i2': 'short',
-    'u2': 'ushort',
-    'i4': 'int',
-    'u4': 'uint',
-    'f4': 'float',
-    'f8': 'double'
-}
+_data_types = dict(_data_type_relation)
+_data_type_reverse = dict((b, a) for (a, b) in _data_type_relation)
+
+_types_list = []
+_types_set = set()
+for (a, b) in _data_type_relation:
+    if a not in _types_set:
+        _types_list.append(a)
+        _types_set.add(a)
+    if b not in _types_set:
+        _types_list.append(b)
+        _types_set.add(b)
+
 
 _byte_order_map = {
     'ascii': '=',
@@ -70,13 +74,16 @@ _byte_order_reverse = {
     '>': 'binary_big_endian'
 }
 
-
 _native_byte_order = {'little': '<', 'big': '>'}[_byteorder]
 
 
 def _lookup_type(type_str):
     if type_str not in _data_type_reverse:
-        raise ValueError("unsupported field type: %s" % type_str)
+        try:
+            type_str = _data_types[type_str]
+        except KeyError:
+            raise ValueError("field type %r not in %r" %
+                             (type_str, _types_list))
 
     return _data_type_reverse[type_str]
 
@@ -475,11 +482,11 @@ class PlyElement(object):
         Construct a PlyElement from an array's metadata.
 
         len_types and val_types can be given as mappings from list
-        property names to type strings (like 'u1', 'f4', etc.). These
-        can be used to define the length and value types of list
-        properties.  List property lengths always default to type 'u1'
-        (8-bit unsigned integer), and value types default to 'i4'
-        (32-bit integer).
+        property names to type strings (like 'u1', 'f4', etc., or
+        'int8', 'float32', etc.). These can be used to define the length
+        and value types of list properties.  List property lengths
+        always default to type 'u1' (8-bit unsigned integer), and value
+        types default to 'i4' (32-bit integer).
 
         '''
         if not isinstance(data, _np.ndarray):
@@ -688,7 +695,15 @@ class PlyProperty(object):
     def __init__(self, name, val_dtype):
         self._name = str(name)
         self._check_name()
-        self.val_dtype = _data_types[val_dtype]
+        self.val_dtype = val_dtype
+
+    def _get_val_dtype(self):
+        return self._val_dtype
+
+    def _set_val_dtype(self, val_dtype):
+        self._val_dtype = _data_types[_lookup_type(val_dtype)]
+
+    val_dtype = property(_get_val_dtype, _set_val_dtype)
 
     @property
     def name(self):
@@ -783,7 +798,15 @@ class PlyListProperty(PlyProperty):
     def __init__(self, name, len_dtype, val_dtype):
         PlyProperty.__init__(self, name, val_dtype)
 
-        self.len_dtype = _data_types[len_dtype]
+        self.len_dtype = len_dtype
+
+    def _get_len_dtype(self):
+        return self._len_dtype
+
+    def _set_len_dtype(self, len_dtype):
+        self._len_dtype = _data_types[_lookup_type(len_dtype)]
+
+    len_dtype = property(_get_len_dtype, _set_len_dtype)
 
     def dtype(self, byte_order='='):
         '''
