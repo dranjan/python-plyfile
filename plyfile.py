@@ -171,8 +171,8 @@ class PlyData(object):
         text: whether the resulting PLY file will be text (True) or
             binary (False).
 
-        byte_order: '<' for little-endian or '>' for big-endian.  This
-            is only relevant if text is False.
+        byte_order: '<' for little-endian, '>' for big-endian, or '='
+            for native.  This is only relevant if `text' is False.
 
         comments: sequence of strings that will be placed in the header
             between the 'ply' and 'format ...' lines.
@@ -199,6 +199,17 @@ class PlyData(object):
         self._index()
 
     elements = property(_get_elements, _set_elements)
+
+    def _get_byte_order(self):
+        return self._byte_order
+
+    def _set_byte_order(self, byte_order):
+        if byte_order not in ['<', '>', '=']:
+            raise ValueError("byte order must be '<', '>', or '='")
+
+        self._byte_order = byte_order
+
+    byte_order = property(_get_byte_order, _set_byte_order)
 
     def _index(self):
         self._element_lookup = dict((elt.name, elt) for elt in

@@ -280,6 +280,14 @@ def test_switch_format(tet_ply_txt, tmpdir):
     verify(ply0, ply3)
 
 
+def test_invalid_byte_order(tet_ply_txt):
+    try:
+        tet_ply_txt.byte_order = 'xx'
+        assert False
+    except ValueError:
+        pass
+
+
 def test_element_lookup(tet_ply_txt):
     assert tet_ply_txt['vertex'].name == 'vertex'
     assert tet_ply_txt['face'].name == 'face'
