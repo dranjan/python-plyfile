@@ -119,15 +119,21 @@ The above expression is equivalent to `plydata['vertex'].data[0]`.
 `PlyElement` instances also contain metadata:
 
     >>> plydata.elements[0].properties
-    [PlyProperty('x', 'float32'), PlyProperty('y', 'float32'),
-     PlyProperty('z', 'float32')]
+    (PlyProperty('x', 'float'), PlyProperty('y', 'float'),
+     PlyProperty('z', 'float'))
     >>> plydata.elements[0].count
     4
 
 `PlyProperty` and `PlyListProperty` instances are used internally as a
 convenient intermediate representation of PLY element properties that
 can easily be serialized to a PLY header (using `str`) or converted to
-`numpy`-compatible type descriptions (via the `dtype` method).
+`numpy`-compatible type descriptions (via the `dtype` method).  It's not
+extremely common to manipulate them directly, but if needed, the
+property metadata of an element can be accessed as a tuple via the
+`properties` attribute (as illustrated above) or looked up by name:
+
+    >>> plydata.elements[0].ply_property('x')
+    PlyProperty('x', 'float32')
 
 Many (but not necessarily all) types of malformed input files will raise
 `PlyParseError` when `PlyData.read` is called.  The string value of the
@@ -258,39 +264,50 @@ A plausible code pattern is to read a PLY file into a `PlyData`
 instance, perform some operations on it, possibly modifying data and
 metadata in place, and write the result to a new file.  This pattern is
 partially supported.  As of version 0.4, the following in-place
-mutations are **supported**:
+mutations are supported:
 
 - Modifying numerical array data only.
 - Assigning directly to a `PlyData` instance's `elements`.
 - Switching format by changing the `text` and `byte_order` attributes of
-  a `PlyData` instance.
-  This will switch between `ascii`, `binary_little_endian`, and
-  `binary_big_endian` PLY formats.
+  a `PlyData` instance.   This will switch between `ascii`,
+  `binary_little_endian`, and `binary_big_endian` PLY formats.
 - Modifying a `PlyData` instance's `comments` and `obj_info`, and
   modifying a `PlyElement` instance's `comments`.
-- Assigning to an element's `data`.  For every property in the `properties`
-  list of the `PlyElement` instance, the `data` array must have a field
-  with the same name (but possibly different type, and possibly in
-  different order).  The array can have additional fields as well, but
-  they won't be output when writing the element to a PLY file.  The
-  properties in the output file will appear as they are in the
-  `properties` list.
-
-The following metadata mutations are also **supported**, with the caveat
-that the `numpy` array wrapped by the `PlyElement` instance will not be
-modified in any way: the mutation only modifies the metadata (and
-possibly data) that gets written  by `PlyData.write`.
-
-- Permuting an element's `properties`,  which will change order of properties
-  in the output file without changing property data.
-- Removing elements from an element's `properties`, which will remove those
-  properties from the output file.
+- Assigning to an element's `data`.  Note that the property metadata in
+  `properties` is not touched by this, so for every property in the
+  `properties` list of the `PlyElement` instance, the `data` array must
+  have a field with the same name (but possibly different type, and
+  possibly in different order).  The array can have additional fields as
+  well, but they won't be output when writing the element to a PLY file.
+  The properties in the output file will appear as they are in the
+  `properties` list.  If an array field has a different type than the
+  corresponding `PlyProperty` instance, then it will be cast when
+  writing.
+- Assigning directly to an element's `properties`.  Note that the
+  `data` array is not touched, and the previous note regarding the
+  relationship between `properties` and `data` still applies: the field
+  names of `data` must be a subset of the property names in
+  `properties`, but they can be in a different order and specify
+  different types.
 - Changing a `PlyProperty` or `PlyListProperty` instance's `val_dtype`
   or a `PlyListProperty` instance's `len_dtype`, which will perform
   casting when writing.
 
 Modifying the `name` of a `PlyElement, `PlyProperty`, or `PlyListProperty`
-instance is not supported and will raise an error.
+instance is not supported and will raise an error.  To rename a
+property of a `PlyElement` instance, you can remove the property from
+`properties`, rename the field in `data`, and re-add the property to
+`properties` with the new name by creating a new `PlyProperty` or
+`PlyListProperty` instance:
+
+    >>> from plyfile import PlyProperty, PlyListProperty
+    >>> face = plydata['face']
+    >>> face.properties = (,)
+    >>> face.data.dtype.names = [('idx', 'r', 'g', 'b')]
+    >>> vertex.properties = (PlyListProperty('idx', 'uchar', 'int'),
+    ...                      PlyProperty('r', 'uchar'),
+    ...                      PlyProperty('g', 'uchar'),
+    ...                      PlyProperty('b', 'uchar'))
 
 Note that it is always safe to create a new `PlyElement` or `PlyData`
 instance instead of modifying one in place, and this is the recommended
