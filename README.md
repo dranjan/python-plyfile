@@ -289,11 +289,8 @@ possibly data) that gets written  by `PlyData.write`.
   or a `PlyListProperty` instance's `len_dtype`, which will perform
   casting when writing.
 
-The following are **unsupported** and will leave objects in an
-inconsistent state:
-
-- Modifying the `name` of an element or `PlyProperty` or
-  `PlyListProperty` instance.
+Modifying the `name` of a `PlyElement, `PlyProperty`, or `PlyListProperty`
+instance is not supported and will raise an error.
 
 Note that it is always safe to create a new `PlyElement` or `PlyData`
 instance instead of modifying one in place, and this is the recommended
