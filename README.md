@@ -133,7 +133,7 @@ property metadata of an element can be accessed as a tuple via the
 `properties` attribute (as illustrated above) or looked up by name:
 
     >>> plydata.elements[0].ply_property('x')
-    PlyProperty('x', 'float32')
+    PlyProperty('x', 'float')
 
 Many (but not necessarily all) types of malformed input files will raise
 `PlyParseError` when `PlyData.read` is called.  The string value of the
@@ -293,12 +293,12 @@ mutations are supported:
   or a `PlyListProperty` instance's `len_dtype`, which will perform
   casting when writing.
 
-Modifying the `name` of a `PlyElement, `PlyProperty`, or `PlyListProperty`
-instance is not supported and will raise an error.  To rename a
-property of a `PlyElement` instance, you can remove the property from
-`properties`, rename the field in `data`, and re-add the property to
-`properties` with the new name by creating a new `PlyProperty` or
-`PlyListProperty` instance:
+Modifying the `name` of a `PlyElement`, `PlyProperty`, or
+`PlyListProperty` instance is not supported and will raise an error.  To
+rename a property of a `PlyElement` instance, you can remove the
+property from `properties`, rename the field in `data`, and re-add the
+property to `properties` with the new name by creating a new
+`PlyProperty` or `PlyListProperty` instance:
 
     >>> from plyfile import PlyProperty, PlyListProperty
     >>> face = plydata['face']
