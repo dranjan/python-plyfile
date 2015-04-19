@@ -15,7 +15,7 @@ setup(name='plyfile',
       install_requires=['numpy>=1.8'],
       description='PLY file reader/writer',
       url=base_url,
-      download_url=('%s/releases/tag/v%s' % (base_url, version)),
+      download_url=('%s/archive/v%s.tar.gz' % (base_url, version)),
       license='GPLv3+',
       classifiers=[
           'Programming Language :: Python :: 2',
