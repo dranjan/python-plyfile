@@ -11,12 +11,13 @@ base_url = 'https://github.com/dranjan/python-plyfile'
 
 setup(name='plyfile',
       author='Darsh Ranjan',
+      author_email='darsh.ranjan@here.com',
       version=version,
       install_requires=['numpy>=1.8'],
       description='PLY file reader/writer',
+      long_description='(see project homepage)',
       url=base_url,
       download_url=('%s/archive/v%s.tar.gz' % (base_url, version)),
-      license='GPLv3+',
       classifiers=[
           'Programming Language :: Python :: 2',
           'Programming Language :: Python :: 2.6',
