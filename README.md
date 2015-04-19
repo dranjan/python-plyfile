@@ -25,6 +25,12 @@ el.data.byteswap().newbyteorder()` in addition to changing the
 
 ## Installing plyfile
 
+Quick way:
+
+    pip install plyfile
+
+Or clone the repository and run from the project root:
+
     python setup.py install
 
 Or just copy `plyfile.py` into your GPL-compatible project.
