@@ -54,13 +54,13 @@ _data_type_reverse = dict((b, a) for (a, b) in _data_type_relation)
 
 _types_list = []
 _types_set = set()
-for (a, b) in _data_type_relation:
-    if a not in _types_set:
-        _types_list.append(a)
-        _types_set.add(a)
-    if b not in _types_set:
-        _types_list.append(b)
-        _types_set.add(b)
+for (_a, _b) in _data_type_relation:
+    if _a not in _types_set:
+        _types_list.append(_a)
+        _types_set.add(_a)
+    if _b not in _types_set:
+        _types_list.append(_b)
+        _types_set.add(_b)
 
 
 _byte_order_map = {
