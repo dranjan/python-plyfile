@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import py
 import pytest
 
 import numpy
@@ -10,9 +9,9 @@ from plyfile import (PlyData, PlyElement, make2d, PlyParseError,
 
 
 try:
-    range = xrange
-except:
-    pass
+    _range = xrange
+except NameError:
+    _range = range
 
 
 class Raises(object):
@@ -46,7 +45,7 @@ def normalize_property(prop):
     n = len(prop)
 
     arr = numpy.empty(n, dtype='O')
-    for k in range(n):
+    for k in _range(n):
         arr[k] = prop[k]
 
     return arr
@@ -63,7 +62,7 @@ def verify(ply0, ply1):
     num_elements = len(el0)
     assert len(el1) == num_elements
 
-    for k in range(num_elements):
+    for k in _range(num_elements):
         assert el0[k].name == el1[k].name
 
         data0 = el0[k].data
@@ -75,7 +74,7 @@ def verify(ply0, ply1):
         num_properties = len(dtype0)
         assert len(dtype1) == num_properties
 
-        for j in range(num_properties):
+        for j in _range(num_properties):
             prop_name = dtype0[j][0]
             assert dtype1[j][0] == prop_name
 
@@ -101,7 +100,7 @@ def verify_1d(prop0, prop1):
     s = s0[0]
 
     if s == 'O':
-        for k in range(n):
+        for k in _range(n):
             assert len(prop0[k]) == len(prop1[k])
             assert (prop0[k] == prop1[k]).all()
     else:
@@ -525,10 +524,10 @@ invalid_cases = [
 
 
 @pytest.mark.parametrize('s,error_string', invalid_cases,
-                         ids=list(map(str, range(len(invalid_cases)))))
+                         ids=list(map(str, _range(len(invalid_cases)))))
 def test_invalid(tmpdir, s, error_string):
     with Raises(PlyParseError) as e:
-        ply = read_str(s, tmpdir)
+        read_str(s, tmpdir)
     assert str(e) == "element 'test': " + error_string
 
 
