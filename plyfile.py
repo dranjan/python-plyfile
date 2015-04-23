@@ -134,7 +134,6 @@ class PlyParseError(Exception):
         self.row = row
         self.prop = prop
 
-    def __str__(self):
         s = ''
         if self.element:
             s += 'element %r: ' % self.element.name
@@ -144,7 +143,7 @@ class PlyParseError(Exception):
             s += 'property %r: ' % self.prop.name
         s += self.message
 
-        return s
+        Exception.__init__(self, s)
 
     def __repr__(self):
         return ('PlyParseError(%r, element=%r, row=%r, prop=%r)' %
