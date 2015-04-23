@@ -626,10 +626,10 @@ class PlyElement(object):
                     self._data[prop.name][k] = prop._from_fields(fields)
                 except StopIteration:
                     raise PlyParseError("early end-of-line",
-                                        self, k,  prop)
+                                        self, k, prop)
                 except ValueError:
                     raise PlyParseError("malformed input",
-                                        self, k,  prop)
+                                        self, k, prop)
             try:
                 next(fields)
             except StopIteration:
