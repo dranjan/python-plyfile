@@ -24,7 +24,7 @@ from sys import byteorder as _byteorder
 
 try:
     _range = xrange
-except:
+except NameError:
     _range = range
 
 
