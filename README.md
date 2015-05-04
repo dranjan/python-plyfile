@@ -190,11 +190,11 @@ Once you have suitably structured array, the static method
 `PlyElement.describe` can then be used to create the necessary
 `PlyElement` instances:
 
-    >>> el = PlyElement.describe('some_name', some_array)
+    >>> el = PlyElement.describe(some_array, 'some_name')
 
 or
 
-    >>> el = PlyElement.describe('some_name', some_array,
+    >>> el = PlyElement.describe(some_array, 'some_name'
     ...                          comments=['comment1',
     ...                                    'comment2'])
 
@@ -209,7 +209,7 @@ defaults to 8-bit unsigned integer, and the value defaults to 32-bit
 signed integer, which covers the majority of use cases.  Exceptions must
 be stated explicitly:
 
-    >>> el = PlyElement.describe('some_name', some_array,
+    >>> el = PlyElement.describe(some_array, 'some_name'
     ...                          val_dtypes={'some_property': 'f8'},
     ...                          len_dtypes={'some_property': 'u4'})
 
