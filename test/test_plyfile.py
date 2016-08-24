@@ -273,6 +273,28 @@ def test_read_stream(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
 
 
+def test_write_read_str_filename(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    test_file = tmpdir.join('test.ply')
+    filename = str(test_file)
+
+    tet_ply_txt.write(filename)
+    ply1 = PlyData.read(filename)
+
+    verify(ply0, ply1)
+
+
+def test_write_read_unicode_filename(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    test_file = tmpdir.join('test.ply')
+    filename = unicode(str(test_file))
+
+    tet_ply_txt.write(filename)
+    ply1 = PlyData.read(filename)
+
+    verify(ply0, ply1)
+
+
 def test_ascii(tet_ply_txt, tmpdir):
     test_file = tmpdir.join('test.ply')
 
