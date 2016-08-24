@@ -6,3 +6,4 @@ plyfile-venv/
 build/
 dist/
 .tox
+.cache
