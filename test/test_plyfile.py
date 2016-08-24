@@ -261,7 +261,7 @@ def test_write_stream(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
 
 
-def tet_read_stream(tmpdir, tet_ply_txt):
+def test_read_stream(tmpdir, tet_ply_txt):
     ply0 = tet_ply_txt
     test_file = tmpdir.join('test.ply')
 
@@ -557,5 +557,5 @@ def test_assign_data_error(tet_ply_txt):
     vertex = tet_ply_txt['vertex']
 
     with Raises(ValueError) as e:
-        vertex.data = vertex[['x', 'z', 'red', 'green', 'blue']]
+        vertex.data = vertex[['x', 'z']]
     assert str(e) == "dangling property 'y'"
