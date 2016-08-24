@@ -295,6 +295,13 @@ def test_write_read_unicode_filename(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
 
 
+def test_write_invalid_filename(tet_ply_txt):
+    with Raises(RuntimeError) as e:
+        tet_ply_txt.write(None)
+
+    assert str(e) == "expected open file or filename"
+
+
 def test_ascii(tet_ply_txt, tmpdir):
     test_file = tmpdir.join('test.ply')
 
