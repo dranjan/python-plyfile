@@ -279,9 +279,12 @@ class PlyData(object):
         '''
         must_close = False
         try:
-            if isinstance(stream, str):
-                stream = open(stream, 'rb')
-                must_close = True
+            if not hasattr(stream, 'read'):
+                try:
+                    stream = open(stream, 'rb')
+                    must_close = True
+                except TypeError:
+                    raise RuntimeError("expected open file or filename")
 
             data = PlyData._parse_header(stream)
 
@@ -301,9 +304,12 @@ class PlyData(object):
         '''
         must_close = False
         try:
-            if isinstance(stream, str):
-                stream = open(stream, 'wb')
-                must_close = True
+            if not hasattr(stream, 'write'):
+                try:
+                    stream = open(stream, 'wb')
+                    must_close = True
+                except TypeError:
+                    raise RuntimeError("expected open file or filename")
 
             stream.write(self.header.encode('ascii'))
             stream.write(b'\r\n')
