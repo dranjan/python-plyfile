@@ -8,7 +8,7 @@ The PLY format is documented
 
 ## Dependencies
 
-- python2 >= 2.6 or python3
+- python2 >= 2.7 or python3
 - numpy >= 1.8
 
 **Note:** `numpy` 1.9 before version 1.9.2 has a bug that breaks byte
