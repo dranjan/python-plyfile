@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import sys
+
 import pytest
 
 import numpy
@@ -284,6 +286,11 @@ def test_write_read_str_filename(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
 
 
+# In Python 3, `unicode' is not a separate type from `str' (and the
+# `unicode' builtin does not exist).  Thus, this test is unnecessary
+# (and indeed would not pass).
+@pytest.mark.skipif(sys.version_info >= (3,),
+                    reason="only relevant on Python 2")
 def test_write_read_unicode_filename(tmpdir, tet_ply_txt):
     ply0 = tet_ply_txt
     test_file = tmpdir.join('test.ply')
