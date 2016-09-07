@@ -277,15 +277,8 @@ class PlyData(object):
         Read PLY data from a readable file-like object or filename.
 
         '''
-        must_close = False
+        (must_close, stream) = _open_stream(stream, 'read')
         try:
-            if not hasattr(stream, 'read'):
-                try:
-                    stream = open(stream, 'rb')
-                    must_close = True
-                except TypeError:
-                    raise RuntimeError("expected open file or filename")
-
             data = PlyData._parse_header(stream)
 
             for elt in data:
@@ -302,15 +295,8 @@ class PlyData(object):
         Write PLY data to a writeable file-like object or filename.
 
         '''
-        must_close = False
+        (must_close, stream) = _open_stream(stream, 'write')
         try:
-            if not hasattr(stream, 'write'):
-                try:
-                    stream = open(stream, 'wb')
-                    must_close = True
-                except TypeError:
-                    raise RuntimeError("expected open file or filename")
-
             stream.write(self.header.encode('ascii'))
             stream.write(b'\r\n')
 
@@ -368,6 +354,15 @@ class PlyData(object):
                 'comments=%r, obj_info=%r)' %
                 (self.elements, self.text, self.byte_order,
                  self.comments, self.obj_info))
+
+
+def _open_stream(stream, read_or_write):
+    if hasattr(stream, read_or_write):
+        return (False, stream)
+    try:
+        return (True, open(stream, read_or_write[0] + 'b'))
+    except TypeError:
+        raise RuntimeError("expected open file or filename")
 
 
 class PlyElement(object):
