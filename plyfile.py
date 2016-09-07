@@ -280,10 +280,8 @@ class PlyData(object):
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
-
             for elt in data:
                 elt._read(stream, data.text, data.byte_order)
-
         finally:
             if must_close:
                 stream.close()
@@ -299,10 +297,8 @@ class PlyData(object):
         try:
             stream.write(self.header.encode('ascii'))
             stream.write(b'\r\n')
-
             for elt in self:
                 elt._write(stream, self.text, self.byte_order)
-
         finally:
             if must_close:
                 stream.close()
