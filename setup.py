@@ -11,7 +11,7 @@ base_url = 'https://github.com/dranjan/python-plyfile'
 
 setup(name='plyfile',
       author='Darsh Ranjan',
-      author_email='darsh.ranjan@here.com',
+      author_email='dranjan@berkeley.edu',
       version=version,
       install_requires=['numpy>=1.8'],
       description='PLY file reader/writer',
