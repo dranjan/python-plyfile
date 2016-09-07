@@ -588,7 +588,8 @@ class PlyElement(object):
             else:
                 # There are no list properties, so loading the data is
                 # much more straightforward.
-                self._data = _np.fromfile(stream, self.dtype(byte_order),
+                self._data = _np.fromfile(stream,
+                                          self.dtype(byte_order),
                                           self.count)
 
         if len(self._data) < self.count:
@@ -673,7 +674,7 @@ class PlyElement(object):
             for prop in self.properties:
                 try:
                     self._data[prop.name][k] = \
-                            prop._read_bin(stream, byte_order)
+                        prop._read_bin(stream, byte_order)
                 except StopIteration:
                     raise PlyParseError("early end-of-file",
                                         self, k, prop)
