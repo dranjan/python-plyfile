@@ -16,7 +16,9 @@
 #   along with python-plyfile.  If not, see
 #       <http://www.gnu.org/licenses/>.
 
+from io import FileIO as _FileIO
 from itertools import islice as _islice
+from os.path import isfile as _isfile
 
 import numpy as _np
 from sys import byteorder as _byteorder
@@ -571,17 +573,25 @@ class PlyElement(object):
         '''
         if text:
             self._read_txt(stream)
+        elif self._have_list:
+            # There are list properties, so a simple load is impossible.
+            self._read_bin(stream, byte_order)
+        # There are no list properties, so loading the data is straightforward.
+        elif (isinstance(stream, _FileIO) and stream.mode == 'rb' and
+              isinstance(stream.name, (str, bytes)) and _isfile(stream.name)):
+            # Use the on-disk bytes to back the array for reads.
+            # Writes turn it into an in-memory array (mode='c').
+            # Saves memory, with identical array interface for users!
+            self._data = _np.memmap(
+                filename=stream.name, dtype=self.dtype(byte_order),
+                mode='c', offset=stream.tell(), shape=(self.count,))
+            # Advance stream position, as if we read the data
+            stream.seek(stream.tell() +
+                        self.count * self.dtype(byte_order).itemsize)
         else:
-            if self._have_list:
-                # There are list properties, so a simple load is
-                # impossible.
-                self._read_bin(stream, byte_order)
-            else:
-                # There are no list properties, so loading the data is
-                # much more straightforward.
-                self._data = _np.fromfile(stream,
-                                          self.dtype(byte_order),
-                                          self.count)
+            # If we can't memmap the file, just read the stream
+            self._data = _np.fromfile(
+                stream, self.dtype(byte_order), self.count)
 
         if len(self._data) < self.count:
             k = len(self._data)
