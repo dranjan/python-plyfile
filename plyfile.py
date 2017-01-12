@@ -18,7 +18,6 @@
 
 from io import FileIO as _FileIO
 from itertools import islice as _islice
-from os.path import isfile as _isfile
 
 import numpy as _np
 from sys import byteorder as _byteorder
@@ -577,16 +576,13 @@ class PlyElement(object):
             # There are list properties, so a simple load is impossible.
             self._read_bin(stream, byte_order)
         # There are no list properties, so loading the data is straightforward.
-        elif (isinstance(stream, _FileIO) and stream.mode == 'rb' and
-              isinstance(stream.name, (str, bytes)) and _isfile(stream.name)):
-            # Use the on-disk bytes to back the array for reads.
-            # Writes turn it into an in-memory array (mode='c').
-            # Saves memory, with identical array interface for users!
-            self._data = _np.memmap(
-                filename=stream.name, dtype=self.dtype(byte_order),
-                mode='c', offset=stream.tell(), shape=(self.count,))
-            # Advance stream position, as if we read the data
-            stream.seek(stream.tell() +
+        elif hasattr(stream, 'fileno'):
+            # Memory-map the file in copy-on-write mode.
+            offset = stream.tell()
+            self._data = _np.memmap(stream, self.dtype(byte_order),
+                                    'c', offset, self.count)
+            # Fix stream position
+            stream.seek(offset +
                         self.count * self.dtype(byte_order).itemsize)
         else:
             # If we can't memmap the file, just read the stream
