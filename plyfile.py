@@ -576,7 +576,8 @@ class PlyElement(object):
         elif self._have_list:
             # There are list properties, so a simple load is impossible.
             self._read_bin(stream, byte_order)
-        # There are no list properties, so loading the data is straightforward.
+        # There are no list properties, so loading the data is
+        # straightforward.
         elif hasattr(stream, 'fileno'):
             # Memory-map the file in copy-on-write mode.
             num_bytes = self.count * dtype.itemsize
