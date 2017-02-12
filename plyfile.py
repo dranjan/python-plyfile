@@ -570,6 +570,7 @@ class PlyElement(object):
         Read the actual data from a PLY file.
 
         '''
+        dtype = self.dtype(byte_order)
         if text:
             self._read_txt(stream)
         elif self._have_list:
@@ -578,12 +579,17 @@ class PlyElement(object):
         # There are no list properties, so loading the data is straightforward.
         elif hasattr(stream, 'fileno'):
             # Memory-map the file in copy-on-write mode.
+            num_bytes = self.count * dtype.itemsize
             offset = stream.tell()
-            self._data = _np.memmap(stream, self.dtype(byte_order),
+            stream.seek(0, 2)
+            max_bytes = stream.tell() - offset
+            if max_bytes < num_bytes:
+                raise PlyParseError("early end-of-file", self,
+                                    max_bytes // dtype.itemsize)
+            self._data = _np.memmap(stream, dtype,
                                     'c', offset, self.count)
             # Fix stream position
-            stream.seek(offset +
-                        self.count * self.dtype(byte_order).itemsize)
+            stream.seek(offset + self.count * dtype.itemsize)
         else:
             # If we can't memmap the file, just read the stream
             self._data = _np.fromfile(
