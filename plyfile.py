@@ -453,8 +453,8 @@ class PlyElement(object):
         representation of the element.)
 
         '''
-        return [(prop.name, prop.dtype(byte_order))
-                for prop in self.properties]
+        return _np.dtype([(prop.name, prop.dtype(byte_order))
+                          for prop in self.properties])
 
     @staticmethod
     def _parse_multi(header_lines):

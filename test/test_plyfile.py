@@ -70,8 +70,8 @@ def verify(ply0, ply1):
         data0 = el0[k].data
         data1 = el1[k].data
 
-        dtype0 = el0[k].dtype()
-        dtype1 = el1[k].dtype()
+        dtype0 = el0[k].dtype().descr
+        dtype1 = el1[k].dtype().descr
 
         num_properties = len(dtype0)
         assert len(dtype1) == num_properties
