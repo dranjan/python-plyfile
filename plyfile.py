@@ -16,7 +16,6 @@
 #   along with python-plyfile.  If not, see
 #       <http://www.gnu.org/licenses/>.
 
-from io import FileIO as _FileIO
 from itertools import islice as _islice
 
 import numpy as _np
