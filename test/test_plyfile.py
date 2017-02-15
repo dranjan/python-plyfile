@@ -286,6 +286,20 @@ def test_write_read_str_filename(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
 
 
+def test_memmap(tmpdir, tet_ply_txt):
+    vertex = tet_ply_txt['vertex']
+    face0 = PlyElement.describe(tet_ply_txt['face'].data, 'face0')
+    face1 = PlyElement.describe(tet_ply_txt['face'].data, 'face1')
+
+    # Since the memory mapping requires some manual offset calculation,
+    # check that it's done correctly when there are elements before
+    # and after the one that can be memory-mapped.
+    ply0 = PlyData([face0, vertex, face1])
+    ply1 = write_read(ply0, tmpdir)
+
+    verify(ply0, ply1)
+
+
 # In Python 3, `unicode' is not a separate type from `str' (and the
 # `unicode' builtin does not exist).  Thus, this test is unnecessary
 # (and indeed would not pass).
