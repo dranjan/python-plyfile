@@ -572,13 +572,9 @@ class PlyElement(object):
         dtype = self.dtype(byte_order)
         if text:
             self._read_txt(stream)
-        elif self._have_list:
-            # There are list properties, so a simple load is impossible.
-            self._read_bin(stream, byte_order)
-        # There are no list properties, so loading the data is
-        # straightforward.
-        elif hasattr(stream, 'fileno'):
-            # Memory-map the file in copy-on-write mode.
+        elif hasattr(stream, 'fileno') and not self._have_list:
+            # Loading the data is straightforward.  We will memory map
+            # the file in copy-on-write mode.
             num_bytes = self.count * dtype.itemsize
             offset = stream.tell()
             stream.seek(0, 2)
@@ -591,9 +587,8 @@ class PlyElement(object):
             # Fix stream position
             stream.seek(offset + self.count * dtype.itemsize)
         else:
-            # If we can't memmap the file, just read the stream
-            self._data = _np.fromfile(
-                stream, self.dtype(byte_order), self.count)
+            # A simple load is impossible.
+            self._read_bin(stream, byte_order)
 
         if len(self._data) < self.count:
             k = len(self._data)
