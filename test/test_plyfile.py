@@ -2,6 +2,11 @@ from __future__ import print_function
 
 import sys
 
+if sys.version_info < (3,):
+    from cStringIO import StringIO
+else:
+    from io import BytesIO as StringIO
+
 import pytest
 
 import numpy
@@ -309,6 +314,16 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
     ply2 = PlyData.read(filename)
 
     verify(ply0, ply2)
+
+
+def test_stringio(tet_ply_txt):
+    output_stream = StringIO()
+    ply0 = tet_ply_txt
+    ply0.write(output_stream)
+    input_stream = StringIO(output_stream.getvalue())
+    ply1 = PlyData.read(input_stream)
+
+    verify(ply0, ply1)
 
 
 # In Python 3, `unicode' is not a separate type from `str' (and the
