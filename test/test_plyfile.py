@@ -300,6 +300,17 @@ def test_memmap(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
 
 
+def test_copy_on_write(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    filename = str(tmpdir.join('test.ply'))
+    ply0.write(filename)
+    ply1 = PlyData.read(filename)
+    ply1['vertex']['x'] += 1
+    ply2 = PlyData.read(filename)
+
+    verify(ply0, ply2)
+
+
 # In Python 3, `unicode' is not a separate type from `str' (and the
 # `unicode' builtin does not exist).  Thus, this test is unnecessary
 # (and indeed would not pass).
