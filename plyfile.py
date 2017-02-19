@@ -186,8 +186,8 @@ class PlyData(object):
         self.byte_order = byte_order
         self.text = text
 
-        self.comments = list(comments)
-        self.obj_info = list(obj_info)
+        self.comments = comments
+        self.obj_info = obj_info
         self.elements = elements
 
     def _get_elements(self):
@@ -215,6 +215,24 @@ class PlyData(object):
                                     self._elements)
         if len(self._element_lookup) != len(self._elements):
             raise ValueError("two elements with same name")
+
+    def _get_comments(self):
+        return list(self._comments)
+
+    def _set_comments(self, comments):
+        _check_comments(comments)
+        self._comments = list(comments)
+
+    comments = property(_get_comments, _set_comments)
+
+    def _get_obj_info(self):
+        return list(self._obj_info)
+
+    def _set_obj_info(self, obj_info):
+        _check_comments(obj_info)
+        self._obj_info = list(obj_info)
+
+    obj_info = property(_get_obj_info, _set_obj_info)
 
     @staticmethod
     def _parse_header(stream):
@@ -391,7 +409,7 @@ class PlyElement(object):
         self._properties = tuple(properties)
         self._index()
 
-        self.comments = list(comments)
+        self.comments = comments
 
         self._have_list = any(isinstance(p, PlyListProperty)
                               for p in self.properties)
@@ -424,6 +442,15 @@ class PlyElement(object):
         self._index()
 
     properties = property(_get_properties, _set_properties)
+
+    def _get_comments(self):
+        return list(self._comments)
+
+    def _set_comments(self, comments):
+        _check_comments(comments)
+        self._comments = list(comments)
+
+    comments = property(_get_comments, _set_comments)
 
     def _index(self):
         self._property_lookup = dict((prop.name, prop)
@@ -718,6 +745,12 @@ class PlyElement(object):
         return ('PlyElement(%r, %r, count=%d, comments=%r)' %
                 (self.name, self.properties, self.count,
                  self.comments))
+
+
+def _check_comments(comments):
+    for comment in comments:
+        if any(c == '\n' for c in comment):
+            raise ValueError("embedded newline in comment")
 
 
 class PlyProperty(object):

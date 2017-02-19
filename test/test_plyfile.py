@@ -444,6 +444,31 @@ def test_comment_spaces(tmpdir):
     assert ply1.comments[0] == '  test comment'
 
 
+def test_assign_comments(tet_ply_txt):
+    ply0 = tet_ply_txt
+
+    ply0.comments = ['comment1', 'comment2']
+    ply0.obj_info = ['obj_info1', 'obj_info2']
+    verify_comments(ply0.comments, ['comment1', 'comment2'])
+    verify_comments(ply0.obj_info, ['obj_info1', 'obj_info2'])
+
+    ply0['face'].comments = ['comment1']
+    verify_comments(ply0['face'].comments, ['comment1'])
+
+
+def test_assign_comments_invalid(tet_ply_txt):
+    ply0 = tet_ply_txt
+
+    with Raises(ValueError):
+        ply0.comments = ['comment1\r\ncomment2']
+
+    with Raises(ValueError):
+        ply0.obj_info = ['comment1\r\ncomment2']
+
+    with Raises(ValueError):
+        ply0['face'].comments = ['comment1\r\ncomment2']
+
+
 def test_make2d():
     a = numpy.empty(2, dtype=object)
     a[:] = [numpy.array([0, 1, 2]), numpy.array([3, 4, 5])]
