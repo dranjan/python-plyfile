@@ -466,7 +466,7 @@ def test_assign_comments(tet_ply_txt):
     verify_comments(ply0['face'].comments, ['comment1'])
 
 
-def test_assign_comments_invalid(tet_ply_txt):
+def test_assign_comments_newline(tet_ply_txt):
     ply0 = tet_ply_txt
 
     with Raises(ValueError):
@@ -477,6 +477,19 @@ def test_assign_comments_invalid(tet_ply_txt):
 
     with Raises(ValueError):
         ply0['face'].comments = ['comment1\r\ncomment2']
+
+
+def test_assign_comments_non_ascii(tet_ply_txt):
+    ply0 = tet_ply_txt
+
+    with Raises(ValueError):
+        ply0.comments = ['\xb0']
+
+    with Raises(ValueError):
+        ply0.obj_info = ['\xb0']
+
+    with Raises(ValueError):
+        ply0['face'].comments = ['\xb0']
 
 
 def test_make2d():

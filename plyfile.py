@@ -749,8 +749,11 @@ class PlyElement(object):
 
 def _check_comments(comments):
     for comment in comments:
-        if any(c == '\n' for c in comment):
-            raise ValueError("embedded newline in comment")
+        for char in comment:
+            if not 0 <= ord(char) < 128:
+                raise ValueError("non-ASCII character in comment")
+            if char == '\n':
+                raise ValueError("embedded newline in comment")
 
 
 class PlyProperty(object):
