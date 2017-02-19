@@ -226,13 +226,13 @@ class PlyData(object):
         comments = {'comment': [], 'obj_info': []}
         while True:
             line = stream.readline().decode('ascii').strip()
-            fields = _split_line(line, 1)
+            keyword = _split_line(line, 1)[0]
 
-            if fields[0] == 'end_header':
+            if keyword == 'end_header':
                 break
 
-            elif fields[0] in comments.keys():
-                lines.append(fields)
+            elif keyword in comments.keys():
+                lines.append([keyword, line[len(keyword)+1:]])
             else:
                 lines.append(line.split())
 

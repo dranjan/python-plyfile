@@ -430,6 +430,20 @@ def test_obj_info(tmpdir):
     assert ply1.obj_info[0] == 'test obj_info'
 
 
+def test_comment_spaces(tmpdir):
+    ply0 = PlyData([], text=True, comments=['  test comment'])
+    test_file = tmpdir.join('test.ply')
+    ply0.write(str(test_file))
+
+    ply0_str = test_file.read('rb').decode('ascii')
+    assert ply0_str.startswith('ply\r\nformat ascii 1.0\r\n'
+                               'comment   test comment\r\n')
+
+    ply1 = PlyData.read(str(test_file))
+    assert len(ply1.comments) == 1
+    assert ply1.comments[0] == '  test comment'
+
+
 def test_make2d():
     a = numpy.empty(2, dtype=object)
     a[:] = [numpy.array([0, 1, 2]), numpy.array([3, 4, 5])]
