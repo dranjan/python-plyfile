@@ -42,7 +42,7 @@ All notable changes to this project will be documented here.
 
 ### Changed
 - Ported test setup to `py.test` and `tox`.
-- Chaned output property names to those in original specification.
+- Changed output property names to those in original specification.
 
 ## [0.2] - 2014-11-09
 ### Added
