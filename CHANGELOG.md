@@ -9,6 +9,8 @@ All notable changes to this project will be documented here.
 - Official support for NumPy 1.10 and 1.11.
 - Automatic unit test coverage reporting through test runner.
 - CHANGELOG.md.
+- Comment validation and preservation of leading spaces.  Thanks to
+  @Zac-HD for the bug report.
 
 ### Changed
 - Made "private" variables explicitly so.
