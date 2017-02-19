@@ -709,3 +709,23 @@ def test_assign_data_error(tet_ply_txt):
     with Raises(ValueError) as e:
         vertex.data = vertex[['x', 'z']]
     assert str(e) == "dangling property 'y'"
+
+
+def test_invalid_element_names():
+    with Raises(ValueError):
+        PlyElement.describe(numpy.zeros(1, dtype=[('a', 'i4')]),
+                            '\xb0')
+
+    with Raises(ValueError):
+        PlyElement.describe(numpy.zeros(1, dtype=[('a', 'i4')]),
+                            'test test')
+
+
+def test_invalid_property_names():
+    with Raises(ValueError):
+        PlyElement.describe(numpy.zeros(1, dtype=[('\xb0', 'i4')]),
+                            'test')
+
+    with Raises(ValueError):
+        PlyElement.describe(numpy.zeros(1, dtype=[('a b', 'i4')]),
+                            'test')

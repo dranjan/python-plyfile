@@ -402,8 +402,8 @@ class PlyElement(object):
         array).
 
         '''
+        _check_name(name)
         self._name = str(name)
-        self._check_name()
         self._count = count
 
         self._properties = tuple(properties)
@@ -464,11 +464,6 @@ class PlyElement(object):
     @property
     def name(self):
         return self._name
-
-    def _check_name(self):
-        if any(c.isspace() for c in self._name):
-            msg = "element name %r contains spaces" % self._name
-            raise ValueError(msg)
 
     def dtype(self, byte_order='='):
         '''
@@ -765,8 +760,8 @@ class PlyProperty(object):
     '''
 
     def __init__(self, name, val_dtype):
+        _check_name(name)
         self._name = str(name)
-        self._check_name()
         self.val_dtype = val_dtype
 
     def _get_val_dtype(self):
@@ -780,11 +775,6 @@ class PlyProperty(object):
     @property
     def name(self):
         return self._name
-
-    def _check_name(self):
-        if any(c.isspace() for c in self._name):
-            msg = "Error: property name %r contains spaces" % self._name
-            raise RuntimeError(msg)
 
     @staticmethod
     def _parse_one(line):
@@ -957,3 +947,11 @@ class PlyListProperty(PlyProperty):
                 (self.name,
                  _lookup_type(self.len_dtype),
                  _lookup_type(self.val_dtype)))
+
+
+def _check_name(name):
+    for char in name:
+        if not 0 <= ord(char) < 128:
+            raise ValueError("non-ASCII character in name %r" % name)
+        if char.isspace():
+            raise ValueError("space character(s) in name %r" % name)
