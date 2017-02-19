@@ -36,7 +36,7 @@ All notable changes to this project will be documented here.
 
 ## [0.3] - 2015-03-28
 ### Added
-- `__getitem__` and `__setitem__` for `PlyElement.
+- `__getitem__` and `__setitem__` for `PlyElement`.
 - Support for `obj_info` comments.
 - `make2d` utility function.
 
@@ -61,7 +61,7 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased] https://github.com/dranjan/python-plyfile/compare/v0.4...HEAD
-[0.4] https://github.com/dranjan/python-plyfile/compare/v0.3...v0.4
-[0.3] https://github.com/dranjan/python-plyfile/compare/v0.2...v0.3
-[0.2] https://github.com/dranjan/python-plyfile/compare/v0.1...v0.2
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.4...HEAD
+[0.4]: https://github.com/dranjan/python-plyfile/compare/v0.3...v0.4
+[0.3]: https://github.com/dranjan/python-plyfile/compare/v0.2...v0.3
+[0.2]: https://github.com/dranjan/python-plyfile/compare/v0.1...v0.2
