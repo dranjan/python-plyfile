@@ -242,6 +242,10 @@ As of version 0.3, "obj_info" comments are supported as well:
 When written, they will be placed after regular comments after the
 "format" line.
 
+Comments can have leading whitespace, but trailing whitespace may be
+stripped and should not be relied upon.  Comments may not contain
+embedded newlines.
+
 ### Getting a two-dimensional array from a list property
 
 The PLY format provides no way to assert that all the data for a given
