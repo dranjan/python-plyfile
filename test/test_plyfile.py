@@ -2,10 +2,7 @@ from __future__ import print_function
 
 import sys
 
-if sys.version_info < (3,):
-    from cStringIO import StringIO
-else:
-    from io import BytesIO as StringIO
+from io import BytesIO
 
 import pytest
 
@@ -316,11 +313,11 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
     verify(ply0, ply2)
 
 
-def test_stringio(tet_ply_txt):
-    output_stream = StringIO()
+def test_file_like(tet_ply_txt):
+    output_stream = BytesIO()
     ply0 = tet_ply_txt
     ply0.write(output_stream)
-    input_stream = StringIO(output_stream.getvalue())
+    input_stream = BytesIO(output_stream.getvalue())
     ply1 = PlyData.read(input_stream)
 
     verify(ply0, ply1)
