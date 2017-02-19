@@ -87,6 +87,11 @@ def verify(ply0, ply1):
 
             verify_1d(prop0, prop1)
 
+        verify_comments(el0[k].comments, el1[k].comments)
+
+    verify_comments(ply0.comments, ply1.comments)
+    verify_comments(ply0.obj_info, ply1.obj_info)
+
 
 def verify_1d(prop0, prop1):
     '''
@@ -109,6 +114,16 @@ def verify_1d(prop0, prop1):
             assert (prop0[k] == prop1[k]).all()
     else:
         assert (prop0 == prop1).all()
+
+
+def verify_comments(comments0, comments1):
+    '''
+    Verify that comment lists are identical.
+
+    '''
+    assert len(comments0) == len(comments1)
+    for (comment0, comment1) in zip(comments0, comments1):
+        assert comment0 == comment1
 
 
 def write_read(ply, tmpdir, name='test.ply'):
