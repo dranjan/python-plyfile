@@ -8,7 +8,7 @@ All notable changes to this project will be documented here.
 - More unit tests.
 - Official support for NumPy 1.10 and 1.11.
 - Automatic unit test coverage reporting through test runner.
-- Added CHANGELOG.md.
+- CHANGELOG.md.
 
 ### Changed
 - Made "private" variables explicitly so.
