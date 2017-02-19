@@ -209,6 +209,16 @@ end_header\r\n\
 np_types = ['i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'f4', 'f8']
 
 
+def test_str(tet_ply_txt):
+    # Nothing to assert; just make sure the call succeeds
+    str(tet_ply_txt)
+
+
+def test_repr(tet_ply_txt):
+    # Nothing to assert; just make sure the call succeeds
+    repr(tet_ply_txt)
+
+
 @pytest.mark.parametrize('np_type', np_types)
 def test_property_type(tmpdir, np_type):
     dtype = [('x', np_type), ('y', np_type), ('z', np_type)]
