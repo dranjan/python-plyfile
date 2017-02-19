@@ -11,6 +11,7 @@ All notable changes to this project will be documented here.
 - CHANGELOG.md.
 - Comment validation and preservation of leading spaces.  Thanks to
   @Zac-HD for the bug report.
+- Better validation of element and property names.
 
 ### Changed
 - Made "private" variables explicitly so.
