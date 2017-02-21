@@ -266,11 +266,11 @@ class PlyData(object):
         if lines[a][0] != 'format':
             raise PlyParseError("expected 'format'")
 
+        if len(lines[a]) != 3:
+            raise PlyParseError("bad 'format' line")
+
         if lines[a][2] != '1.0':
             raise PlyParseError("expected version '1.0'")
-
-        if len(lines[a]) != 3:
-            raise PlyParseError("too many fields after 'format'")
 
         fmt = lines[a][1]
 
