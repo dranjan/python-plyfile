@@ -729,3 +729,52 @@ def test_invalid_property_names():
     with Raises(ValueError):
         PlyElement.describe(numpy.zeros(1, dtype=[('a b', 'i4')]),
                             'test')
+
+
+def test_parse_error_ply():
+    stream = BytesIO(
+        b'plyy\n'
+    )
+
+    with Raises(PlyParseError) as e:
+        PlyData.read(stream)
+
+
+def test_parse_error_missing_format():
+    stream = BytesIO(
+        b'ply\n'
+        b'\n'
+    )
+
+    with Raises(PlyParseError) as e:
+        PlyData.read(stream)
+
+
+def test_parse_error_bad_format():
+    stream = BytesIO(
+        b'ply\n'
+        b'format\n'
+    )
+
+    with Raises(PlyParseError) as e:
+        PlyData.read(stream)
+
+
+def test_parse_error_unknown_format():
+    stream = BytesIO(
+        b'ply\n'
+        b'format asciii 1.0\n'
+    )
+
+    with Raises(PlyParseError) as e:
+        PlyData.read(stream)
+
+
+def test_parse_error_unknown_version():
+    stream = BytesIO(
+        b'ply\n'
+        b'format ascii 2.0\n'
+    )
+
+    with Raises(PlyParseError) as e:
+        PlyData.read(stream)
