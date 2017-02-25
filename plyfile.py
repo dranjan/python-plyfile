@@ -660,11 +660,6 @@ class PlyElement(object):
             # A simple load is impossible.
             self._read_bin(stream, byte_order)
 
-        if len(self._data) < self.count:
-            k = len(self._data)
-            del self._data
-            raise PlyElementParseError("early end-of-file", self, k)
-
         self._check_sanity()
 
     def _write(self, stream, text, byte_order):
