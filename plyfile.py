@@ -280,7 +280,8 @@ class PlyHeaderParseError(PlyParseError):
 
     def __repr__(self):
         return ('%s(%r, line=%r)' %
-                (self.__class__.__name__, self.line))
+                (self.__class__.__name__,
+                 self.message, self.line))
 
 
 class PlyData(object):
