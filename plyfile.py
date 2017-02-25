@@ -190,17 +190,23 @@ class _PlyParser(object):
                 self._error("expected \"property list "
                             "{len_type} {val_type} {name}\"")
 
-            properties.append(
-                PlyListProperty(fields[3], fields[1], fields[2])
-            )
+            try:
+                properties.append(
+                    PlyListProperty(fields[3], fields[1], fields[2])
+                )
+            except ValueError as e:
+                self._error(str(e))
 
         else:
             if len(fields) > 2:
                 self._error("expected \"property {type} {name}\"")
 
-            properties.append(
-                PlyProperty(fields[1], fields[0])
-            )
+            try:
+                properties.append(
+                    PlyProperty(fields[1], fields[0])
+                )
+            except ValueError as e:
+                self._error(str(e))
 
     def parse_end_header(self, data):
         if data:
