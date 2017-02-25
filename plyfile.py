@@ -110,12 +110,12 @@ def make2d(array, cols=None, dtype=None):
 
 class _PlyParser(object):
     def __init__(self):
-        self.ply = None
         self.format = None
         self.elements = []
         self.comments = []
         self.obj_info = []
         self.lines = 0
+        self._allowed = ['ply']
 
     def consume(self, raw_line):
         self.lines += 1
@@ -128,12 +128,11 @@ class _PlyParser(object):
         except IndexError:
             self._error()
 
-        data = line[len(keyword)+1:]
+        if keyword not in self._allowed:
+            self._error("expected one of {%s}" %
+                        ", ".join(self._allowed))
 
-        try:
-            return getattr(self, 'parse_' + keyword)(data)
-        except AttributeError:
-            self._error()
+        return getattr(self, 'parse_' + keyword)(line[len(keyword)+1:])
 
     def _error(self, message="parse error"):
         raise PlyHeaderParseError(message, self.lines)
@@ -141,16 +140,9 @@ class _PlyParser(object):
     def parse_ply(self, data):
         if data:
             self._error("unexpected characters after 'ply'")
-
-        if self.ply:
-            self._error("unexpected 'ply' line")
-
-        self.ply = True
+        self._allowed = ['format', 'comment', 'obj_info']
 
     def parse_format(self, data):
-        if not self.ply or self.format:
-            self._error("unexpected 'format' line")
-
         fields = data.strip().split()
         if len(fields) != 2:
             self._error("expected \"format {format} 1.0\"")
@@ -162,25 +154,18 @@ class _PlyParser(object):
         if fields[1] != '1.0':
             self._error("expected version '1.0'")
 
-    def parse_comment(self, data):
-        if not self.ply:
-            self._error("unexpected 'comment' line")
+        self._allowed = ['element', 'comment', 'obj_info', 'end_header']
 
+    def parse_comment(self, data):
         if not self.elements:
             self.comments.append(data)
         else:
             self.elements[-1][3].append(data)
 
     def parse_obj_info(self, data):
-        if not self.ply:
-            self._error("unexpected 'comment' line")
-
         self.obj_info.append(data)
 
     def parse_element(self, data):
-        if not self.format:
-            self._error("unexpected 'element' line")
-
         fields = data.strip().split()
         if len(fields) != 2:
             self._error("expected \"element {name} {count}\"")
@@ -192,11 +177,9 @@ class _PlyParser(object):
             self._error("expected integer count")
 
         self.elements.append((name, [], count, []))
+        self._allowed = ['element', 'comment', 'property', 'end_header']
 
     def parse_property(self, data):
-        if not self.elements:
-            self._error("unexpected 'property' line")
-
         properties = self.elements[-1][1]
         fields = data.strip().split()
         if len(fields) < 2:
@@ -220,12 +203,10 @@ class _PlyParser(object):
             )
 
     def parse_end_header(self, data):
-        if not self.format:
-            self._error("unexpected 'end_header' line")
-
         if data:
             self._error("unexpected data after 'end_header'")
 
+        self._allowed = []
         return True
 
 
