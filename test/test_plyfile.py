@@ -765,3 +765,26 @@ def test_header_parse_error(s, line):
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(BytesIO(s))
     assert e.exc_val.line == line
+
+
+invalid_arrays = [
+    numpy.zeros((2,2)),
+    numpy.array([(0, (0, 0))],
+                dtype=[('x', 'f4'), ('y', [('y0', 'f4'), ('y1', 'f4')])]),
+    numpy.array([(0, (0, 0))],
+                dtype=[('x', 'f4'), ('y', 'O', (2,))])
+]
+
+
+@pytest.mark.parametrize(
+    'a', invalid_arrays,
+    ids=list(map(str, _range(len(invalid_arrays))))
+)
+def test_invalid_array(a):
+    with Raises(ValueError):
+        PlyElement.describe(a, 'test')
+
+
+def test_invalid_array_type():
+    with Raises(TypeError):
+        PlyElement.describe([0, 1, 2])
