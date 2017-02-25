@@ -153,7 +153,7 @@ class _PlyParser(object):
 
         fields = data.strip().split()
         if len(fields) != 2:
-            self._error("bad 'format' line")
+            self._error("expected \"format {format} 1.0\"")
 
         self.format = fields[0]
         if self.format not in _byte_order_map:
@@ -183,7 +183,7 @@ class _PlyParser(object):
 
         fields = data.strip().split()
         if len(fields) != 2:
-            self._error("bad 'element' line")
+            self._error("expected \"element {name} {count}\"")
 
         name = fields[0]
         try:
@@ -203,10 +203,9 @@ class _PlyParser(object):
             self._error("bad 'property' line")
 
         if fields[0] == 'list':
-            if len(fields) > 4:
-                self._error("too many fields after 'property list'")
-            if len(fields) < 4:
-                self._error("too few fields after 'property list'")
+            if len(fields) != 4:
+                self._error("expected \"property list "
+                            "{len_type} {val_type} {name}\"")
 
             properties.append(
                 PlyListProperty(fields[3], fields[1], fields[2])
@@ -214,9 +213,7 @@ class _PlyParser(object):
 
         else:
             if len(fields) > 2:
-                self._error("too many fields after 'property'")
-            if len(fields) < 2:
-                self._error("too few fields after 'property'")
+                self._error("expected \"property {type} {name}\"")
 
             properties.append(
                 PlyProperty(fields[1], fields[0])
