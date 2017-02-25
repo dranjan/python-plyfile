@@ -108,7 +108,7 @@ def make2d(array, cols=None, dtype=None):
                         count=len(array))['_']
 
 
-class _PlyParser(object):
+class _PlyHeaderParser(object):
     def __init__(self):
         self.format = None
         self.elements = []
@@ -374,7 +374,7 @@ class PlyData(object):
         Parse a PLY header from a readable file-like stream.
 
         '''
-        parser = _PlyParser()
+        parser = _PlyHeaderParser()
         while not parser.consume(stream.readline()):
             pass
 
