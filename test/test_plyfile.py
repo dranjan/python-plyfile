@@ -731,168 +731,34 @@ def test_invalid_property_names():
         PlyElement.describe(numpy.zeros(1, dtype=[('a b', 'i4')]),
                             'test')
 
+invalid_header_cases = [
+    (b'plyy\n', 1),
+    (b'ply\n\n', 2),
+    (b'ply\nformat\n', 2),
+    (b'ply\nelement vertex 0\n', 2),
+    (b'ply\nformat asciii 1.0\n', 2),
+    (b'ply\nformat ascii 2.0\n', 2),
+    (b'ply\nformat ascii 1.0\n', 3),
+    (b'ply\nformat ascii 1.0\nelement vertex\n', 3),
+    (b'ply\nformat ascii 1.0\nelement vertex x\n', 3),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property float\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property list float\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property floatt x\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property list ucharr int extra\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property float x\nend_header xxx\n', 5)
+]
 
-def test_parse_error_ply():
-    stream = BytesIO(
-        b'plyy\n'
-    )
 
+@pytest.mark.parametrize(
+    's,line', invalid_header_cases,
+    ids=list(map(str, _range(len(invalid_header_cases))))
+)
+def test_header_parse_error(s, line):
     with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 1
-
-
-def test_parse_error_missing_format():
-    stream = BytesIO(
-        b'ply\n'
-        b'\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 2
-
-
-def test_parse_error_bad_format():
-    stream = BytesIO(
-        b'ply\n'
-        b'format\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 2
-
-
-def test_parse_error_unknown_format():
-    stream = BytesIO(
-        b'ply\n'
-        b'format asciii 1.0\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 2
-
-
-def test_parse_error_unknown_version():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 2.0\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 2
-
-
-def test_parse_error_eof():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 3
-
-
-def test_parse_error_unknown_keyword():
-    stream = BytesIO(
-        b'ply\n'
-        b'element vertex 0\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 2
-
-
-def test_parse_error_bad_element():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 3
-
-
-def test_parse_error_bad_count():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex x\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 3
-
-
-def test_parse_error_bad_property():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex 0\n'
-        b'property float\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 4
-
-
-def test_parse_error_bad_property_list():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex 0\n'
-        b'property list float\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 4
-
-
-def test_parse_error_bad_property_type():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex 0\n'
-        b'property floatt x\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 4
-
-
-def test_parse_error_bad_property_list_type():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex 0\n'
-        b'property list ucharr int extra\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 4
-
-
-def test_parse_error_end_header():
-    stream = BytesIO(
-        b'ply\n'
-        b'format ascii 1.0\n'
-        b'element vertex 0\n'
-        b'property float x\n'
-        b'end_header xxx\n'
-    )
-
-    with Raises(PlyHeaderParseError) as e:
-        PlyData.read(stream)
-    assert e.exc_val.line == 5
+        PlyData.read(BytesIO(s))
+    assert e.exc_val.line == line
