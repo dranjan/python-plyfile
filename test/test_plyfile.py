@@ -787,7 +787,7 @@ def test_invalid_array(a):
 
 def test_invalid_array_type():
     with Raises(TypeError):
-        PlyElement.describe([0, 1, 2])
+        PlyElement.describe([0, 1, 2], 'test')
 
 
 def test_header_parse_error_repr():
