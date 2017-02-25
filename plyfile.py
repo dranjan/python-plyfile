@@ -164,7 +164,7 @@ class _PlyParser(object):
 
     def parse_comment(self, data):
         if not self.ply:
-            self._error("Unexpected 'comment' line")
+            self._error("unexpected 'comment' line")
 
         if not self.elements:
             self.comments.append(data)
@@ -173,7 +173,7 @@ class _PlyParser(object):
 
     def parse_obj_info(self, data):
         if not self.ply:
-            self._error("Unexpected 'comment' line")
+            self._error("unexpected 'comment' line")
 
         self.obj_info.append(data)
 
