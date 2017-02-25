@@ -199,7 +199,7 @@ class _PlyHeaderParser(object):
                 self._error(str(e))
 
         else:
-            if len(fields) > 2:
+            if len(fields) != 2:
                 self._error("expected \"property {type} {name}\"")
 
             try:
