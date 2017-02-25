@@ -739,6 +739,7 @@ def test_parse_error_ply():
 
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
+    assert e.exc_val.line == 1
 
 
 def test_parse_error_missing_format():
@@ -749,6 +750,7 @@ def test_parse_error_missing_format():
 
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
+    assert e.exc_val.line == 2
 
 
 def test_parse_error_bad_format():
@@ -759,6 +761,7 @@ def test_parse_error_bad_format():
 
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
+    assert e.exc_val.line == 2
 
 
 def test_parse_error_unknown_format():
@@ -769,6 +772,7 @@ def test_parse_error_unknown_format():
 
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
+    assert e.exc_val.line == 2
 
 
 def test_parse_error_unknown_version():
@@ -779,3 +783,4 @@ def test_parse_error_unknown_version():
 
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
+    assert e.exc_val.line == 2
