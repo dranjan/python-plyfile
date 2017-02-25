@@ -784,3 +784,14 @@ def test_parse_error_unknown_version():
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
     assert e.exc_val.line == 2
+
+
+def test_parse_error_eof():
+    stream = BytesIO(
+        b'ply\n'
+        b'format ascii 1.0\n'
+    )
+
+    with Raises(PlyHeaderParseError) as e:
+        PlyData.read(stream)
+    assert e.exc_val.line == 3
