@@ -8,7 +8,8 @@ import pytest
 
 import numpy
 
-from plyfile import (PlyData, PlyElement, make2d, PlyParseError,
+from plyfile import (PlyData, PlyElement, make2d,
+                     PlyHeaderParseError, PlyElementParseError,
                      PlyProperty)
 
 
@@ -676,7 +677,7 @@ invalid_cases = [
 @pytest.mark.parametrize('s,error_string', invalid_cases,
                          ids=list(map(str, _range(len(invalid_cases)))))
 def test_invalid(tmpdir, s, error_string):
-    with Raises(PlyParseError) as e:
+    with Raises(PlyElementParseError) as e:
         read_str(s, tmpdir)
     assert str(e) == "element 'test': " + error_string
 
@@ -736,7 +737,7 @@ def test_parse_error_ply():
         b'plyy\n'
     )
 
-    with Raises(PlyParseError) as e:
+    with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
 
 
@@ -746,7 +747,7 @@ def test_parse_error_missing_format():
         b'\n'
     )
 
-    with Raises(PlyParseError) as e:
+    with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
 
 
@@ -756,7 +757,7 @@ def test_parse_error_bad_format():
         b'format\n'
     )
 
-    with Raises(PlyParseError) as e:
+    with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
 
 
@@ -766,7 +767,7 @@ def test_parse_error_unknown_format():
         b'format asciii 1.0\n'
     )
 
-    with Raises(PlyParseError) as e:
+    with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)
 
 
@@ -776,5 +777,5 @@ def test_parse_error_unknown_version():
         b'format ascii 2.0\n'
     )
 
-    with Raises(PlyParseError) as e:
+    with Raises(PlyHeaderParseError) as e:
         PlyData.read(stream)

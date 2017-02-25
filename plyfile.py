@@ -115,34 +115,56 @@ class _PlyParser(object):
         self.elements = []
         self.comments = []
         self.obj_info = []
+        self.lines = 0
+
+    def consume(self, raw_line):
+        self.lines += 1
+        if not raw_line:
+            self._error("early end-of-file")
+
+        line = raw_line.decode('ascii').strip()
+        try:
+            keyword = line.split(None, 1)[0]
+        except IndexError:
+            self._error()
+
+        data = line[len(keyword)+1:]
+
+        try:
+            return getattr(self, 'parse_' + keyword)(data)
+        except AttributeError:
+            self._error()
+
+    def _error(self, message="parse error"):
+        raise PlyHeaderParseError(message, self.lines)
 
     def parse_ply(self, data):
         if data:
-            raise PlyParseError("unexpected characters after 'ply'")
+            self._error("unexpected characters after 'ply'")
 
         if self.ply:
-            raise PlyParseError("unexpected 'ply' line")
+            self._error("unexpected 'ply' line")
 
         self.ply = True
 
     def parse_format(self, data):
-        if not self.ply:
-            raise PlyParseError("unexpected 'format' line")
+        if not self.ply or self.format:
+            self._error("unexpected 'format' line")
 
         fields = data.strip().split()
         if len(fields) != 2:
-            raise PlyParseError("bad 'format' line")
+            self._error("bad 'format' line")
 
         self.format = fields[0]
         if self.format not in _byte_order_map:
-            raise PlyParseError("don't understand format %r" % format)
+            self._error("don't understand format %r" % format)
 
         if fields[1] != '1.0':
-            raise PlyParseError("expected version '1.0'")
+            self._error("expected version '1.0'")
 
     def parse_comment(self, data):
         if not self.ply:
-            raise PlyParseError("Unexpected 'comment' line")
+            self._error("Unexpected 'comment' line")
 
         if not self.elements:
             self.comments.append(data)
@@ -151,42 +173,40 @@ class _PlyParser(object):
 
     def parse_obj_info(self, data):
         if not self.ply:
-            raise PlyParseError("Unexpected 'comment' line")
+            self._error("Unexpected 'comment' line")
 
         self.obj_info.append(data)
 
     def parse_element(self, data):
         if not self.format:
-            raise PlyParseError("unexpected 'element' line")
+            self._error("unexpected 'element' line")
 
         fields = data.strip().split()
         if len(fields) != 2:
-            raise PlyParseError("bad 'element' line")
+            self._error("bad 'element' line")
 
         name = fields[0]
         try:
             count = int(fields[1])
         except ValueError:
-            raise PlyParseError("expected integer count")
+            self._error("expected integer count")
 
         self.elements.append((name, [], count, []))
 
     def parse_property(self, data):
         if not self.elements:
-            raise PlyParseError("unexpected 'property' line")
+            self._error("unexpected 'property' line")
 
         properties = self.elements[-1][1]
         fields = data.strip().split()
         if len(fields) < 2:
-            raise PlyParseError("bad 'property' line")
+            self._error("bad 'property' line")
 
         if fields[0] == 'list':
             if len(fields) > 4:
-                raise PlyParseError("too many fields after "
-                                    "'property list'")
+                self._error("too many fields after 'property list'")
             if len(fields) < 4:
-                raise PlyParseError("too few fields after "
-                                    "'property list'")
+                self._error("too few fields after 'property list'")
 
             properties.append(
                 PlyListProperty(fields[3], fields[1], fields[2])
@@ -194,11 +214,9 @@ class _PlyParser(object):
 
         else:
             if len(fields) > 2:
-                raise PlyParseError("too many fields after "
-                                    "'property'")
+                self._error("too many fields after 'property'")
             if len(fields) < 2:
-                raise PlyParseError("too few fields after "
-                                    "'property'")
+                self._error("too few fields after 'property'")
 
             properties.append(
                 PlyProperty(fields[1], fields[0])
@@ -206,18 +224,28 @@ class _PlyParser(object):
 
     def parse_end_header(self, data):
         if not self.format:
-            raise PlyParseError("unexpected 'end_header' line")
+            self._error("unexpected 'end_header' line")
 
         if data:
-            raise PlyParseError("unexpected data after "
-                                "'end_header'")
+            self._error("unexpected data after 'end_header'")
+
         return True
 
 
 class PlyParseError(Exception):
 
     '''
-    Raised when a PLY file cannot be parsed.
+    Base class for PLY parsing errors.
+
+    '''
+
+    pass
+
+
+class PlyElementParseError(PlyParseError):
+
+    '''
+    Raised when a PLY element cannot be parsed.
 
     The attributes `element', `row', `property', and `message' give
     additional information.
@@ -242,8 +270,34 @@ class PlyParseError(Exception):
         Exception.__init__(self, s)
 
     def __repr__(self):
-        return ('PlyParseError(%r, element=%r, row=%r, prop=%r)' %
-                self.message, self.element, self.row, self.prop)
+        return ('%s(%r, element=%r, row=%r, prop=%r)' %
+                (self.__class__.__name__,
+                 self.message, self.element, self.row, self.prop))
+
+
+class PlyHeaderParseError(PlyParseError):
+
+    '''
+    Raised when a PLY header cannot be parsed.
+
+    The attribute `line' provides additional information.
+
+    '''
+
+    def __init__(self, message, line=None):
+        self.message = message
+        self.line = line
+
+        s = ''
+        if self.line:
+            s += 'line %r: ' % self.line
+        s += self.message
+
+        Exception.__init__(self, s)
+
+    def __repr__(self):
+        return ('%s(%r, line=%r)' %
+                (self.__class__.__name__, self.line))
 
 
 class PlyData(object):
@@ -337,24 +391,8 @@ class PlyData(object):
 
         '''
         parser = _PlyParser()
-        while True:
-            raw_line = stream.readline()
-            if not raw_line:
-                raise PlyParseError("early end-of-file")
-            line = raw_line.decode('ascii').strip()
-
-            try:
-                keyword = line.split(None, 1)[0]
-            except IndexError:
-                raise PlyParseError("parse error")
-
-            data = line[len(keyword)+1:]
-
-            try:
-                if getattr(parser, 'parse_' + keyword)(data):
-                    break
-            except AttributeError:
-                raise PlyParseError("parse error")
+        while not parser.consume(stream.readline()):
+            pass
 
         return PlyData(
             [PlyElement(*e) for e in parser.elements],
@@ -628,8 +666,8 @@ class PlyElement(object):
             stream.seek(0, 2)
             max_bytes = stream.tell() - offset
             if max_bytes < num_bytes:
-                raise PlyParseError("early end-of-file", self,
-                                    max_bytes // dtype.itemsize)
+                raise PlyElementParseError("early end-of-file", self,
+                                           max_bytes // dtype.itemsize)
             self._data = _np.memmap(stream, dtype,
                                     'c', offset, self.count)
             # Fix stream position
@@ -641,7 +679,7 @@ class PlyElement(object):
         if len(self._data) < self.count:
             k = len(self._data)
             del self._data
-            raise PlyParseError("early end-of-file", self, k)
+            raise PlyElementParseError("early end-of-file", self, k)
 
         self._check_sanity()
 
@@ -678,22 +716,23 @@ class PlyElement(object):
                 try:
                     self._data[prop.name][k] = prop._from_fields(fields)
                 except StopIteration:
-                    raise PlyParseError("early end-of-line",
-                                        self, k, prop)
+                    raise PlyElementParseError("early end-of-line",
+                                               self, k, prop)
                 except ValueError:
-                    raise PlyParseError("malformed input",
-                                        self, k, prop)
+                    raise PlyElementParseError("malformed input",
+                                               self, k, prop)
             try:
                 next(fields)
             except StopIteration:
                 pass
             else:
-                raise PlyParseError("expected end-of-line", self, k)
+                raise PlyElementParseError("expected end-of-line",
+                                           self, k)
             k += 1
 
         if k < self.count:
             del self._data
-            raise PlyParseError("early end-of-file", self, k)
+            raise PlyElementParseError("early end-of-file", self, k)
 
     def _write_txt(self, stream):
         '''
@@ -722,8 +761,8 @@ class PlyElement(object):
                     self._data[prop.name][k] = \
                         prop._read_bin(stream, byte_order)
                 except StopIteration:
-                    raise PlyParseError("early end-of-file",
-                                        self, k, prop)
+                    raise PlyElementParseError("early end-of-file",
+                                               self, k, prop)
 
     def _write_bin(self, stream, byte_order):
         '''
