@@ -733,6 +733,7 @@ def test_invalid_property_names():
 
 invalid_header_cases = [
     (b'plyy\n', 1),
+    (b'ply xxx\n', 1),
     (b'ply\n\n', 2),
     (b'ply\nformat\n', 2),
     (b'ply\nelement vertex 0\n', 2),
@@ -747,6 +748,8 @@ invalid_header_cases = [
      b'property list float\n', 4),
     (b'ply\nformat ascii 1.0\nelement vertex 0\n'
      b'property floatt x\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property float x y\n', 4),
     (b'ply\nformat ascii 1.0\nelement vertex 0\n'
      b'property list ucharr int extra\n', 4),
     (b'ply\nformat ascii 1.0\nelement vertex 0\n'
