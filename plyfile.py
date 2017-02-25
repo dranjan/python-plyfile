@@ -132,7 +132,8 @@ class _PlyHeaderParser(object):
             self._error("expected one of {%s}" %
                         ", ".join(self._allowed))
 
-        return getattr(self, 'parse_' + keyword)(line[len(keyword)+1:])
+        getattr(self, 'parse_' + keyword)(line[len(keyword)+1:])
+        return self._allowed
 
     def _error(self, message="parse error"):
         raise PlyHeaderParseError(message, self.lines)
@@ -211,9 +212,7 @@ class _PlyHeaderParser(object):
     def parse_end_header(self, data):
         if data:
             self._error("unexpected data after 'end_header'")
-
         self._allowed = []
-        return True
 
 
 class PlyParseError(Exception):
@@ -375,7 +374,7 @@ class PlyData(object):
 
         '''
         parser = _PlyHeaderParser()
-        while not parser.consume(stream.readline()):
+        while parser.consume(stream.readline()):
             pass
 
         return PlyData(
