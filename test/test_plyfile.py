@@ -788,3 +788,15 @@ def test_invalid_array(a):
 def test_invalid_array_type():
     with Raises(TypeError):
         PlyElement.describe([0, 1, 2])
+
+
+def test_header_parse_error_repr():
+    e = PlyHeaderParseError('text', 11)
+    assert repr(e) == 'PlyHeaderParseError(\'text\', line=11)'
+
+
+def test_element_parse_error_repr():
+    prop = PlyProperty('x', 'f4')
+    elt = PlyElement('test', [prop], 0)
+    e = PlyElementParseError('text', elt, 0, prop)
+    assert repr(e)
