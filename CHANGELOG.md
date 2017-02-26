@@ -23,7 +23,6 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 - Fixed reading and writing through unicode filenames.
-- Fixed reading of non-file file-like objects.
 - Fixed documentation bugs.  Thanks to @jeremyherbert.
 
 ## [0.4] - 2015-04-05
