@@ -86,7 +86,8 @@ the following text:
 
 or
 
-    >>> plydata = PlyData.read(open('tet.ply'))
+    >>> with open('tet.ply', 'rb') as f:
+    ...     plydata = PlyData.read(f)
 
 The static method `PlyData.read` returns a `PlyData` instance, which is
 `plyfile`'s representation of the data in a PLY file.  A `PlyData`
