@@ -652,6 +652,12 @@ invalid_cases = [
     (ply_abc('ascii', 2, b'1 2 3'),
      "row 1: early end-of-file"),
 
+    (ply_abc('binary_little_endian', 1, b'\x01\x02'),
+     "row 0: early end-of-file"),
+
+    (ply_list_a('binary_little_endian', 1, b''),
+     "row 0: property 'a': early end-of-file"),
+
     (ply_list_a('binary_little_endian', 1,
                 b'\x03\x01\x00\x00\x00\x02\x00\x00\x00'),
      "row 0: property 'a': early end-of-file"),
