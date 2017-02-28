@@ -6,7 +6,7 @@ mydir = os.path.dirname(__file__)
 if mydir:
     os.chdir(mydir)
 
-version = '0.4'
+version = '0.5'
 base_url = 'https://github.com/dranjan/python-plyfile'
 
 setup(name='plyfile',
