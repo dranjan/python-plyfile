@@ -17,6 +17,7 @@ All notable changes to this project will be documented here.
 - Made "private" variables explicitly so.
 - Used memory mapping for "simple" PLY elements.  Thanks to @Zac-HD for
   the original pull request.
+- (Under the hood) Rewrote header parser.
 
 ### Removed
 - Official support for Python 2.6.
