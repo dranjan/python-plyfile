@@ -339,16 +339,6 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
     verify(ply0, ply2)
 
 
-def test_file_like(tet_ply_txt):
-    output_stream = BytesIO()
-    ply0 = tet_ply_txt
-    ply0.write(output_stream)
-    input_stream = BytesIO(output_stream.getvalue())
-    ply1 = PlyData.read(input_stream)
-
-    verify(ply0, ply1)
-
-
 # In Python 3, `unicode' is not a separate type from `str' (and the
 # `unicode' builtin does not exist).  Thus, this test is unnecessary
 # (and indeed would not pass).
