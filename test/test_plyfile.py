@@ -8,7 +8,8 @@ import pytest
 
 import numpy
 
-from plyfile import (PlyData, PlyElement, make2d, PlyParseError,
+from plyfile import (PlyData, PlyElement, make2d,
+                     PlyHeaderParseError, PlyElementParseError,
                      PlyProperty)
 
 
@@ -338,16 +339,6 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
     verify(ply0, ply2)
 
 
-def test_file_like(tet_ply_txt):
-    output_stream = BytesIO()
-    ply0 = tet_ply_txt
-    ply0.write(output_stream)
-    input_stream = BytesIO(output_stream.getvalue())
-    ply1 = PlyData.read(input_stream)
-
-    verify(ply0, ply1)
-
-
 # In Python 3, `unicode' is not a separate type from `str' (and the
 # `unicode' builtin does not exist).  Thus, this test is unnecessary
 # (and indeed would not pass).
@@ -661,6 +652,12 @@ invalid_cases = [
     (ply_abc('ascii', 2, b'1 2 3'),
      "row 1: early end-of-file"),
 
+    (ply_abc('binary_little_endian', 1, b'\x01\x02'),
+     "row 0: early end-of-file"),
+
+    (ply_list_a('binary_little_endian', 1, b''),
+     "row 0: property 'a': early end-of-file"),
+
     (ply_list_a('binary_little_endian', 1,
                 b'\x03\x01\x00\x00\x00\x02\x00\x00\x00'),
      "row 0: property 'a': early end-of-file"),
@@ -676,7 +673,7 @@ invalid_cases = [
 @pytest.mark.parametrize('s,error_string', invalid_cases,
                          ids=list(map(str, _range(len(invalid_cases)))))
 def test_invalid(tmpdir, s, error_string):
-    with Raises(PlyParseError) as e:
+    with Raises(PlyElementParseError) as e:
         read_str(s, tmpdir)
     assert str(e) == "element 'test': " + error_string
 
@@ -729,3 +726,73 @@ def test_invalid_property_names():
     with Raises(ValueError):
         PlyElement.describe(numpy.zeros(1, dtype=[('a b', 'i4')]),
                             'test')
+
+invalid_header_cases = [
+    (b'plyy\n', 1),
+    (b'ply xxx\n', 1),
+    (b'ply\n\n', 2),
+    (b'ply\nformat\n', 2),
+    (b'ply\nelement vertex 0\n', 2),
+    (b'ply\nformat asciii 1.0\n', 2),
+    (b'ply\nformat ascii 2.0\n', 2),
+    (b'ply\nformat ascii 1.0\n', 3),
+    (b'ply\nformat ascii 1.0\nelement vertex\n', 3),
+    (b'ply\nformat ascii 1.0\nelement vertex x\n', 3),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property float\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property list float\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property floatt x\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property float x y\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property list ucharr int extra\n', 4),
+    (b'ply\nformat ascii 1.0\nelement vertex 0\n'
+     b'property float x\nend_header xxx\n', 5)
+]
+
+
+@pytest.mark.parametrize(
+    's,line', invalid_header_cases,
+    ids=list(map(str, _range(len(invalid_header_cases))))
+)
+def test_header_parse_error(s, line):
+    with Raises(PlyHeaderParseError) as e:
+        PlyData.read(BytesIO(s))
+    assert e.exc_val.line == line
+
+
+invalid_arrays = [
+    numpy.zeros((2,2)),
+    numpy.array([(0, (0, 0))],
+                dtype=[('x', 'f4'), ('y', [('y0', 'f4'), ('y1', 'f4')])]),
+    numpy.array([(0, (0, 0))],
+                dtype=[('x', 'f4'), ('y', 'O', (2,))])
+]
+
+
+@pytest.mark.parametrize(
+    'a', invalid_arrays,
+    ids=list(map(str, _range(len(invalid_arrays))))
+)
+def test_invalid_array(a):
+    with Raises(ValueError):
+        PlyElement.describe(a, 'test')
+
+
+def test_invalid_array_type():
+    with Raises(TypeError):
+        PlyElement.describe([0, 1, 2], 'test')
+
+
+def test_header_parse_error_repr():
+    e = PlyHeaderParseError('text', 11)
+    assert repr(e) == 'PlyHeaderParseError(\'text\', line=11)'
+
+
+def test_element_parse_error_repr():
+    prop = PlyProperty('x', 'f4')
+    elt = PlyElement('test', [prop], 0)
+    e = PlyElementParseError('text', elt, 0, prop)
+    assert repr(e)
