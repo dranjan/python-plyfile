@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dranjan/python-plyfile.svg?branch=master)](https://travis-ci.org/dranjan/python-plyfile)
+
 Welcome to the `plyfile` Python module, which provides a simple facility
 for reading and writing ASCII and binary PLY files.
 
