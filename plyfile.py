@@ -411,7 +411,7 @@ class PlyData(object):
         (must_close, stream) = _open_stream(stream, 'write')
         try:
             stream.write(self.header.encode('ascii'))
-            stream.write(b'\r\n')
+            stream.write(b'\n')
             for elt in self:
                 elt._write(stream, self.text, self.byte_order)
         finally:
@@ -443,7 +443,7 @@ class PlyData(object):
 
         lines.extend(elt.header for elt in self.elements)
         lines.append('end_header')
-        return '\r\n'.join(lines)
+        return '\n'.join(lines)
 
     def __iter__(self):
         return iter(self.elements)
@@ -724,7 +724,7 @@ class PlyElement(object):
             for prop in self.properties:
                 fields.extend(prop._to_fields(rec[prop.name]))
 
-            _np.savetxt(stream, [fields], '%.18g', newline='\r\n')
+            _np.savetxt(stream, [fields], '%.18g', newline='\n')
 
     def _read_bin(self, stream, byte_order):
         '''
@@ -769,7 +769,7 @@ class PlyElement(object):
 
         lines.extend(list(map(str, self.properties)))
 
-        return '\r\n'.join(lines)
+        return '\n'.join(lines)
 
     def __getitem__(self, key):
         return self.data[key]

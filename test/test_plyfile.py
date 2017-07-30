@@ -183,28 +183,28 @@ def tet_ply_txt():
 
 
 tet_ply_ascii = '''\
-ply\r\n\
-format ascii 1.0\r\n\
-comment single tetrahedron with colored faces\r\n\
-element vertex 4\r\n\
-comment tetrahedron vertices\r\n\
-property float x\r\n\
-property float y\r\n\
-property float z\r\n\
-element face 4\r\n\
-property list uchar int vertex_indices\r\n\
-property uchar red\r\n\
-property uchar green\r\n\
-property uchar blue\r\n\
-end_header\r\n\
-0 0 0\r\n\
-0 1 1\r\n\
-1 0 1\r\n\
-1 1 0\r\n\
-3 0 1 2 255 255 255\r\n\
-3 0 2 3 255 0 0\r\n\
-3 0 1 3 0 255 0\r\n\
-3 1 2 3 0 0 255\r\n\
+ply\n\
+format ascii 1.0\n\
+comment single tetrahedron with colored faces\n\
+element vertex 4\n\
+comment tetrahedron vertices\n\
+property float x\n\
+property float y\n\
+property float z\n\
+element face 4\n\
+property list uchar int vertex_indices\n\
+property uchar red\n\
+property uchar green\n\
+property uchar blue\n\
+end_header\n\
+0 0 0\n\
+0 1 1\n\
+1 0 1\n\
+1 1 0\n\
+3 0 1 2 255 255 255\n\
+3 0 2 3 255 0 0\n\
+3 0 1 3 0 255 0\n\
+3 1 2 3 0 0 255\n\
 '''.encode('ascii')
 
 np_types = ['i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'f4', 'f8']
@@ -423,8 +423,8 @@ def test_obj_info(tmpdir):
     ply0.write(str(test_file))
 
     ply0_str = test_file.read('rb').decode('ascii')
-    assert ply0_str.startswith('ply\r\nformat ascii 1.0\r\n'
-                               'obj_info test obj_info\r\n')
+    assert ply0_str.startswith('ply\nformat ascii 1.0\n'
+                               'obj_info test obj_info\n')
 
     ply1 = PlyData.read(str(test_file))
     assert len(ply1.obj_info) == 1
@@ -437,8 +437,8 @@ def test_comment_spaces(tmpdir):
     ply0.write(str(test_file))
 
     ply0_str = test_file.read('rb').decode('ascii')
-    assert ply0_str.startswith('ply\r\nformat ascii 1.0\r\n'
-                               'comment   test comment\r\n')
+    assert ply0_str.startswith('ply\nformat ascii 1.0\n'
+                               'comment   test comment\n')
 
     ply1 = PlyData.read(str(test_file))
     assert len(ply1.comments) == 1
@@ -461,13 +461,13 @@ def test_assign_comments_newline(tet_ply_txt):
     ply0 = tet_ply_txt
 
     with Raises(ValueError):
-        ply0.comments = ['comment1\r\ncomment2']
+        ply0.comments = ['comment1\ncomment2']
 
     with Raises(ValueError):
-        ply0.obj_info = ['comment1\r\ncomment2']
+        ply0.obj_info = ['comment1\ncomment2']
 
     with Raises(ValueError):
-        ply0['face'].comments = ['comment1\r\ncomment2']
+        ply0['face'].comments = ['comment1\ncomment2']
 
 
 def test_assign_comments_non_ascii(tet_ply_txt):
