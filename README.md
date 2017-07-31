@@ -4,7 +4,7 @@ Welcome to the `plyfile` Python module, which provides a simple facility
 for reading and writing ASCII and binary PLY files.
 
 The PLY format is documented
-[elsewhere](http://www.cs.virginia.edu/~gfx/Courses/2001/Advanced.spring.01/plylib/Ply.txt).
+[elsewhere](https://web.archive.org/web/20161221115231/http://www.cs.virginia.edu/~gfx/Courses/2001/Advanced.spring.01/plylib/Ply.txt).
 
 # Installation
 
@@ -386,7 +386,7 @@ maintainable interface at least for the first usable version.)
 
 There doesn't seem to be a single complete and consistent description of
 the PLY format.  Even the "authoritative"
-[Ply.txt](http://www.cs.virginia.edu/~gfx/Courses/2001/Advanced.spring.01/plylib/Ply.txt)
+[Ply.txt](https://web.archive.org/web/20161221115231/http://www.cs.virginia.edu/~gfx/Courses/2001/Advanced.spring.01/plylib/Ply.txt)
 by Greg Turk has some issues.
 
 ### Comment placement
