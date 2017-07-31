@@ -426,6 +426,15 @@ and in others,
 `plyfile` only supports the former, which appears to be standard _de
 facto_.
 
+### Header line endings
+
+The specification explicitly states that lines in the header must
+end with carriage returns, but this rule doesn't seem to be followed by
+anyone, including the C-language PLY implementation by Greg Turk, the
+author of the format.  Here, we stick to common practice and output
+Unix-style line endings (with no carriage returns) but accept any line
+ending style in input files.
+
 # More examples
 
 Examples beyond the scope of this document and the tests are in the
