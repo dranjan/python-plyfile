@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Changed
+- Changed line endings back to Unix-style.
 
 ## [0.5] - 2017-02-27
 ### Added
