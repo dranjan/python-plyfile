@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [0.6] - 2018-07-28
 ### Changed
 - Changed line endings back to Unix-style.
 
@@ -74,7 +76,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.5...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.6...HEAD
+[0.6]: https://github.com/dranjan/python-plyfile/compare/v0.5...v0.6
 [0.5]: https://github.com/dranjan/python-plyfile/compare/v0.4...v0.5
 [0.4]: https://github.com/dranjan/python-plyfile/compare/v0.3...v0.4
 [0.3]: https://github.com/dranjan/python-plyfile/compare/v0.2...v0.3
