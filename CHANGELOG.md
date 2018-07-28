@@ -6,6 +6,12 @@ All notable changes to this project will be documented here.
 ### Changed
 - Changed line endings back to Unix-style.
 
+### Fixed
+- `make2d` on `numpy`>=1.14.
+
+### Deprecated
+- `make2d` function. Please use `numpy.vstack`.
+
 ## [0.5] - 2017-02-27
 ### Added
 - Project metadata suitable for PyPI.
