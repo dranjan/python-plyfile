@@ -262,14 +262,7 @@ row length in advance:
 
     >>> plydata = PlyData.read('tet.ply')
     >>> tri_data = plydata['face'].data['vertex_indices']
-    >>> triangles = numpy.fromiter(tri_data,
-    ...                            [('data', tri_data[0].dtype, (3,))],
-    ...                            count=len(tri_data))['data']
-
-As of version 0.3, you can use the `make2d` function:
-
-    >>> from plyfile import make2d
-    >>> triangles = make2d(tri_data)
+    >>> triangles = numpy.vstack(tri_data)
 
 ### Instance mutability
 

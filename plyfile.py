@@ -94,18 +94,13 @@ def make2d(array, cols=None, dtype=None):
     arguments can be omitted if the array is not empty.
 
     '''
-    if (cols is None or dtype is None) and not len(array):
-        raise RuntimeError("cols and dtype must be specified for empty "
-                           "array")
-
-    if cols is None:
-        cols = len(array[0])
-
-    if dtype is None:
-        dtype = array[0].dtype
-
-    return _np.fromiter(array, [('_', dtype, (cols,))],
-                        count=len(array))['_']
+    if not len(array):
+        if cols is None or dtype is None:
+            raise RuntimeError(
+                "cols and dtype must be specified for empty array"
+            )
+        return _np.empty((0, cols), dtype=dtype)
+    return _np.vstack(array)
 
 
 class _PlyHeaderParser(object):
