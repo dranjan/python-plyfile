@@ -220,11 +220,16 @@ Now you can instantiate `PlyData` and serialize:
 
     >>> PlyData([el]).write('some_binary.ply')
     >>> PlyData([el], text=True).write('some_ascii.ply')
+
+    # Force the byte order of the output to big-endian, independently of
+    # the machine's native byte order
     >>> PlyData([el],
     ...         byte_order='>').write('some_big_endian_binary.ply')
 
-In the last example, the byte order of the output was forced to
-big-endian, independently of the machine's native byte order.
+    # Use a file object.  Binary mode is used here, which will cause
+    # Unix-style line endings to be written on all system.
+    >>> with open('some_ascii.ply', mode='wb') as f:
+    ...     PlyData([el], text=True).write(f)
 
 ## Miscellaneous
 
