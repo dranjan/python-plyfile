@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Fixed
+- Documentation improved.
 
 ## [0.6] - 2018-07-28
 ### Changed
