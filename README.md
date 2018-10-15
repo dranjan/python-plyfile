@@ -227,7 +227,7 @@ Now you can instantiate `PlyData` and serialize:
     ...         byte_order='>').write('some_big_endian_binary.ply')
 
     # Use a file object.  Binary mode is used here, which will cause
-    # Unix-style line endings to be written on all system.
+    # Unix-style line endings to be written on all systems.
     >>> with open('some_ascii.ply', mode='wb') as f:
     ...     PlyData([el], text=True).write(f)
 
