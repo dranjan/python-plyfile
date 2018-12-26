@@ -1,8 +1,8 @@
 from __future__ import print_function
 
 import sys
-
 from io import BytesIO
+import gzip
 
 import pytest
 
@@ -796,3 +796,33 @@ def test_element_parse_error_repr():
     elt = PlyElement('test', [prop], 0)
     e = PlyElementParseError('text', elt, 0, prop)
     assert repr(e)
+
+
+@pytest.mark.parametrize('text,byte_order',
+                         [(True, '='), (False, '<'), (False, '>')])
+def test_gzip_file(tmpdir, tet_ply_txt, text, byte_order):
+    ply0 = tet_ply_txt
+    ply0.text = text
+    ply0.byte_order = byte_order
+    test_file = tmpdir.join('test.ply.gz')
+
+    with gzip.open(str(test_file), 'wb') as f:
+        tet_ply_txt.write(f)
+
+    with gzip.open(str(test_file), 'rb') as f:
+        ply1 = PlyData.read(f)
+
+    verify(ply0, ply1)
+
+
+@pytest.mark.parametrize('text,byte_order',
+                         [(True, '='), (False, '<'), (False, '>')])
+def test_bytesio(tet_ply_txt, text, byte_order):
+    ply0 = tet_ply_txt
+    ply0.text = text
+    ply0.byte_order = byte_order
+    fw = BytesIO()
+    ply0.write(fw)
+    fr = BytesIO(fw.getvalue())
+    ply1 = PlyData.read(fr)
+    verify(ply0, ply1)

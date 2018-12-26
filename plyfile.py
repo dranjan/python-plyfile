@@ -637,7 +637,7 @@ class PlyElement(object):
         dtype = self.dtype(byte_order)
         if text:
             self._read_txt(stream)
-        elif hasattr(stream, 'fileno') and not self._have_list:
+        elif _can_mmap(stream) and not self._have_list:
             # Loading the data is straightforward.  We will memory map
             # the file in copy-on-write mode.
             num_bytes = self.count * dtype.itemsize
@@ -672,8 +672,8 @@ class PlyElement(object):
             else:
                 # no list properties, so serialization is
                 # straightforward.
-                self.data.astype(self.dtype(byte_order),
-                                 copy=False).tofile(stream)
+                stream.write(self.data.astype(self.dtype(byte_order),
+                                              copy=False).data)
 
     def _read_txt(self, stream):
         '''
@@ -845,7 +845,7 @@ class PlyProperty(object):
 
         '''
         try:
-            return _np.fromfile(stream, self.dtype(byte_order), 1)[0]
+            return _read_array(stream, self.dtype(byte_order), 1)[0]
         except IndexError:
             raise StopIteration
 
@@ -854,7 +854,7 @@ class PlyProperty(object):
         Write data to a binary stream.
 
         '''
-        _np.dtype(self.dtype(byte_order)).type(data).tofile(stream)
+        _write_array(stream, _np.dtype(self.dtype(byte_order)).type(data))
 
     def __str__(self):
         val_str = _data_type_reverse[self.val_dtype]
@@ -930,11 +930,11 @@ class PlyListProperty(PlyProperty):
         (len_t, val_t) = self.list_dtype(byte_order)
 
         try:
-            n = _np.fromfile(stream, len_t, 1)[0]
+            n = _read_array(stream, _np.dtype(len_t), 1)[0]
         except IndexError:
             raise StopIteration
 
-        data = _np.fromfile(stream, val_t, n)
+        data = _read_array(stream, _np.dtype(val_t), n)
         if len(data) < n:
             raise StopIteration
 
@@ -949,8 +949,8 @@ class PlyListProperty(PlyProperty):
 
         data = _np.asarray(data, dtype=val_t).ravel()
 
-        _np.array(data.size, dtype=len_t).tofile(stream)
-        data.tofile(stream)
+        _write_array(stream, _np.array(data.size, dtype=len_t))
+        _write_array(stream, data)
 
     def __str__(self):
         len_str = _data_type_reverse[self.len_dtype]
@@ -970,3 +970,29 @@ def _check_name(name):
             raise ValueError("non-ASCII character in name %r" % name)
         if char.isspace():
             raise ValueError("space character(s) in name %r" % name)
+
+
+def _read_array(stream, dtype, n):
+    try:
+        size = int(_np.dtype(dtype).itemsize * n)
+        return _np.frombuffer(stream.read(size), dtype)
+    except Exception:
+        raise StopIteration
+
+
+def _write_array(stream, array):
+    stream.write(array.tostring())
+
+
+def _can_mmap(stream):
+    try:
+        pos = stream.tell()
+        try:
+            _np.memmap(stream, 'u1', 'c')
+            stream.seek(pos)
+            return True
+        except Exception as e:
+            stream.seek(pos)
+            return False
+    except Exception as e:
+        return False

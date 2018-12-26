@@ -3,6 +3,9 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- Read & write wupport for file-like objects.
+
 ### Fixed
 - Documentation improved.
 
