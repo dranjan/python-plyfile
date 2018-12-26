@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [0.7] - 2018-12-25
 ### Added
 - Read & write wupport for file-like objects.
 
@@ -81,7 +83,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.6...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7...HEAD
+[0.7]: https://github.com/dranjan/python-plyfile/compare/v0.6...v0.7
 [0.6]: https://github.com/dranjan/python-plyfile/compare/v0.5...v0.6
 [0.5]: https://github.com/dranjan/python-plyfile/compare/v0.4...v0.5
 [0.4]: https://github.com/dranjan/python-plyfile/compare/v0.3...v0.4
