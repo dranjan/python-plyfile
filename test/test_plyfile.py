@@ -201,6 +201,31 @@ end_header\n\
 3 1 2 3 0 0 255\n\
 '''.encode('ascii')
 
+tet_ply_ascii_mac = '''\
+ply\r\
+format ascii 1.0\r\
+comment single tetrahedron with colored faces\r\
+element vertex 4\r\
+comment tetrahedron vertices\r\
+property float x\r\
+property float y\r\
+property float z\r\
+element face 4\r\
+property list uchar int vertex_indices\r\
+property uchar red\r\
+property uchar green\r\
+property uchar blue\r\
+end_header\r\
+0 0 0\r\
+0 1 1\r\
+1 0 1\r\
+1 1 0\r\
+3 0 1 2 255 255 255\r\
+3 0 2 3 255 0 0\r\
+3 0 1 3 0 255 0\r\
+3 1 2 3 0 0 255\r\
+'''.encode('ascii')
+
 np_types = ['i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'f4', 'f8']
 
 
@@ -895,3 +920,10 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
     assert e.exc_val.element.name == 'face'
     assert e.exc_val.row == 0
     assert e.exc_val.prop.name == 'vertex_indices'
+
+
+def test_mac_newlines(tet_ply_txt):
+    ply0 = tet_ply_txt
+    f = BytesIO(tet_ply_ascii_mac)
+    ply1 = PlyData.read(f)
+    verify(ply0, ply1)

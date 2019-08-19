@@ -16,6 +16,7 @@
 #   along with python-plyfile.  If not, see
 #       <http://www.gnu.org/licenses/>.
 
+import io as _io
 from itertools import islice as _islice
 
 import numpy as _np
@@ -82,14 +83,49 @@ def _lookup_type(type_str):
     return _data_type_reverse[type_str]
 
 
+class _PlyHeaderLines(object):
+    def __init__(self, stream):
+        s = stream.read(4)
+        self.chars = []
+        if s[:3].decode('ascii') != 'ply':
+            raise PlyHeaderParseError("expected 'ply'", 1)
+        self.nl = s[3:]
+        if s[3:] == b'\r':
+            c = stream.read(1)
+            if c == b'\n':
+                self.nl += c
+            else:
+                self.chars.append(c)
+        elif s[3:] != b'\n':
+            raise PlyHeaderParseError("unexpected characters after 'ply'", 1)
+        self.stream = stream
+        self.len_nl = len(self.nl)
+        self.done = False
+        self.lines = 1
+
+    def __iter__(self):
+        while not self.done:
+            self.lines += 1
+            while b''.join(self.chars[-self.len_nl:]) != self.nl:
+                char = self.stream.read(1)
+                if not char:
+                    raise PlyHeaderParseError("early end-of-file", self.lines)
+                self.chars.append(char)
+            line = b''.join(self.chars[:-self.len_nl])
+            self.chars = []
+            if line == b'end_header':
+                self.done = True
+            yield line
+
+
 class _PlyHeaderParser(object):
     def __init__(self):
         self.format = None
         self.elements = []
         self.comments = []
         self.obj_info = []
-        self.lines = 0
-        self._allowed = ['ply']
+        self.lines = 1
+        self._allowed = ['format', 'comment', 'obj_info']
 
     def consume(self, raw_line):
         self.lines += 1
@@ -111,11 +147,6 @@ class _PlyHeaderParser(object):
 
     def _error(self, message="parse error"):
         raise PlyHeaderParseError(message, self.lines)
-
-    def parse_ply(self, data):
-        if data:
-            self._error("unexpected characters after 'ply'")
-        self._allowed = ['format', 'comment', 'obj_info']
 
     def parse_format(self, data):
         fields = data.strip().split()
@@ -349,8 +380,8 @@ class PlyData(object):
 
         '''
         parser = _PlyHeaderParser()
-        while parser.consume(stream.readline()):
-            pass
+        for line in iter(_PlyHeaderLines(stream)):
+            parser.consume(line)
 
         return PlyData(
             [PlyElement(*e) for e in parser.elements],
@@ -380,6 +411,8 @@ class PlyData(object):
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
+            if data.text:
+                stream = _io.TextIOWrapper(stream)
             for elt in data:
                 elt._read(stream, data.text, data.byte_order, mmap,
                           known_list_len=known_list_len.get(elt.name, {}))
@@ -714,7 +747,7 @@ class PlyElement(object):
         self._data = _np.empty(self.count, dtype=self.dtype())
 
         k = 0
-        for line in _islice(iter(stream.readline, b''), self.count):
+        for line in _islice(iter(stream.readline, ''), self.count):
             fields = iter(line.strip().split())
             for prop in self.properties:
                 try:
