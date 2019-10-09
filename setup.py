@@ -30,5 +30,6 @@ setup(name='plyfile',
           'Development Status :: 4 - Beta',
           'Topic :: Scientific/Engineering'
       ],
+      data_files=[('', ['COPYING'])],
       py_modules=['plyfile'],
       keywords=['ply', 'numpy'])

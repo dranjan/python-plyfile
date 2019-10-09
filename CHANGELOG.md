@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Fixed
+- License file included in distribution.
 
 ## [0.7] - 2018-12-25
 ### Added
