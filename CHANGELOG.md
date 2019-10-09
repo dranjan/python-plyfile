@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [0.7.1] - 2019-10-08
 ### Fixed
 - License file included in distribution.
 
@@ -85,7 +87,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/dranjan/python-plyfile/compare/v0.7...v0.7.1
 [0.7]: https://github.com/dranjan/python-plyfile/compare/v0.6...v0.7
 [0.6]: https://github.com/dranjan/python-plyfile/compare/v0.5...v0.6
 [0.5]: https://github.com/dranjan/python-plyfile/compare/v0.4...v0.5
