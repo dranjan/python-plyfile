@@ -20,6 +20,7 @@ def main():
 
     args = parser.parse_args()
 
+    mlab.figure(bgcolor=(0, 0, 0))
     plot(PlyData.read(args.ply_filename))
     mlab.show()
 
@@ -42,11 +43,7 @@ def plot(ply):
 
     if 'face' in ply:
         tri_idx = ply['face']['vertex_indices']
-        idx_dtype = tri_idx[0].dtype
-
-        triangles = numpy.fromiter(tri_idx, [('data', idx_dtype, (3,))],
-                                   count=len(tri_idx))['data']
-
+        triangles = numpy.vstack(tri_idx)
         mlab.triangular_mesh(x, y, z, triangles,
                              color=(1, 0, 0.4), opacity=0.5)
 
