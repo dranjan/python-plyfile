@@ -10,7 +10,7 @@ All notable changes to this project will be documented here.
 
 ## [0.7] - 2018-12-25
 ### Added
-- Read & write wupport for file-like objects.
+- Read & write support for file-like objects.
 
 ### Fixed
 - Documentation improved.
