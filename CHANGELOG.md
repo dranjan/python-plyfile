@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- Long description added to package distribution.
 
 ## [0.7.1] - 2019-10-08
 ### Fixed
