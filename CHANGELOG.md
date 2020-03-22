@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [0.7.2] - 2020-03-21
 ### Added
 - Long description added to package distribution.
 
@@ -89,7 +91,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/dranjan/python-plyfile/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/dranjan/python-plyfile/compare/v0.7...v0.7.1
 [0.7]: https://github.com/dranjan/python-plyfile/compare/v0.6...v0.7
 [0.6]: https://github.com/dranjan/python-plyfile/compare/v0.5...v0.6
