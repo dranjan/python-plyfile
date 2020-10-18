@@ -826,3 +826,15 @@ def test_bytesio(tet_ply_txt, text, byte_order):
     fr = BytesIO(fw.getvalue())
     ply1 = PlyData.read(fr)
     verify(ply0, ply1)
+
+
+def test_mmap_option(tmpdir, tet_ply_txt):
+    tet_ply_txt.text = False
+    tet_ply_txt.byte_order = '<'
+    filename = tmpdir.join('tet.ply')
+    with filename.open('wb') as f:
+        tet_ply_txt.write(f)
+    tet_ply1 = PlyData.read(str(filename))
+    assert isinstance(tet_ply1['vertex'].data, numpy.memmap)
+    tet_ply2 = PlyData.read(str(filename), mmap=False)
+    assert not isinstance(tet_ply2['vertex'].data, numpy.memmap)

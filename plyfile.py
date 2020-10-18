@@ -382,16 +382,19 @@ class PlyData(object):
         )
 
     @staticmethod
-    def read(stream):
+    def read(stream, mmap=True):
         '''
         Read PLY data from a readable file-like object or filename.
 
+        mmap: whether to allow element data to be memory-mapped when
+            possible. The default is True, which allows memory mapping.
+            Using False will prevent memory mapping.
         '''
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
             for elt in data:
-                elt._read(stream, data.text, data.byte_order)
+                elt._read(stream, data.text, data.byte_order, mmap)
         finally:
             if must_close:
                 stream.close()
@@ -629,7 +632,7 @@ class PlyElement(object):
 
         return elt
 
-    def _read(self, stream, text, byte_order):
+    def _read(self, stream, text, byte_order, mmap):
         '''
         Read the actual data from a PLY file.
 
@@ -637,7 +640,7 @@ class PlyElement(object):
         dtype = self.dtype(byte_order)
         if text:
             self._read_txt(stream)
-        elif _can_mmap(stream) and not self._have_list:
+        elif mmap and _can_mmap(stream) and not self._have_list:
             # Loading the data is straightforward.  We will memory map
             # the file in copy-on-write mode.
             num_bytes = self.count * dtype.itemsize
