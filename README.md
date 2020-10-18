@@ -383,46 +383,39 @@ There are a few ways around this.
 
 # Design philosophy and rationale
 
-At the time that I wrote this, I didn't know of any simple and
-self-contained Python PLY file module using `numpy` as its data
-representation medium.  Considering the increasing prevalence of Python
-as a tool for scientific programming with NumPy as the _lingua franca_
-for numerical data, such a module seemed desirable; hence, `plyfile` was
-born.
+The design philosophy of `plyfile` can be summed up as follows.
+- Be familiar to users of `numpy` and reuse existing idioms and concepts
+  when possible.
+- Favor simplicity over power or user-friendliness.
+- Support all valid PLY files.
 
 ## Familiarity
 
-I opted to use existing Python and NumPy constructs whenever they
-matched the data.  Thus, the `elements` attribute of a `PlyData`
-instance is simply a `list` of `PlyElement` instances, and the `data`
-attribute of a `PlyElement` instance is a `numpy` array, and a list
-property field of a PLY element datum is referred to in the `data`
-attribute by a type of `object` with the value being another `numpy`
-array, etc.  In the last case, this is certainly not the most-efficient
-in-memory representation of the data, since it contains a lot of
-indirection.  However, it is arguably the most obvious and natural
-unless NumPy adds explicit support for "ragged" arrays in its type
-system.  The design goal was to represent data in a form familiar to
-users of `numpy`.
+For the most part, PLY concepts map nicely to Python and specifically to
+`numpy`, and leveraging that has strongly influenced the design of this
+package.  The `elements` attribute of a `PlyData` instance is simply a
+`list` of `PlyElement` instances, and the `data` attribute of a
+`PlyElement` instance is a `numpy` array, and a list property field of a
+PLY element datum is referred to in the `data` attribute by a type of
+`object` with the value being another `numpy` array, etc.
 
 ## Simplicity
 
-When the two were at odds, I decided to favor simplicity over power or
-user-friendliness.  Thus, list property types in `PlyElement.describe`
-always default to the same, rather than, say, being obtained by looking
-at an array element.  (Which element?  What if the array has length
-zero?  Whatever default we could choose in that case could lead to
-subtle edge-case bugs if the user isn't vigilant.)  Also, all input and
-output is done in "one shot": all the arrays must be created up front
-rather than being processed in a streaming fashion.  (That said, I have
-nothing against streamability, and I considered it at one point.  I
-decided against it for now in order to have a consistent and
-maintainable interface at least for the first usable version.)
+When applicable, we favor simplicity over power or user-friendliness.
+Thus, list property types in `PlyElement.describe` always default to the
+same, rather than, say, being obtained by looking at an array element.
+(Which element?  What if the array has length zero?  Whatever default we
+could choose in that case could lead to subtle edge-case bugs if the
+user isn't vigilant.)  Also, all input and output is done in "one shot":
+all the arrays must be created up front rather than being processed in a
+streaming fashion.
 
-## Interpretation issues
+## Generality and interpretation issues
 
-There doesn't seem to be a single complete and consistent description of
-the PLY format.  Even the "authoritative"
+We aim to support all valid PLY files. However, exactly what constitutes
+a "valid" file isn't obvious, since there doesn't seem to be a single
+complete and consistent description of the PLY format.  Even the
+"authoritative"
 [Ply.txt](https://web.archive.org/web/20161221115231/http://www.cs.virginia.edu/~gfx/Courses/2001/Advanced.spring.01/plylib/Ply.txt)
 by Greg Turk has some issues.
 
