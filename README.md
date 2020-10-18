@@ -342,6 +342,45 @@ new instances and modifying in place).  For example, a single
 but modifying that instance will then affect all of those containing
 `PlyData` instances.
 
+# FAQ
+
+## How do I initialize a list property from two-dimensional array?
+
+    >>> # Here's a two-dimensional array containing vertex indices.
+    >>> face_data = numpy.array([[0, 1, 2], [3, 4, 5]], dtype='i4')
+
+    >>> # PlyElement.describe requires a one-dimensional structured array.
+    >>> ply_faces = numpy.empty(len(faces),
+    ...                         dtype=[('vertex_indices', 'i4', (3,))])
+    >>> ply_faces['vertex_indices'] = face_data
+    >>> face = PlyElement.describe(ply_faces, 'face')
+
+## Can I save a PLY file directly to `sys.stdout`?
+
+On Python 3, you will probably run into issues because `sys.stdout` is a
+text-mode stream and `plyfile` outputs binary data, even for
+ASCII-format PLY files:
+
+    >>> import sys
+    >>> plydata.write(sys.stdout)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+        File ".../python-plyfile/plyfile.py", line 411, in write
+            stream.write(self.header.encode('ascii'))
+            TypeError: write() argument must be str, not bytes
+
+There are a few ways around this.
+- Write to a named file instead. On Linux and some other Unix-likes, you
+  can access `stdout` via the named file `/dev/stdout`:
+
+      >>> plydata.write('/dev/stdout')
+
+- Use `sys.stdout.buffer`:
+
+      >>> plydata.write(sys.stdout.buffer)
+
+  (source: https://bugs.python.org/issue4571)
+
 # Design philosophy and rationale
 
 At the time that I wrote this, I didn't know of any simple and
