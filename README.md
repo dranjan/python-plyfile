@@ -514,11 +514,9 @@ ending style in input files.
 Examples beyond the scope of this document and the tests are in the
 `examples` directory.
 
-# Credits
-
-Author: Darsh Ranjan
-
 # License
+
+Copyright Darsh Ranjan.
 
 This software is released under the terms of the GNU General Public
 License, version 3.  See the file `COPYING` for details.
