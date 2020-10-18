@@ -5,6 +5,10 @@ All notable changes to this project will be documented here.
 ## [Unreleased]
 ### Added
 - Memory-mapping made optional.
+- FAQ section in `README.md`.
+
+### Changed
+- Syntax highlighting in `README.md` improved.
 
 ## [0.7.2] - 2020-03-21
 ### Added
