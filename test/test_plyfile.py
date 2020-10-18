@@ -325,6 +325,8 @@ def test_memmap(tmpdir, tet_ply_txt):
     ply0 = PlyData([face0, vertex, face1])
     ply1 = write_read(ply0, tmpdir)
 
+    assert isinstance(ply1['vertex'].data, numpy.memmap)
+
     verify(ply0, ply1)
 
 
