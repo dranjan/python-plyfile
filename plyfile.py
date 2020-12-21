@@ -769,6 +769,12 @@ class PlyElement(object):
 
         return '\n'.join(lines)
 
+    def __len__(self):
+        return self.count
+
+    def __contains__(self, name):
+        return name in self._property_lookup
+
     def __getitem__(self, key):
         return self.data[key]
 
