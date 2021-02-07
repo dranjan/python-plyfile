@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented here.
 
-## [Unreleased]
+## [0.7.3] - 2021-02-06
 ### Added
 - Memory-mapping made optional.
 - FAQ section in `README.md`.
@@ -99,7 +99,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/dranjan/python-plyfile/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/dranjan/python-plyfile/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/dranjan/python-plyfile/compare/v0.7...v0.7.1
 [0.7]: https://github.com/dranjan/python-plyfile/compare/v0.6...v0.7
