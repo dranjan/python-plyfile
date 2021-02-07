@@ -220,6 +220,16 @@ def test_repr(tet_ply_txt):
     repr(tet_ply_txt)
 
 
+def test_element_len(tet_ply_txt):
+    assert len(tet_ply_txt['vertex']) == 4
+    assert len(tet_ply_txt['face']) == 4
+
+
+def test_element_contains(tet_ply_txt):
+    assert 'x' in tet_ply_txt['vertex']
+    assert 'w' not in tet_ply_txt['vertex']
+
+
 @pytest.mark.parametrize('np_type', np_types)
 def test_property_type(tmpdir, np_type):
     dtype = [('x', np_type), ('y', np_type), ('z', np_type)]
