@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 ### Added
 - Memory-mapping made optional.
 - FAQ section in `README.md`.
+- `PlyElement.__len__` and `PlyElement.__contains__`. Thanks to
+  @athompson673.
 
 ### Changed
 - Syntax highlighting in `README.md` improved.
