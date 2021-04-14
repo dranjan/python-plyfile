@@ -990,7 +990,11 @@ def _read_array(stream, dtype, n):
 
 
 def _write_array(stream, array):
-    stream.write(array.tostring())
+    # ndarray.tostring is deprecated since numpy 1.19.0
+    try:
+        stream.write(array.tobytes())
+    except AttributeError:
+        stream.write(array.tostring())
 
 
 def _can_mmap(stream):
