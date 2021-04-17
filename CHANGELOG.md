@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 ### Fixed
-- `DeprecationWarning` fix on NumPy 1.19. Thanks to @markbandstra.
+- `DeprecationWarning` fix on `numpy`>=1.19. Thanks to @markbandstra.
 
 ## [0.7.3] - 2021-02-06
 ### Added
