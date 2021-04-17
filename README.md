@@ -11,13 +11,14 @@ The PLY format is documented
 ## Dependencies
 
 - python2 >= 2.7 or python3
-- numpy >= 1.8
+- numpy >= 1.11
 
-**Note:** `numpy` 1.9 before version 1.9.2 has a bug that breaks byte
+`plyfile` may or may not work on older `numpy` versions.
+For example, note that `numpy` 1.9 before version 1.9.2 has a bug that breaks byte
 swapping by manipulating the `byte_order` field of a `PlyData` instance.
-As a workaround, you can manually byte-swap your arrays using `el.data =
+(As a workaround, you can manually byte-swap your arrays using `el.data =
 el.data.byteswap().newbyteorder()` in addition to changing the
-`byte_order` attribute.
+`byte_order` attribute.)
 
 ### Optional dependencies
 
