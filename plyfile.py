@@ -382,19 +382,24 @@ class PlyData(object):
         )
 
     @staticmethod
-    def read(stream, mmap=True):
+    def read(stream, mmap=True, list_len=None):
         '''
         Read PLY data from a readable file-like object or filename.
 
         mmap: whether to allow element data to be memory-mapped when
             possible. The default is True, which allows memory mapping.
             Using False will prevent memory mapping.
+
+        list_len: the specified fixed length of any list type present, which
+            if possible to specify can greatly speed up binary stream reading.
+            Must also have mmap=True. By default will allow flexible list
+            lengths.
         '''
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
             for elt in data:
-                elt._read(stream, data.text, data.byte_order, mmap)
+                elt._read(stream, data.text, data.byte_order, mmap, list_len=list_len)
         finally:
             if must_close:
                 stream.close()
@@ -632,7 +637,7 @@ class PlyElement(object):
 
         return elt
 
-    def _read(self, stream, text, byte_order, mmap):
+    def _read(self, stream, text, byte_order, mmap, list_len=None):
         '''
         Read the actual data from a PLY file.
 
@@ -640,9 +645,30 @@ class PlyElement(object):
         dtype = self.dtype(byte_order)
         if text:
             self._read_txt(stream)
-        elif mmap and _can_mmap(stream) and not self._have_list:
+        elif mmap and _can_mmap(stream) and (not self._have_list or list_len):
             # Loading the data is straightforward.  We will memory map
             # the file in copy-on-write mode.
+            num_bytes = self.count * dtype.itemsize
+            list_len_props = []
+            if self._have_list and list_len:
+                # update the dtype to include the list length and list dtype
+                new_dtype = []
+                for j, p in enumerate(self.properties):
+                    if isinstance(p, PlyListProperty):
+                        # create new dtype for the list length
+                        new_dtype.append(
+                            (p.name + "_len", byte_order + _data_types[_lookup_type(p.len_dtype)])
+                        )
+                        # a new dtype with size for the list values themselves
+                        new_dtype.append(
+                            (p.name, byte_order + _data_types[_lookup_type(p.val_dtype)], (list_len,))
+                        )
+                        list_len_props.append(p.name + "_len")
+                    else:
+                        new_dtype.append(
+                            (p.name, p.dtype(byte_order))
+                        )
+                dtype = _np.dtype(new_dtype)
             num_bytes = self.count * dtype.itemsize
             offset = stream.tell()
             stream.seek(0, 2)
@@ -654,6 +680,12 @@ class PlyElement(object):
                                     'c', offset, self.count)
             # Fix stream position
             stream.seek(offset + self.count * dtype.itemsize)
+            # remove any extra properties added
+            if len(list_len_props) > 0:
+                for prop in list_len_props:
+                    assert (self._data[prop] == list_len).all()
+                props = [p.name for p in self.properties]
+                self._data = self._data[props]
         else:
             # A simple load is impossible.
             self._read_bin(stream, byte_order)

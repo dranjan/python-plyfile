@@ -850,3 +850,19 @@ def test_mmap_option(tmpdir, tet_ply_txt):
     assert isinstance(tet_ply1['vertex'].data, numpy.memmap)
     tet_ply2 = PlyData.read(str(filename), mmap=False)
     assert not isinstance(tet_ply2['vertex'].data, numpy.memmap)
+
+
+def test_read_list_len_option(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    ply0.text = False
+    ply0.byte_order = '<'
+    test_file = tmpdir.join('test.ply')
+
+    with test_file.open('wb') as f:
+        tet_ply_txt.write(f)
+
+    print(help(PlyData.read))
+    ply1 = PlyData.read(str(test_file), list_len=None)
+    verify(ply0, ply1)
+    ply2 = PlyData.read(str(test_file), list_len=3)
+    verify(ply0, ply2)
