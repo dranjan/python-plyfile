@@ -859,9 +859,8 @@ def test_read_list_len_option(tmpdir, tet_ply_txt):
     test_file = tmpdir.join('test.ply')
 
     with test_file.open('wb') as f:
-        tet_ply_txt.write(f)
+        ply0.write(f)
 
-    print(help(PlyData.read))
     ply1 = PlyData.read(str(test_file), list_len=None)
     verify(ply0, ply1)
     ply2 = PlyData.read(str(test_file), list_len=3)
