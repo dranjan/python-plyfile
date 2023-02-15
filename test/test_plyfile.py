@@ -866,3 +866,8 @@ def test_read_list_len_option(tmpdir, tet_ply_txt):
     verify(ply0, ply1)
     ply2 = PlyData.read(str(test_file), list_len=3)
     verify(ply0, ply2)
+
+    # test the result of an incorrect length
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), list_len=4)
+    assert str(e) == "element 'face': row 3: early end-of-file"
