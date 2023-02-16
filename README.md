@@ -171,19 +171,20 @@ length of the list may be fixed and known, e.g., for the triangular mesh
 described by `tet.ply`. The default for `PlyData.read` is to assume any
 lists can be of arbitrary length, which is what the PLY format supports,
 but that flexibility can make reading slow for large files. In the case
-where any lists have fixed, known length, the `list_len` kwarg has been
-added to `PlyData.read` to accelerate reading when the data are binary:
+where any lists have fixed, known length, the `known_list_len` kwarg has
+been added to `PlyData.read` to accelerate reading when the data are
+binary:
 
 ```Python Console
 >>> plydata.text = False
 >>> plydata.byte_order = '<'
 >>> plydata.write('tet_binary.ply')
->>> plydata = PlyData.read('tet_binary.ply', list_len=3)
+>>> plydata = PlyData.read('tet_binary.ply', known_list_len=3)
 ```
 
 If there is no `PlyParseError` raised, the code will check that all the
-lists that were read in have reported lengths equal to `list_len`, and if
-they do not match, a `PlyParseError` will be raised.
+lists that were read in have reported lengths equal to `known_list_len`,
+and if they do not match, a `PlyParseError` will be raised.
 
 ## Creating a PLY file
 
@@ -205,8 +206,9 @@ format provides no way to find out that each "vertex_indices" field has
 length 3 without actually reading all the data, so `plyfile` has to
 assume that this is a variable-length property.  However, see below (and
 `examples/plot.py`) for an easy way to recover a two-dimensional array
-from a list property, and also see the notes above about the `list_len`
-kwarg to speed up the reading of files with list of fixed known length.
+from a list property, and also see the notes above about the
+`known_list_len` kwarg to speed up the reading of files with list of
+fixed, known length.
 
 For example, if we wanted to create the "vertex" and "face" PLY elements
 of the `tet.ply` data directly as `numpy` arrays for the purpose of

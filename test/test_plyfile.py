@@ -852,7 +852,7 @@ def test_mmap_option(tmpdir, tet_ply_txt):
     assert not isinstance(tet_ply2['vertex'].data, numpy.memmap)
 
 
-def test_read_list_len_option(tmpdir, tet_ply_txt):
+def test_read_known_list_len_option(tmpdir, tet_ply_txt):
     ply0 = tet_ply_txt
     ply0.text = False
     ply0.byte_order = '<'
@@ -861,12 +861,12 @@ def test_read_list_len_option(tmpdir, tet_ply_txt):
     with test_file.open('wb') as f:
         ply0.write(f)
 
-    ply1 = PlyData.read(str(test_file), list_len=None)
+    ply1 = PlyData.read(str(test_file), known_list_len=None)
     verify(ply0, ply1)
-    ply2 = PlyData.read(str(test_file), list_len=3)
+    ply2 = PlyData.read(str(test_file), known_list_len=3)
     verify(ply0, ply2)
 
     # test the result of an incorrect length
     with Raises(PlyElementParseError) as e:
-        PlyData.read(str(test_file), list_len=4)
+        PlyData.read(str(test_file), known_list_len=4)
     assert str(e) == "element 'face': row 3: early end-of-file"

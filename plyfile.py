@@ -382,7 +382,7 @@ class PlyData(object):
         )
 
     @staticmethod
-    def read(stream, mmap=True, list_len=None):
+    def read(stream, mmap=True, known_list_len=None):
         '''
         Read PLY data from a readable file-like object or filename.
 
@@ -390,16 +390,17 @@ class PlyData(object):
             possible. The default is True, which allows memory mapping.
             Using False will prevent memory mapping.
 
-        list_len: the specified fixed length of any list type present, which
-            if possible to specify can greatly speed up binary stream reading.
-            Must also have mmap=True. By default will allow flexible list
-            lengths.
+        known_list_len: if known, the fixed length of any list type present,
+            which if possible to specify can greatly speed up binary stream
+            reading. Must also have mmap=True. By default None, which
+            will allow flexible list lengths.
         '''
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
             for elt in data:
-                elt._read(stream, data.text, data.byte_order, mmap, list_len=list_len)
+                elt._read(stream, data.text, data.byte_order, mmap,
+                          known_list_len=known_list_len)
         finally:
             if must_close:
                 stream.close()
@@ -637,7 +638,7 @@ class PlyElement(object):
 
         return elt
 
-    def _read(self, stream, text, byte_order, mmap, list_len=None):
+    def _read(self, stream, text, byte_order, mmap, known_list_len=None):
         '''
         Read the actual data from a PLY file.
 
@@ -645,12 +646,12 @@ class PlyElement(object):
         dtype = self.dtype(byte_order)
         if text:
             self._read_txt(stream)
-        elif mmap and _can_mmap(stream) and (not self._have_list or list_len):
+        elif mmap and _can_mmap(stream) and (not self._have_list or known_list_len):
             # Loading the data is straightforward.  We will memory map
             # the file in copy-on-write mode.
             num_bytes = self.count * dtype.itemsize
             list_len_props = []
-            if self._have_list and list_len:
+            if self._have_list and known_list_len:
                 # update the dtype to include the list length and list dtype
                 new_dtype = []
                 for j, p in enumerate(self.properties):
@@ -661,7 +662,7 @@ class PlyElement(object):
                         )
                         # a new dtype with size for the list values themselves
                         new_dtype.append(
-                            (p.name, byte_order + _data_types[_lookup_type(p.val_dtype)], (list_len,))
+                            (p.name, byte_order + _data_types[_lookup_type(p.val_dtype)], (known_list_len,))
                         )
                         list_len_props.append(p.name + "_len")
                     else:
@@ -683,7 +684,7 @@ class PlyElement(object):
             # remove any extra properties added
             if len(list_len_props) > 0:
                 for prop in list_len_props:
-                    if not (self._data[prop] == list_len).all():
+                    if not (self._data[prop] == known_list_len).all():
                         raise PlyElementParseError("Unexpected list length: " +
                                                    prop.name)
                 props = [p.name for p in self.properties]
