@@ -652,6 +652,8 @@ class PlyElement(object):
             num_bytes = self.count * dtype.itemsize
             list_len_props = []
             if self._have_list and known_list_len:
+                assert isinstance(known_list_len, int)
+                assert known_list_len >= 1
                 # update the dtype to include the list length and list dtype
                 new_dtype = []
                 for j, p in enumerate(self.properties):
