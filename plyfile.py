@@ -683,7 +683,9 @@ class PlyElement(object):
             # remove any extra properties added
             if len(list_len_props) > 0:
                 for prop in list_len_props:
-                    assert (self._data[prop] == list_len).all()
+                    if not (self._data[prop] == list_len).all():
+                        raise PlyElementParseError("Unexpected list length: " +
+                                                   prop.name)
                 props = [p.name for p in self.properties]
                 self._data = self._data[props]
         else:
