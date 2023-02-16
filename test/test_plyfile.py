@@ -866,7 +866,11 @@ def test_read_known_list_len_option(tmpdir, tet_ply_txt):
     ply2 = PlyData.read(str(test_file), known_list_len=3)
     verify(ply0, ply2)
 
-    # test the result of an incorrect length
+    # test the results of an incorrect length
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=4)
     assert str(e) == "element 'face': row 3: early end-of-file"
+
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), known_list_len=2)
+    assert str(e) == "Unexpected list length: vertex_indices"

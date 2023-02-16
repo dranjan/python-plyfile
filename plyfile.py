@@ -688,7 +688,7 @@ class PlyElement(object):
                 for prop in list_len_props:
                     if not (self._data[prop] == known_list_len).all():
                         raise PlyElementParseError("Unexpected list length: " +
-                                                   prop.name)
+                                                   prop[:-4])
                 props = [p.name for p in self.properties]
                 self._data = self._data[props]
         else:
