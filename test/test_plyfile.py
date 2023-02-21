@@ -852,7 +852,7 @@ def test_mmap_option(tmpdir, tet_ply_txt):
     assert not isinstance(tet_ply2['vertex'].data, numpy.memmap)
 
 
-def test_read_known_list_len_option(tmpdir, tet_ply_txt):
+def test_read_known_list_len_default(tmpdir, tet_ply_txt):
     ply0 = tet_ply_txt
     ply0.text = False
     ply0.byte_order = '<'
@@ -866,10 +866,79 @@ def test_read_known_list_len_option(tmpdir, tet_ply_txt):
     ply2 = PlyData.read(str(test_file), known_list_len=3)
     verify(ply0, ply2)
 
-    # test the results of an incorrect length
+    # test the results of specifying an incorrect length
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=4)
     assert str(e) == "element 'face': row 3: early end-of-file"
+
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), known_list_len=2)
+    assert str(e) == "Unexpected list length: vertex_indices"
+
+
+def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
+    # add another face element to the test data
+    # so there is a second, identical list "vertex_indices"
+    ply0 = tet_ply_txt
+    face2 = numpy.array([([0, 1, 2], 255, 255, 255),
+                         ([0, 2, 3], 255,   0,   0),
+                         ([0, 1, 3],   0, 255,   0),
+                         ([1, 2, 3],   0,   0, 255)],
+                        dtype=[('vertex_indices2', 'i4', (3,)),
+                               ('red', 'u1'), ('green', 'u1'),
+                               ('blue', 'u1')])
+    ply0 = PlyData([ply0['vertex'], ply0['face'], PlyElement.describe(face2, 'face2')])
+    ply0.text = False
+    ply0.byte_order = '<'
+    test_file = tmpdir.join('test.ply')
+
+    with test_file.open('wb') as f:
+        ply0.write(f)
+
+    ply1 = PlyData.read(str(test_file), known_list_len=None)
+    verify(ply0, ply1)
+    ply2 = PlyData.read(str(test_file), known_list_len=3)
+    verify(ply0, ply2)
+
+    # test the results of specifying an incorrect length
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), known_list_len=4)
+    assert str(e) == "Unexpected list length: vertex_indices"
+
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), known_list_len=2)
+    assert str(e) == "Unexpected list length: vertex_indices"
+
+
+def test_read_known_list_len_two_lists_diff(tmpdir, tet_ply_txt):
+    # add another face element to the test data
+    # but change the length of its vertex_indices property
+    # so we cannot read it using known_list_len
+    ply0 = tet_ply_txt
+    face2 = numpy.array([([0, 1, 2, 3], 255, 255, 255),
+                         ([0, 2, 3, 1], 255,   0,   0),
+                         ([0, 1, 3, 2],   0, 255,   0)],
+                        dtype=[('vertex_indices2', 'i4', (4,)),
+                               ('red', 'u1'), ('green', 'u1'),
+                               ('blue', 'u1')])
+    ply0 = PlyData([ply0['vertex'], ply0['face'], PlyElement.describe(face2, 'face2')])
+    ply0.text = False
+    ply0.byte_order = '<'
+    test_file = tmpdir.join('test.ply')
+
+    with test_file.open('wb') as f:
+        ply0.write(f)
+
+    ply1 = PlyData.read(str(test_file), known_list_len=None)
+    verify(ply0, ply1)
+
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), known_list_len=3)
+    assert str(e) == "Unexpected list length: vertex_indices2"
+
+    with Raises(PlyElementParseError) as e:
+        PlyData.read(str(test_file), known_list_len=4)
+    assert str(e) == "Unexpected list length: vertex_indices"
 
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=2)
