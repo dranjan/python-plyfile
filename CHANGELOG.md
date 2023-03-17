@@ -3,6 +3,11 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- `known_list_len` optional argument. Thanks to @markbandstra.
+
+### Removed
+- Official support for Python<3.7 and `numpy`<1.17.
 
 ## [0.7.4] - 2021-05-02
 ### Fixed
