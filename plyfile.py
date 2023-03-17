@@ -655,14 +655,11 @@ class PlyElement(object):
             list_prop_names = set(p.name for p in self.properties
                                   if isinstance(p, PlyListProperty))
             can_mmap_lists = list_prop_names <= set(known_list_len)
-            print(list_prop_names, known_list_len, can_mmap_lists, _can_mmap(stream))
             if mmap and _can_mmap(stream) and can_mmap_lists:
-                print("mmap.")
                 # Loading the data is straightforward.  We will memory
                 # map the file in copy-on-write mode.
                 self._read_mmap(stream, byte_order, known_list_len)
             else:
-                print("can't mmap.")
                 # A simple load is impossible.
                 self._read_bin(stream, byte_order)
 
@@ -724,9 +721,7 @@ class PlyElement(object):
                 raise PlyElementParseError("Unexpected list length: " +
                                            prop)
         props = [p.name for p in self.properties]
-        print(self._data.__class__)
         self._data = self._data[props]
-        print(self._data.__class__)
 
     def _read_txt(self, stream):
         '''
