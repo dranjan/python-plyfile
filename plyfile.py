@@ -386,14 +386,17 @@ class PlyData(object):
         '''
         Read PLY data from a readable file-like object or filename.
 
-        mmap: whether to allow element data to be memory-mapped when
-            possible. The default is True, which allows memory mapping.
-            Using False will prevent memory mapping.
+        mmap (optional): whether to allow element data to be
+            memory-mapped when possible. The default is True, which
+            allows memory mapping.  Using False will prevent memory
+            mapping.
 
-        known_list_len: if known, the fixed length of any list type present,
-            which if possible to specify can greatly speed up binary stream
-            reading. Must also have mmap=True. By default None, which
-            will allow flexible list lengths.
+        known_list_len (optional): mapping from element names to
+            mappings from list property names to their fixed lengths.
+            This optional argument is necessary to enable memory mapping
+            of elements that contain list properties. (Note that
+            elements with variable-length list properties cannot be
+            memory-mapped.)
         '''
         (must_close, stream) = _open_stream(stream, 'read')
         try:
