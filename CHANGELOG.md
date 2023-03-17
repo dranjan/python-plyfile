@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [v0.8] - 2023-03-17
 ### Added
 - `known_list_len` optional argument. Thanks to @markbandstra.
 
@@ -110,7 +112,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.8...HEAD
+[0.8]: https://github.com/dranjan/python-plyfile/compare/v0.7.4...v0.8
 [0.7.4]: https://github.com/dranjan/python-plyfile/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/dranjan/python-plyfile/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/dranjan/python-plyfile/compare/v0.7.1...v0.7.2
