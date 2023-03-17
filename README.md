@@ -166,25 +166,57 @@ Many (but not necessarily all) types of malformed input files will raise
 `PlyParseError` instance (as well as attributes `element`, `row`, and
 `prop`) provides additional context for the error if applicable.
 
-In many cases where a property is a list (e.g., "vertex_indices"), the
-length of the list may be fixed and known, e.g., for the triangular mesh
-described by `tet.ply`. The default for `PlyData.read` is to assume any
-lists can be of arbitrary length, which is what the PLY format supports,
-but that flexibility can make reading slow for large files. In the case
-where any lists have fixed, known length, the `known_list_len` kwarg has
-been added to `PlyData.read` to accelerate reading when the data are
-binary:
+### Faster reading via memory mapping
+
+To accelerate parsing of binary data, `plyfile` can make use of
+`numpy`'s memory mapping facilities. The decision to memory map or not
+is made on a per-element basis. To make this determination, there are
+two cases to consider.
+
+#### Case 1: elements with no list properties
+
+If an element in a binary PLY file has no list properties, then it will
+be memory-mapped by default, subject to the capabilities of the
+underlying file object. Memory mapping can be disabled using the
+`mmap` argument:
 
 ```Python Console
 >>> plydata.text = False
 >>> plydata.byte_order = '<'
 >>> plydata.write('tet_binary.ply')
->>> plydata = PlyData.read('tet_binary.ply', known_list_len=3)
+>>>
+>>> # `mmap=True` is the default:
+>>> plydata = PlyData.read('tet_binary_ply')
+>>> isinstance(plydata['vertex'].data, numpy.memmap)
+True
+>>> plydata = PlyData.read('tet_binary_ply', mmap=False)
+>>> isinstance(plydata['vertex'].data, numpy.memmap)
+False
 ```
 
-If there is no `PlyParseError` raised, the code will check that all the
-lists that were read in have reported lengths equal to `known_list_len`,
-and if they do not match, a `PlyParseError` will be raised.
+#### Case 2: elements with list properties
+
+In the general case, elements with list properties cannot be
+memory-mapped as `numpy` arrays, except in one important case: when
+all list properties have fixed and known lengths. In that case, the
+`known_list_len` argument can be given to `PlyData.read`:
+
+```Python Console
+>>> plydata = PlyData.read('tet_binary.ply',
+...                        known_list_len={'face': {'vertex_indices': 3}})
+>>> isinstance(plydata['face'].data, numpy.memmap)
+True
+```
+
+The implementation will validate the data: if any instance of the list
+property has a length other than the value specified, then
+`PlyParseError` will be raised.
+
+Note that in order to enable memory mapping for a given element,
+*all* list properties in the element must have their lengths in the
+`known_list_len` dictionary. If any list property does not have its
+length given in `known_list_len`, then memory mapping will not be
+attempted, and no error will be raised.
 
 ## Creating a PLY file
 
@@ -207,7 +239,7 @@ length 3 without actually reading all the data, so `plyfile` has to
 assume that this is a variable-length property.  However, see below (and
 `examples/plot.py`) for an easy way to recover a two-dimensional array
 from a list property, and also see the notes above about the
-`known_list_len` kwarg to speed up the reading of files with list of
+`known_list_len` kwarg to speed up the reading of files with lists of
 fixed, known length.
 
 For example, if we wanted to create the "vertex" and "face" PLY elements
