@@ -888,11 +888,10 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
     # add another face element to the test data
     # so there is a second, identical list "vertex_indices"
     ply0 = tet_ply_txt
-    face2 = numpy.array([([0, 1, 2], 255, 255, 255),
-                         ([0, 2, 3], 255,   0,   0),
-                         ([0, 1, 3],   0, 255,   0),
-                         ([1, 2, 3],   0,   0, 255)],
-                        dtype=[('vertex_indices2', 'i4', (3,)),
+    face2 = numpy.array([([0, 1, 2, 3], 255, 255, 255),
+                         ([0, 2, 3, 1], 255,   0,   0),
+                         ([0, 1, 3, 2],   0, 255,   0)],
+                        dtype=[('vertex_indices2', 'i4', (4,)),
                                ('red', 'u1'), ('green', 'u1'),
                                ('blue', 'u1')])
     ply0 = PlyData([ply0['vertex'], ply0['face'],
@@ -905,7 +904,7 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
         ply0.write(f)
 
     list_len = {'face':{'vertex_indices': 3},
-                'face2':{'vertex_indices2': 3}}
+                'face2':{'vertex_indices2': 4}}
     ply1 = PlyData.read(str(test_file))
     verify(ply0, ply1)
     ply2 = PlyData.read(str(test_file), known_list_len=list_len)
@@ -927,31 +926,3 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
     assert e.exc_val.element.name == 'face'
     assert e.exc_val.row == 0
     assert e.exc_val.prop.name == 'vertex_indices'
-
-
-def test_read_known_list_len_two_lists_diff(tmpdir, tet_ply_txt):
-    # add another face element to the test data
-    # but change the length of its vertex_indices property
-    # so we cannot read it using known_list_len
-    ply0 = tet_ply_txt
-    face2 = numpy.array([([0, 1, 2, 3], 255, 255, 255),
-                         ([0, 2, 3, 1], 255,   0,   0),
-                         ([0, 1, 3, 2],   0, 255,   0)],
-                        dtype=[('vertex_indices2', 'i4', (4,)),
-                               ('red', 'u1'), ('green', 'u1'),
-                               ('blue', 'u1')])
-    ply0 = PlyData([ply0['vertex'], ply0['face'], PlyElement.describe(face2, 'face2')])
-    ply0.text = False
-    ply0.byte_order = '<'
-    test_file = tmpdir.join('test.ply')
-
-    with test_file.open('wb') as f:
-        ply0.write(f)
-
-    ply1 = PlyData.read(str(test_file))
-    verify(ply0, ply1)
-
-    list_len = {'face':{'vertex_indices': 3},
-                'face2':{'vertex_indices2': 4}}
-    ply1 = PlyData.read(str(test_file), known_list_len=list_len)
-    verify(ply0, ply1)
