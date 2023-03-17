@@ -689,15 +689,14 @@ class PlyElement(object):
         new_dtype = []
         for p in self.properties:
             if isinstance(p, PlyListProperty):
-                _len_type = byte_order + _data_types[_lookup_type(p.len_dtype)]
-                _val_type = byte_order + _data_types[_lookup_type(p.val_dtype)]
                 # create new dtype for the list length
                 new_dtype.append(
-                    (p.name + "\nlen", _len_type)
+                    (p.name + "\nlen", byte_order + p.len_dtype)
                 )
                 # a new dtype with size for the list values themselves
                 new_dtype.append(
-                    (p.name, _val_type, (known_list_len[p.name],))
+                    (p.name, byte_order + p.val_dtype,
+                     (known_list_len[p.name],))
                 )
                 list_len_props[p.name] = p.name + "\nlen"
             else:
