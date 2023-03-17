@@ -717,9 +717,12 @@ class PlyElement(object):
         # remove any extra properties added
         for prop in list_len_props:
             field = list_len_props[prop]
-            if not (self._data[field] == known_list_len[prop]).all():
-                raise PlyElementParseError("Unexpected list length: " +
-                                           prop)
+            len_check = self._data[field] == known_list_len[prop]
+            if not len_check.all():
+                row = _np.flatnonzero(len_check ^ True)[0]
+                raise PlyElementParseError(
+                    "unexpected list length",
+                    self, row, self.ply_property(prop))
         props = [p.name for p in self.properties]
         self._data = self._data[props]
 

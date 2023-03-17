@@ -871,12 +871,17 @@ def test_read_known_list_len_default(tmpdir, tet_ply_txt):
     list_len['face']['vertex_indices'] = 4
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=list_len)
-    assert str(e) == "element 'face': row 3: early end-of-file"
+    assert e.exc_val.message == "early end-of-file"
+    assert e.exc_val.element.name == 'face'
+    assert e.exc_val.row == 3
 
     list_len['face']['vertex_indices'] = 2
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=list_len)
-    assert str(e) == "Unexpected list length: vertex_indices"
+    assert e.exc_val.message == "unexpected list length"
+    assert e.exc_val.element.name == 'face'
+    assert e.exc_val.row == 0
+    assert e.exc_val.prop.name == 'vertex_indices'
 
 
 def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
@@ -910,12 +915,18 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
     list_len['face']['vertex_indices'] = 4
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=list_len)
-    assert str(e) == "Unexpected list length: vertex_indices"
+    assert e.exc_val.message == "unexpected list length"
+    assert e.exc_val.element.name == 'face'
+    assert e.exc_val.row == 0
+    assert e.exc_val.prop.name == 'vertex_indices'
 
     list_len['face']['vertex_indices'] = 2
     with Raises(PlyElementParseError) as e:
         PlyData.read(str(test_file), known_list_len=list_len)
-    assert str(e) == "Unexpected list length: vertex_indices"
+    assert e.exc_val.message == "unexpected list length"
+    assert e.exc_val.element.name == 'face'
+    assert e.exc_val.row == 0
+    assert e.exc_val.prop.name == 'vertex_indices'
 
 
 def test_read_known_list_len_two_lists_diff(tmpdir, tet_ply_txt):
