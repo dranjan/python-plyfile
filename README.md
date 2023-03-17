@@ -268,14 +268,14 @@ Now you can instantiate `PlyData` and serialize:
 ```Python Console
 >>> PlyData([el]).write('some_binary.ply')
 >>> PlyData([el], text=True).write('some_ascii.ply')
-
-# Force the byte order of the output to big-endian, independently of
-# the machine's native byte order
+>>>
+>>> # Force the byte order of the output to big-endian, independently of
+>>> # the machine's native byte order
 >>> PlyData([el],
 ...         byte_order='>').write('some_big_endian_binary.ply')
-
-# Use a file object.  Binary mode is used here, which will cause
-# Unix-style line endings to be written on all systems.
+>>>
+>>> # Use a file object.  Binary mode is used here, which will cause
+>>> # Unix-style line endings to be written on all systems.
 >>> with open('some_ascii.ply', mode='wb') as f:
 ...     PlyData([el], text=True).write(f)
 ```
@@ -384,8 +384,8 @@ style:
 ```Python Console
 >>> # Recommended:
 >>> plydata = PlyData([plydata['face'], plydata['vertex']],
-                      text=False, byte_order='<')
-
+...                   text=False, byte_order='<')
+>>>
 >>> # Also supported:
 >>> plydata.elements = [plydata['face'], plydata['vertex']]
 >>> plydata.text = False
@@ -408,7 +408,7 @@ but modifying that instance will then affect all of those containing
 ```Python Console
 >>> # Here's a two-dimensional array containing vertex indices.
 >>> face_data = numpy.array([[0, 1, 2], [3, 4, 5]], dtype='i4')
-
+>>>
 >>> # PlyElement.describe requires a one-dimensional structured array.
 >>> ply_faces = numpy.empty(len(faces),
 ...                         dtype=[('vertex_indices', 'i4', (3,))])
