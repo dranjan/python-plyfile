@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
-## [v0.8] - 2023-03-17
+## [0.8] - 2023-03-17
 ### Added
 - `known_list_len` optional argument. Thanks to @markbandstra.
 
