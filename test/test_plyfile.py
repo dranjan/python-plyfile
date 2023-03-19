@@ -13,12 +13,6 @@ from plyfile import (PlyData, PlyElement, make2d,
                      PlyProperty)
 
 
-try:
-    _range = xrange
-except NameError:
-    _range = range
-
-
 class Raises(object):
 
     '''
@@ -50,7 +44,7 @@ def normalize_property(prop):
     n = len(prop)
 
     arr = numpy.empty(n, dtype='O')
-    for k in _range(n):
+    for k in range(n):
         arr[k] = prop[k]
 
     return arr
@@ -67,7 +61,7 @@ def verify(ply0, ply1):
     num_elements = len(el0)
     assert len(el1) == num_elements
 
-    for k in _range(num_elements):
+    for k in range(num_elements):
         assert el0[k].name == el1[k].name
 
         data0 = el0[k].data
@@ -79,7 +73,7 @@ def verify(ply0, ply1):
         num_properties = len(dtype0)
         assert len(dtype1) == num_properties
 
-        for j in _range(num_properties):
+        for j in range(num_properties):
             prop_name = dtype0[j][0]
             assert dtype1[j][0] == prop_name
 
@@ -110,7 +104,7 @@ def verify_1d(prop0, prop1):
     s = s0[0]
 
     if s == 'O':
-        for k in _range(n):
+        for k in range(n):
             assert len(prop0[k]) == len(prop1[k])
             assert (prop0[k] == prop1[k]).all()
     else:
@@ -349,22 +343,6 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
     ply2 = PlyData.read(filename)
 
     verify(ply0, ply2)
-
-
-# In Python 3, `unicode' is not a separate type from `str' (and the
-# `unicode' builtin does not exist).  Thus, this test is unnecessary
-# (and indeed would not pass).
-@pytest.mark.skipif(sys.version_info >= (3,),
-                    reason="only relevant on Python 2")
-def test_write_read_unicode_filename(tmpdir, tet_ply_txt):
-    ply0 = tet_ply_txt
-    test_file = tmpdir.join('test.ply')
-    filename = unicode(str(test_file))
-
-    tet_ply_txt.write(filename)
-    ply1 = PlyData.read(filename)
-
-    verify(ply0, ply1)
 
 
 def test_write_invalid_filename(tet_ply_txt):
@@ -683,7 +661,7 @@ invalid_cases = [
 
 
 @pytest.mark.parametrize('s,error_string', invalid_cases,
-                         ids=list(map(str, _range(len(invalid_cases)))))
+                         ids=list(map(str, range(len(invalid_cases)))))
 def test_invalid(tmpdir, s, error_string):
     with Raises(PlyElementParseError) as e:
         read_str(s, tmpdir)
@@ -767,7 +745,7 @@ invalid_header_cases = [
 
 @pytest.mark.parametrize(
     's,line', invalid_header_cases,
-    ids=list(map(str, _range(len(invalid_header_cases))))
+    ids=list(map(str, range(len(invalid_header_cases))))
 )
 def test_header_parse_error(s, line):
     with Raises(PlyHeaderParseError) as e:
@@ -786,7 +764,7 @@ invalid_arrays = [
 
 @pytest.mark.parametrize(
     'a', invalid_arrays,
-    ids=list(map(str, _range(len(invalid_arrays))))
+    ids=list(map(str, range(len(invalid_arrays))))
 )
 def test_invalid_array(a):
     with Raises(ValueError):

@@ -22,12 +22,6 @@ import numpy as _np
 from sys import byteorder as _byteorder
 
 
-try:
-    _range = xrange
-except NameError:
-    _range = range
-
-
 # Many-many relation
 _data_type_relation = [
     ('int8', 'i1'),
@@ -780,7 +774,7 @@ class PlyElement(object):
         '''
         self._data = _np.empty(self.count, dtype=self.dtype(byte_order))
 
-        for k in _range(self.count):
+        for k in range(self.count):
             for prop in self.properties:
                 try:
                     self._data[prop.name][k] = \
