@@ -3,6 +3,11 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Changed
+- Package metadata management via PDM, rather than `setuptools`.
+
+### Fixed
+- Project classifiers array.
 
 ## [0.8] - 2023-03-17
 ### Added
