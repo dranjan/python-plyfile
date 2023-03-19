@@ -17,31 +17,30 @@ The PLY format is documented
 
 ### Optional dependencies
 
-- setuptools (for installation via setup.py)
 - tox (for test suite)
-- py.test and py (for test suite)
+- pytest (for test suite)
 
 ## Installing plyfile
 
 Quick way:
 
-    pip install plyfile
+    pip3 install plyfile
 
 Or clone the repository and run from the project root:
 
-    python setup.py install
+    pip3 install .
 
 Or just copy `plyfile.py` into your GPL-compatible project.
 
 ## Running test suite
 
-Preferred (more comprehensive; requires tox and setuptools):
+Preferred (more comprehensive; requires tox):
 
-    tox -v
+    tox -v --skip-missing-interpreters
 
-Alternate (requires py.test and py):
+Alternate (requires pytest):
 
-    py.test test -v
+    pytest test -v
 
 # Usage
 

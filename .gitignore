@@ -8,3 +8,5 @@ dist/
 .tox
 .cache
 .pytest_cache
+__pypackages__
+pdm.lock

@@ -1,0 +1,34 @@
+[tool]
+[tool.pdm]
+
+[project]
+name = "plyfile"
+version = "0.8"
+description = "PLY file reader/writer"
+authors = [
+    {name = "Darsh Ranjan", email = "dranjan@berkeley.edu"},
+]
+dependencies = ["numpy>=1.17"]
+requires-python = ">=3.7"
+readme = "README.md"
+license = {file = "COPYING"}
+keywords = ["ply", "numpy"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://github.com/dranjan/python-plyfile"
+Downloads = "https://github.com/dranjan/python-plyfile/archive/v0.8.tar.gz"
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
