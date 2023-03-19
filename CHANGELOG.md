@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [0.8.1] - 2023-03-18
 ### Changed
 - Package metadata management via PDM, rather than `setuptools`.
 
@@ -117,7 +119,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.8...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/dranjan/python-plyfile/compare/v0.8...v0.8.1
 [0.8]: https://github.com/dranjan/python-plyfile/compare/v0.7.4...v0.8
 [0.7.4]: https://github.com/dranjan/python-plyfile/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/dranjan/python-plyfile/compare/v0.7.2...v0.7.3
