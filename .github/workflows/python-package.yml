@@ -7,7 +7,18 @@ on:
         branches: [ "master" ]
 
 jobs:
-    build:
+    pre_test:
+        runs-on: ubuntu-latest
+        outputs:
+            should_skip: ${{ steps.skip_check.outputs.should_skip }}
+        steps:
+        - id: skip_check
+          uses: fkirc/skip-duplicate-actions@v5
+          with:
+              do_not_skip: '["pull_request"]'
+    test:
+        needs: pre_test
+        if: needs.pre_test.outputs.should_skip != 'true'
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
