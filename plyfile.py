@@ -662,8 +662,6 @@ class PlyElement(object):
         if text:
             self._read_txt(stream)
         else:
-            if known_list_len is None:
-                known_list_len = {}
             list_prop_names = set(p.name for p in self.properties
                                   if isinstance(p, PlyListProperty))
             can_mmap_lists = list_prop_names <= set(known_list_len)
