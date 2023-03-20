@@ -319,9 +319,6 @@ class PlyData(object):
             "obj_info ..." instead of "comment ...".
 
         '''
-        if byte_order == '=' and not text:
-            byte_order = _native_byte_order
-
         self.byte_order = byte_order
         self.text = text
 
@@ -339,6 +336,8 @@ class PlyData(object):
     elements = property(_get_elements, _set_elements)
 
     def _get_byte_order(self):
+        if not self.text and self._byte_order == '=':
+            return _native_byte_order
         return self._byte_order
 
     def _set_byte_order(self, byte_order):
