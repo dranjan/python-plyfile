@@ -85,54 +85,64 @@ def _lookup_type(type_str):
 
 class _PlyHeaderLines(object):
     def __init__(self, stream):
-        s = stream.read(4)
+        s = self._decode(stream.read(4))
         self.chars = []
-        if s[:3].decode('ascii') != 'ply':
+        if s[:3] != 'ply':
             raise PlyHeaderParseError("expected 'ply'", 1)
         self.nl = s[3:]
-        if s[3:] == b'\r':
-            c = stream.read(1)
-            if c == b'\n':
+        if s[3:] =='\r':
+            c = self._decode(stream.read(1))
+            if c == '\n':
                 self.nl += c
             else:
                 self.chars.append(c)
-        elif s[3:] != b'\n':
+        elif s[3:] != '\n':
             raise PlyHeaderParseError("unexpected characters after 'ply'", 1)
         self.stream = stream
         self.len_nl = len(self.nl)
         self.done = False
         self.lines = 1
 
+    @staticmethod
+    def _decode(s):
+        if isinstance(s, str):
+            return s
+        return s.decode('ascii')
+
     def __iter__(self):
         while not self.done:
             self.lines += 1
-            while b''.join(self.chars[-self.len_nl:]) != self.nl:
-                char = self.stream.read(1)
+            while ''.join(self.chars[-self.len_nl:]) != self.nl:
+                char = self._decode(self.stream.read(1))
                 if not char:
                     raise PlyHeaderParseError("early end-of-file", self.lines)
                 self.chars.append(char)
-            line = b''.join(self.chars[:-self.len_nl])
+            line = ''.join(self.chars[:-self.len_nl])
             self.chars = []
-            if line == b'end_header':
+            if line == 'end_header':
                 self.done = True
             yield line
 
 
 class _PlyHeaderParser(object):
-    def __init__(self):
+    def __init__(self, lines):
         self.format = None
         self.elements = []
         self.comments = []
         self.obj_info = []
         self.lines = 1
         self._allowed = ['format', 'comment', 'obj_info']
+        for line in lines:
+            self.consume(line)
+        if self._allowed:
+            self._error("early end-of-file")
 
     def consume(self, raw_line):
         self.lines += 1
         if not raw_line:
             self._error("early end-of-file")
 
-        line = raw_line.decode('ascii').strip()
+        line = raw_line.strip()
         try:
             keyword = line.split(None, 1)[0]
         except IndexError:
@@ -375,13 +385,10 @@ class PlyData(object):
     @staticmethod
     def _parse_header(stream):
         '''
-        Parse a PLY header from a readable file-like stream.
+        Parse a PLY header from input lines.
 
         '''
-        parser = _PlyHeaderParser()
-        for line in iter(_PlyHeaderLines(stream)):
-            parser.consume(line)
-
+        parser = _PlyHeaderParser(_PlyHeaderLines(stream))
         return PlyData(
             [PlyElement(*e) for e in parser.elements],
             parser.format == 'ascii',
@@ -410,10 +417,19 @@ class PlyData(object):
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
-            if data.text:
-                stream = _io.TextIOWrapper(stream)
+            if isinstance(stream.read(0), str):
+                if data.text:
+                    data_stream = stream
+                else:
+                    raise PlyParseError("can't read binary-format PLY "
+                                        "from text stream")
+            else:
+                if data.text:
+                    data_stream = _io.TextIOWrapper(stream, 'ascii')
+                else:
+                    data_stream = stream
             for elt in data:
-                elt._read(stream, data.text, data.byte_order, mmap,
+                elt._read(data_stream, data.text, data.byte_order, mmap,
                           known_list_len=known_list_len.get(elt.name, {}))
         finally:
             if must_close:
@@ -428,8 +444,20 @@ class PlyData(object):
         '''
         (must_close, stream) = _open_stream(stream, 'write')
         try:
-            stream.write(self.header.encode('ascii'))
-            stream.write(b'\n')
+            try:
+                stream.write(b'')
+                binary_stream = True
+            except TypeError:
+                binary_stream = False
+            if binary_stream:
+                stream.write(self.header.encode('ascii'))
+                stream.write(b'\n')
+            else:
+                if not self.text:
+                    raise ValueError("can't write binary-format PLY to "
+                                     "text stream")
+                stream.write(self.header)
+                stream.write('\n')
             for elt in self:
                 elt._write(stream, self.text, self.byte_order)
         finally:

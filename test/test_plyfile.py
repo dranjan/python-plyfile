@@ -1,16 +1,17 @@
 from __future__ import print_function
 
 import sys
-from io import (BytesIO, TextIOWrapper)
+from io import (BytesIO, StringIO, TextIOWrapper)
 import gzip
 
 import pytest
 
 import numpy
 
-from plyfile import (PlyData, PlyElement,
-                     PlyHeaderParseError, PlyElementParseError,
-                     PlyProperty)
+from plyfile import (
+    PlyData, PlyElement, PlyProperty,
+    PlyParseError, PlyHeaderParseError, PlyElementParseError,
+)
 
 
 class Raises(object):
@@ -911,10 +912,43 @@ def test_newlines_binary(text, byte_order, newline):
     data = ply_str[header_len:]
 
     stream1 = BytesIO()
-    txt = TextIOWrapper(stream1, newline=newline,
+    txt = TextIOWrapper(stream1, 'ascii', newline=newline,
                         write_through=True)
     txt.write(header)
     stream1.write(data)
 
     ply1 = PlyData.read(BytesIO(stream1.getvalue()))
     verify(ply0, ply1)
+
+
+def test_text_io(tet_ply_txt):
+    ply0 = tet_ply_txt
+    stream0 = StringIO()
+    ply0.write(stream0)
+    stream1 = StringIO(stream0.getvalue())
+    ply1 = PlyData.read(stream1)
+    verify(ply0, ply1)
+
+
+def test_text_io_bad_write(tet_ply_txt):
+    ply0 = tet_ply_txt
+    ply0.text = False
+    stream0 = StringIO()
+    with Raises(ValueError) as e:
+        ply0.write(stream0)
+    assert str(e) == "can't write binary-format PLY to text stream"
+
+
+def test_text_io_bad_read(tet_ply_txt):
+    # Use valid ASCII bytes
+    vertex_data = numpy.array(
+        [(64, 64, 64), (64, 64, 64)],
+        dtype=[('x', 'u1'), ('y', 'u1'), ('z', 'u1')])
+    elt = PlyElement.describe(vertex_data, 'vertex')
+    ply0 = PlyData([elt], text=False)
+    stream0 = BytesIO()
+    ply0.write(stream0)
+    stream1 = TextIOWrapper(BytesIO(stream0.getvalue()), 'ascii')
+    with Raises(PlyParseError) as e:
+        ply1 = PlyData.read(stream1)
+    assert str(e) == "can't read binary-format PLY from text stream"
