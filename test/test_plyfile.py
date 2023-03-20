@@ -8,7 +8,7 @@ import pytest
 
 import numpy
 
-from plyfile import (PlyData, PlyElement, make2d,
+from plyfile import (PlyData, PlyElement,
                      PlyHeaderParseError, PlyElementParseError,
                      PlyProperty)
 
@@ -471,15 +471,6 @@ def test_assign_comments_non_ascii(tet_ply_txt):
 
     with Raises(ValueError):
         ply0['face'].comments = ['\xb0']
-
-
-def test_make2d():
-    a = numpy.empty(2, dtype=object)
-    a[:] = [numpy.array([0, 1, 2]), numpy.array([3, 4, 5])]
-
-    b = make2d(a)
-    assert b.shape == (2, 3)
-    assert (b == [[0, 1, 2], [3, 4, 5]]).all()
 
 
 def test_reorder_elements(tet_ply_txt, tmpdir):

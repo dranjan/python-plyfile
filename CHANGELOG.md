@@ -3,6 +3,9 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Removed
+- Python2-specific code paths.
+- `make2d` function (redundant with `numpy.vstack`).
 
 ## [0.8.1] - 2023-03-18
 ### Changed

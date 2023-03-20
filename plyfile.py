@@ -82,21 +82,6 @@ def _lookup_type(type_str):
     return _data_type_reverse[type_str]
 
 
-def make2d(array, cols=None, dtype=None):
-    '''
-    Make a 2D array from an array of arrays.  The `cols' and `dtype'
-    arguments can be omitted if the array is not empty.
-
-    '''
-    if not len(array):
-        if cols is None or dtype is None:
-            raise RuntimeError(
-                "cols and dtype must be specified for empty array"
-            )
-        return _np.empty((0, cols), dtype=dtype)
-    return _np.vstack(array)
-
-
 class _PlyHeaderParser(object):
     def __init__(self):
         self.format = None
