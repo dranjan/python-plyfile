@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import sys
-from io import BytesIO
+from io import (BytesIO, TextIOWrapper)
 import gzip
 
 import pytest
@@ -922,8 +922,29 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
     assert e.exc_val.prop.name == 'vertex_indices'
 
 
-def test_mac_newlines(tet_ply_txt):
+def test_mac_newlines_ascii(tet_ply_txt):
     ply0 = tet_ply_txt
     f = BytesIO(tet_ply_ascii_mac)
     ply1 = PlyData.read(f)
+    verify(ply0, ply1)
+
+
+@pytest.mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_newlines_binary(newline):
+    ply0 = tet_ply(False, '<')
+    header = ply0.header + '\n'
+    header_len = len(header)
+
+    stream0 = BytesIO()
+    ply0.write(stream0)
+    ply_str = stream0.getvalue()
+    data = ply_str[header_len:]
+
+    stream1 = BytesIO()
+    txt = TextIOWrapper(stream1, newline=newline,
+                        write_through=True)
+    txt.write(header)
+    stream1.write(data)
+
+    ply1 = PlyData.read(BytesIO(stream1.getvalue()))
     verify(ply0, ply1)
