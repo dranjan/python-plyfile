@@ -84,7 +84,22 @@ def _lookup_type(type_str):
 
 
 class _PlyHeaderLines(object):
+    """
+    Generator over lines in the PLY header.
+
+    LF, CR, and CRLF line endings are supported.
+    """
+
     def __init__(self, stream):
+        """
+        Parameters
+        ----------
+        stream : text or binary stream.
+
+        Raises
+        ------
+        PlyHeaderParseError
+        """
         s = self._decode(stream.read(4))
         self.chars = []
         if s[:3] != 'ply':
@@ -106,11 +121,21 @@ class _PlyHeaderLines(object):
 
     @staticmethod
     def _decode(s):
+        """
+        Convert input `str` or `bytes` instance to `str`, decoding
+        as ASCII if necessary.
+        """
         if isinstance(s, str):
             return s
         return s.decode('ascii')
 
     def __iter__(self):
+        """
+        Yields
+        ------
+        line : str
+            Decoded line with newline removed.
+        """
         while not self.done:
             self.lines += 1
             while ''.join(self.chars[-self.len_nl:]) != self.nl:
@@ -127,7 +152,30 @@ class _PlyHeaderLines(object):
 
 
 class _PlyHeaderParser(object):
+    """
+    Parser for PLY format header.
+
+    Attributes
+    ----------
+    format : str
+        "ascii", "binary_little_endian", or "binary_big_endian"
+    elements : list of (name, comments, count, properties)
+    comments : list of str
+    obj_info : list of str
+    lines : int
+    """
+
     def __init__(self, lines):
+        """
+        Parameters
+        ----------
+        lines : iterable of str
+            Header lines, starting *after* the "ply" line.
+
+        Raises
+        ------
+        PlyHeaderParseError
+        """
         self.format = None
         self.elements = []
         self.comments = []
@@ -140,6 +188,9 @@ class _PlyHeaderParser(object):
             self._error("early end-of-file")
 
     def consume(self, raw_line):
+        """
+        Parse and internalize one line of input.
+        """
         self.lines += 1
         if not raw_line:
             self._error("early end-of-file")
@@ -154,11 +205,24 @@ class _PlyHeaderParser(object):
             self._error("expected one of {%s}" %
                         ", ".join(self._allowed))
 
+        # This dynamic method lookup pattern is somewhat questionable,
+        # but it's probably not worth replacing it with something more
+        # principled but also more complex.
         getattr(self, 'parse_' + keyword)(line[len(keyword)+1:])
         return self._allowed
 
     def _error(self, message="parse error"):
         raise PlyHeaderParseError(message, self.lines)
+
+    # The parse_* methods below are used to parse all the different
+    # types of PLY header lines. (See `consume` above for the call site,
+    # which uses dynamic lookup.) Each method accepts a single argument,
+    # which is the remainder of the header line after the first word,
+    # and the method does two things:
+    # - internalize the semantic content of the string into the
+    #   instance's attributes, and
+    # - set self._allowed to a list of the line types that can come
+    #   next.
 
     def parse_format(self, data):
         fields = data.strip().split()
@@ -167,7 +231,7 @@ class _PlyHeaderParser(object):
 
         self.format = fields[0]
         if self.format not in _byte_order_map:
-            self._error("don't understand format %r" % format)
+            self._error("don't understand format %r" % self.format)
 
         if fields[1] != '1.0':
             self._error("expected version '1.0'")
@@ -233,24 +297,24 @@ class _PlyHeaderParser(object):
 
 
 class PlyParseError(Exception):
-
-    '''
+    """
     Base class for PLY parsing errors.
-
-    '''
+    """
 
     pass
 
 
 class PlyElementParseError(PlyParseError):
-
-    '''
+    """
     Raised when a PLY element cannot be parsed.
 
-    The attributes `element', `row', `property', and `message' give
-    additional information.
-
-    '''
+    Attributes
+    ----------
+    message : str
+    element : PlyElement
+    row : int
+    prop : PlyProperty
+    """
 
     def __init__(self, message, element=None, row=None, prop=None):
         self.message = message
@@ -276,13 +340,14 @@ class PlyElementParseError(PlyParseError):
 
 
 class PlyHeaderParseError(PlyParseError):
-
-    '''
+    """
     Raised when a PLY header cannot be parsed.
 
-    The attribute `line' provides additional information.
-
-    '''
+    Attributes
+    ----------
+    line : str
+        Which header line the error occurred on.
+    """
 
     def __init__(self, message, line=None):
         self.message = message
@@ -302,8 +367,7 @@ class PlyHeaderParseError(PlyParseError):
 
 
 class PlyData(object):
-
-    '''
+    """
     PLY file header and data.
 
     A PlyData instance is created in one of two ways: by the static
@@ -311,26 +375,34 @@ class PlyData(object):
     given a sequence of elements (which can then be written to a PLY
     file).
 
-    '''
+    Attributes
+    ----------
+    elements : list of PlyElement
+    comments : list of str
+    obj_info : list of str
+    text : bool
+    byte_order : {'<', '>', '='}
+    header : str
+    """
 
     def __init__(self, elements=[], text=False, byte_order='=',
                  comments=[], obj_info=[]):
-        '''
-        elements: sequence of PlyElement instances.
-
-        text: whether the resulting PLY file will be text (True) or
+        """
+        Parameters
+        ----------
+        elements : iterable of PlyElement
+        text : bool
+            Whether the resulting PLY file will be text (True) or
             binary (False).
-
-        byte_order: '<' for little-endian, '>' for big-endian, or '='
-            for native.  This is only relevant if `text' is False.
-
-        comments: sequence of strings that will be placed in the header
-            between the 'ply' and 'format ...' lines.
-
-        obj_info: like comments, but will be placed in the header with
+        byte_order : {'<', '>', '='}
+            '<' for little-endian, '>' for big-endian, or '='
+            for native.  This is only relevant if `text` is False.
+        comments : iterable of str
+            Comment lines between 'ply' and 'format' lines.
+        obj_info : iterable of str
+            like comments, but will be placed in the header with
             "obj_info ..." instead of "comment ...".
-
-        '''
+        """
         self.byte_order = byte_order
         self.text = text
 
@@ -386,10 +458,6 @@ class PlyData(object):
 
     @staticmethod
     def _parse_header(stream):
-        '''
-        Parse a PLY header from input lines.
-
-        '''
         parser = _PlyHeaderParser(_PlyHeaderLines(stream))
         return PlyData(
             [PlyElement(*e) for e in parser.elements],
@@ -401,21 +469,31 @@ class PlyData(object):
 
     @staticmethod
     def read(stream, mmap=True, known_list_len={}):
-        '''
+        """
         Read PLY data from a readable file-like object or filename.
 
-        mmap (optional): whether to allow element data to be
-            memory-mapped when possible. The default is True, which
-            allows memory mapping.  Using False will prevent memory
-            mapping.
+        Parameters
+        ----------
+        stream : str or readable open file
+        mmap : bool, optional (default=True)
+            Whether to allow element data to be memory-mapped when
+            possible. The default is `True`, which allows memory
+            mapping. Using `False` will prevent memory mapping.
 
-        known_list_len (optional): mapping from element names to
-            mappings from list property names to their fixed lengths.
-            This optional argument is necessary to enable memory mapping
-            of elements that contain list properties. (Note that
-            elements with variable-length list properties cannot be
-            memory-mapped.)
-        '''
+        known_list_len : dict, optional
+            Mapping from element names to mappings from list property
+            names to their fixed lengths.  This optional argument is
+            necessary to enable memory mapping of elements that contain
+            list properties. (Note that elements with variable-length
+            list properties cannot be memory-mapped.)
+
+        Raises
+        ------
+        PlyParseError
+        ValueError
+            If `stream` is open in text mode but the PLY header
+            indicates binary encoding.
+        """
         (must_close, stream) = _open_stream(stream, 'read')
         try:
             data = PlyData._parse_header(stream)
@@ -440,10 +518,19 @@ class PlyData(object):
         return data
 
     def write(self, stream):
-        '''
+        """
         Write PLY data to a writeable file-like object or filename.
 
-        '''
+        Parameters
+        ----------
+        stream : str or writeable open file
+
+        Raises
+        ------
+        ValueError
+            If `stream` is open in text mode and the file to be written
+            is binary-format.
+        """
         (must_close, stream) = _open_stream(stream, 'write')
         try:
             try:
@@ -468,10 +555,9 @@ class PlyData(object):
 
     @property
     def header(self):
-        '''
-        Provide PLY-formatted metadata for the instance.
-
-        '''
+        """
+        PLY-formatted metadata for the instance.
+        """
         lines = ['ply']
 
         if self.text:
@@ -494,15 +580,40 @@ class PlyData(object):
         return '\n'.join(lines)
 
     def __iter__(self):
+        """
+        Iterate over the elements.
+        """
         return iter(self.elements)
 
     def __len__(self):
+        """
+        Return the number of elements.
+        """
         return len(self.elements)
 
     def __contains__(self, name):
+        """
+        Check if an element with the given name exists.
+        """
         return name in self._element_lookup
 
     def __getitem__(self, name):
+        """
+        Retrieve an element by name.
+
+        Parameters
+        ----------
+        name : str
+
+        Returns
+        -------
+        PlyElement
+
+        Raises
+        ------
+        KeyError
+            If the element can't be found.
+        """
         return self._element_lookup[name]
 
     def __str__(self):
@@ -516,6 +627,29 @@ class PlyData(object):
 
 
 def _open_stream(stream, read_or_write):
+    """
+    Normalizing function: given a filename or open stream,
+    return an open stream.
+
+    Parameters
+    ----------
+    stream : str or open file-like object
+    read_or_write : str
+        "read" or "write", the method to be used on the stream.
+
+    Returns
+    -------
+    must_close : bool
+        Whether `.close` needs to be called on the file object
+        by the caller (i.e., it wasn't already open).
+    file : file-like object
+
+    Raises
+    ------
+    TypeError
+        If `stream` is neither a string nor has the
+        `read_or_write`-indicated method.
+    """
     if hasattr(stream, read_or_write):
         return (False, stream)
     try:
@@ -525,28 +659,38 @@ def _open_stream(stream, read_or_write):
 
 
 class PlyElement(object):
-
-    '''
+    """
     PLY file element.
 
-    A client of this library doesn't normally need to instantiate this
-    directly, so the following is only for the sake of documenting the
-    internals.
+    Creating a `PlyElement` instance is generally done in one of two
+    ways: as a byproduct of `PlyData.read` (when reading a PLY file) and
+    by `PlyElement.describe` (before writing a PLY file).
 
-    Creating a PlyElement instance is generally done in one of two ways:
-    as a byproduct of PlyData.read (when reading a PLY file) and by
-    PlyElement.describe (before writing a PLY file).
-
-    '''
+    Attributes
+    ----------
+    name : str
+    count : int
+    data : numpy.ndarray
+    properties : list of PlyProperty
+    comments : list of str
+    header : str
+        PLY header block for this element.
+    """
 
     def __init__(self, name, properties, count, comments=[]):
-        '''
+        """
         This is not part of the public interface.  The preferred methods
-        of obtaining PlyElement instances are PlyData.read (to read from
-        a file) and PlyElement.describe (to construct from a numpy
-        array).
+        of obtaining `PlyElement` instances are `PlyData.read` (to read
+        from a file) and `PlyElement.describe` (to construct from a
+        `numpy` array).
 
-        '''
+        Parameters
+        ----------
+        name : str
+        properties : list of PlyProperty
+        count : str
+        comments : list of str
+        """
         _check_name(name)
         self._name = str(name)
         self._count = count
@@ -604,6 +748,22 @@ class PlyElement(object):
             raise ValueError("two properties with same name")
 
     def ply_property(self, name):
+        """
+        Look up property by name.
+
+        Parameters
+        ----------
+        name : str
+
+        Returns
+        -------
+        PlyProperty
+
+        Raises
+        ------
+        KeyError
+            If the property can't be found.
+        """
         return self._property_lookup[name]
 
     @property
@@ -611,30 +771,54 @@ class PlyElement(object):
         return self._name
 
     def dtype(self, byte_order='='):
-        '''
+        """
         Return the numpy dtype of the in-memory representation of the
         data.  (If there are no list properties, and the PLY format is
         binary, then this also accurately describes the on-disk
         representation of the element.)
 
-        '''
+        Parameters
+        ----------
+        byte_order : {'<', '>', '='}
+
+        Returns
+        -------
+        numpy.dtype
+        """
         return _np.dtype([(prop.name, prop.dtype(byte_order))
                           for prop in self.properties])
 
     @staticmethod
     def describe(data, name, len_types={}, val_types={},
                  comments=[]):
-        '''
-        Construct a PlyElement from an array's metadata.
+        """
+        Construct a `PlyElement` instance from an array's metadata.
 
-        len_types and val_types can be given as mappings from list
-        property names to type strings (like 'u1', 'f4', etc., or
-        'int8', 'float32', etc.). These can be used to define the length
-        and value types of list properties.  List property lengths
-        always default to type 'u1' (8-bit unsigned integer), and value
-        types default to 'i4' (32-bit integer).
+        Parameters
+        ----------
+        data : numpy.ndarray
+            Structured `numpy` array.
+        len_types : dict, optional
+            Mapping from list property names to type strings (like 'u1',
+            'f4', etc., or 'int8', 'float32', etc.), which will be used
+            to encode the length of the list in binary-format PLY files.
+            Defaults to 'u1' (8-bit integer) for all list properties.
+        val_types : dict, optional
+            Mapping from list property names to type strings as for `len_types`,
+            but is used to encode the list elements in binary-format PLY files.
+            Defaults to 'i4' (32-bit integer) for all list properties.
+        comments : list of str
+            Comments between the "element" line and first property definition
+            in the header.
 
-        '''
+        Returns
+        -------
+        PlyElement
+
+        Raises
+        ------
+        TypeError, ValueError
+        """
         if not isinstance(data, _np.ndarray):
             raise TypeError("only numpy arrays are supported")
 
@@ -684,10 +868,17 @@ class PlyElement(object):
 
     def _read(self, stream, text, byte_order, mmap,
               known_list_len={}):
-        '''
+        """
         Read the actual data from a PLY file.
 
-        '''
+        Parameters
+        ----------
+        stream : readable open file
+        text : bool
+        byte_order : {'<', '>', '='}
+        mmap : bool
+        known_list_len : dict
+        """
         if text:
             self._read_txt(stream)
         else:
@@ -705,10 +896,15 @@ class PlyElement(object):
         self._check_sanity()
 
     def _write(self, stream, text, byte_order):
-        '''
+        """
         Write the data to a PLY file.
 
-        '''
+        Parameters
+        ----------
+        stream : writeable open file
+        text : bool
+        byte_order : {'<', '>', '='}
+        """
         if text:
             self._write_txt(stream)
         else:
@@ -723,6 +919,15 @@ class PlyElement(object):
                                               copy=False).data)
 
     def _read_mmap(self, stream, byte_order, known_list_len):
+        """
+        Memory-map an input file as `self.data`.
+
+        Parameters
+        ----------
+        stream : readable open file
+        byte_order : {'<', '>', '='}
+        known_list_len : dict
+        """
         list_len_props = {}
         # update the dtype to include the list length and list dtype
         new_dtype = []
@@ -766,11 +971,14 @@ class PlyElement(object):
         self._data = self._data[props]
 
     def _read_txt(self, stream):
-        '''
+        """
         Load a PLY element from an ASCII-format PLY file.  The element
         may contain list properties.
 
-        '''
+        Parameters
+        ----------
+        stream : readable open file
+        """
         self._data = _np.empty(self.count, dtype=self.dtype())
 
         k = 0
@@ -799,11 +1007,14 @@ class PlyElement(object):
             raise PlyElementParseError("early end-of-file", self, k)
 
     def _write_txt(self, stream):
-        '''
+        """
         Save a PLY element to an ASCII-format PLY file.  The element may
         contain list properties.
 
-        '''
+        Parameters
+        ----------
+        stream : writeable open file
+        """
         for rec in self.data:
             fields = []
             for prop in self.properties:
@@ -812,11 +1023,15 @@ class PlyElement(object):
             _np.savetxt(stream, [fields], '%.18g', newline='\n')
 
     def _read_bin(self, stream, byte_order):
-        '''
+        """
         Load a PLY element from a binary PLY file.  The element may
         contain list properties.
 
-        '''
+        Parameters
+        ----------
+        stream : readable open file
+        byte_order : {'<', '>', '='}
+        """
         self._data = _np.empty(self.count, dtype=self.dtype(byte_order))
 
         for k in range(self.count):
@@ -829,22 +1044,21 @@ class PlyElement(object):
                                                self, k, prop)
 
     def _write_bin(self, stream, byte_order):
-        '''
+        """
         Save a PLY element to a binary PLY file.  The element may
         contain list properties.
 
-        '''
+        Parameters
+        ----------
+        stream : writeable open file
+        byte_order : {'<', '>', '='}
+        """
         for rec in self.data:
             for prop in self.properties:
                 prop._write_bin(rec[prop.name], stream, byte_order)
 
     @property
     def header(self):
-        '''
-        Format this element's metadata as it would appear in a PLY
-        header.
-
-        '''
         lines = ['element %s %d' % (self.name, self.count)]
 
         # Some information is lost here, since all comments are placed
@@ -857,15 +1071,27 @@ class PlyElement(object):
         return '\n'.join(lines)
 
     def __len__(self):
+        """
+        Return the number of rows in the element.
+        """
         return self.count
 
     def __contains__(self, name):
+        """
+        Determine if a property with the given name exists.
+        """
         return name in self._property_lookup
 
     def __getitem__(self, key):
+        """
+        Proxy to `self.data.__getitem__` for convenience.
+        """
         return self.data[key]
 
     def __setitem__(self, key, value):
+        """
+        Proxy to `self.data.__setitem__` for convenience.
+        """
         self.data[key] = value
 
     def __str__(self):
@@ -878,6 +1104,18 @@ class PlyElement(object):
 
 
 def _check_comments(comments):
+    """
+    Check that the given comments can be safely used in a PLY header.
+
+    Parameters
+    ----------
+    comments : list of str
+
+    Raises
+    ------
+    ValueError
+        If the check fails.
+    """
     for comment in comments:
         for char in comment:
             if not 0 <= ord(char) < 128:
@@ -887,14 +1125,26 @@ def _check_comments(comments):
 
 
 class PlyProperty(object):
+    """
+    PLY property description.
 
-    '''
-    PLY property description.  This class is pure metadata; the data
-    itself is contained in PlyElement instances.
+    This class is pure metadata; the data itself is contained in
+    PlyElement instances.
 
-    '''
+    Attributes
+    ----------
+    name : str
+    val_dtype : str
+        `numpy` `dtype` string for the property's data.
+    """
 
     def __init__(self, name, val_dtype):
+        """
+        Parameters
+        ----------
+        name : str
+        val_dtype : str
+        """
         _check_name(name)
         self._name = str(name)
         self.val_dtype = val_dtype
@@ -912,44 +1162,83 @@ class PlyProperty(object):
         return self._name
 
     def dtype(self, byte_order='='):
-        '''
-        Return the numpy dtype description for this property (as a tuple
-        of strings).
+        """
+        Return the `numpy` `dtype` description for this property.
 
-        '''
+        Parameters
+        ----------
+        byte_order : {'<', '>', '='}, default='='
+
+        Returns
+        -------
+        tuple of str
+        """
         return byte_order + self.val_dtype
 
     def _from_fields(self, fields):
-        '''
-        Parse from generator.  Raise StopIteration if the property could
-        not be read.
+        """
+        Parse data from generator.
 
-        '''
+        Parameters
+        ----------
+        fields : iterator of str
+
+        Returns
+        -------
+        data
+            Parsed data of the correct type.
+
+        Raises
+        ------
+        StopIteration
+            if the property's data could not be read.
+        """
         return _np.dtype(self.dtype()).type(next(fields))
 
     def _to_fields(self, data):
-        '''
-        Return generator over one item.
+        """
+        Parameters
+        ----------
+        data
+            Property data to encode.
 
-        '''
+        Yields
+        ------
+        encoded_data
+            Data with type consistent with `self.val_dtype`.
+        """
         yield _np.dtype(self.dtype()).type(data)
 
     def _read_bin(self, stream, byte_order):
-        '''
-        Read data from a binary stream.  Raise StopIteration if the
-        property could not be read.
+        """
+        Read data from a binary stream.
 
-        '''
+        Parameters
+        ----------
+        stream : readable open binary file
+        byte_order : {'<'. '>', '='}
+
+        Raises
+        ------
+        StopIteration
+            If the property data could not be read.
+        """
         try:
             return _read_array(stream, self.dtype(byte_order), 1)[0]
         except IndexError:
             raise StopIteration
 
     def _write_bin(self, data, stream, byte_order):
-        '''
+        """
         Write data to a binary stream.
 
-        '''
+        Parameters
+        ----------
+        data
+            Property data to encode.
+        stream : writeable open binary file
+        byte_order : {'<', '>', '='}
+        """
         _write_array(stream, _np.dtype(self.dtype(byte_order)).type(data))
 
     def __str__(self):
@@ -962,13 +1251,25 @@ class PlyProperty(object):
 
 
 class PlyListProperty(PlyProperty):
-
-    '''
+    """
     PLY list property description.
 
-    '''
+    Attributes
+    ----------
+    name
+    val_dtype
+    len_dtype : str
+        `numpy` `dtype` for the property's length field.
+    """
 
     def __init__(self, name, len_dtype, val_dtype):
+        """
+        Parameters
+        ----------
+        name : str
+        len_dtype : str
+        val_dtype : str
+        """
         PlyProperty.__init__(self, name, val_dtype)
 
         self.len_dtype = len_dtype
@@ -982,22 +1283,56 @@ class PlyListProperty(PlyProperty):
     len_dtype = property(_get_len_dtype, _set_len_dtype)
 
     def dtype(self, byte_order='='):
-        '''
+        """
+        `dtype` name for the property's field in the element.
+
         List properties always have a numpy dtype of "object".
 
-        '''
+        Parameters
+        ----------
+        byte_order : {'<', '>', '='}
+
+        Returns
+        -------
+        '|O'
+        """
         return '|O'
 
     def list_dtype(self, byte_order='='):
-        '''
-        Return the pair (len_dtype, val_dtype) (both numpy-friendly
+        """
+        Return the pair `(len_dtype, val_dtype)` (both numpy-friendly
         strings).
 
-        '''
+        Parameters
+        ----------
+        byte_order : {'<', '>', '='}
+
+        Returns
+        -------
+        len_dtype : str
+        val_dtype : str
+        """
         return (byte_order + self.len_dtype,
                 byte_order + self.val_dtype)
 
     def _from_fields(self, fields):
+        """
+        Parse data from generator.
+
+        Parameters
+        ----------
+        fields : iterator of str
+
+        Returns
+        -------
+        data : numpy.ndarray
+            Parsed list data for the property.
+
+        Raises
+        ------
+        StopIteration
+            if the property's data could not be read.
+        """
         (len_t, val_t) = self.list_dtype()
 
         n = int(_np.dtype(len_t).type(next(fields)))
@@ -1009,11 +1344,19 @@ class PlyListProperty(PlyProperty):
         return data
 
     def _to_fields(self, data):
-        '''
+        """
         Return generator over the (numerical) PLY representation of the
         list data (length followed by actual data).
 
-        '''
+        Parameters
+        ----------
+        data : numpy.ndarray
+            Property data to encode.
+
+        Yields
+        ------
+        Length followed by each list element.
+        """
         (len_t, val_t) = self.list_dtype()
 
         data = _np.asarray(data, dtype=val_t).ravel()
@@ -1023,6 +1366,23 @@ class PlyListProperty(PlyProperty):
             yield x
 
     def _read_bin(self, stream, byte_order):
+        """
+        Read data from a binary stream.
+
+        Parameters
+        ----------
+        stream : readable open binary file
+        byte_order : {'<', '>', '='}
+
+        Returns
+        -------
+        data : numpy.ndarray
+
+        Raises
+        ------
+        StopIteration
+            If data could not be read.
+        """
         (len_t, val_t) = self.list_dtype(byte_order)
 
         try:
@@ -1037,10 +1397,16 @@ class PlyListProperty(PlyProperty):
         return data
 
     def _write_bin(self, data, stream, byte_order):
-        '''
+        """
         Write data to a binary stream.
 
-        '''
+        Parameters
+        ----------
+        data : numpy.ndarray
+            Data to encode.
+        stream : writeable open binary file
+        byte_order : {'<', '>', '='}
+        """
         (len_t, val_t) = self.list_dtype(byte_order)
 
         data = _np.asarray(data, dtype=val_t).ravel()
@@ -1061,6 +1427,19 @@ class PlyListProperty(PlyProperty):
 
 
 def _check_name(name):
+    """
+    Check that a string can be safely be used as the name of an element
+    or property in a PLY file.
+
+    Parameters
+    ----------
+    name : str
+
+    Raises
+    ------
+    ValueError
+        If the check failed.
+    """
     for char in name:
         if not 0 <= ord(char) < 128:
             raise ValueError("non-ASCII character in name %r" % name)
@@ -1069,6 +1448,24 @@ def _check_name(name):
 
 
 def _read_array(stream, dtype, n):
+    """
+    Read `n` elements of type `dtype` from an open stream.
+
+    Parameters
+    ----------
+    stream : readable open binary file
+    dtype : dtype description
+    n : int
+
+    Returns
+    -------
+    numpy.ndarray
+
+    Raises
+    ------
+    StopIteration
+        If `n` elements could not be read.
+    """
     try:
         size = int(_np.dtype(dtype).itemsize * n)
         return _np.frombuffer(stream.read(size), dtype)
@@ -1077,10 +1474,30 @@ def _read_array(stream, dtype, n):
 
 
 def _write_array(stream, array):
+    """
+    Write `numpy` array to a binary file.
+
+    Parameters
+    ----------
+    stream : writeable open binary file
+    array : numpy.ndarray
+    """
     stream.write(array.tobytes())
 
 
 def _can_mmap(stream):
+    """
+    Determine if a readable stream can be memory-mapped, using some good
+    heuristics.
+
+    Parameters
+    ----------
+    stream : open binary file
+
+    Returns
+    -------
+    bool
+    """
     try:
         pos = stream.tell()
         try:
