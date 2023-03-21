@@ -421,8 +421,8 @@ class PlyData(object):
                 if data.text:
                     data_stream = stream
                 else:
-                    raise PlyParseError("can't read binary-format PLY "
-                                        "from text stream")
+                    raise ValueError("can't read binary-format PLY "
+                                     "from text stream")
             else:
                 if data.text:
                     data_stream = _io.TextIOWrapper(stream, 'ascii')
@@ -519,7 +519,7 @@ def _open_stream(stream, read_or_write):
     try:
         return (True, open(stream, read_or_write[0] + 'b'))
     except TypeError:
-        raise RuntimeError("expected open file or filename")
+        raise TypeError("expected open file or filename")
 
 
 class PlyElement(object):

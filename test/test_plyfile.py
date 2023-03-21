@@ -347,7 +347,7 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
 
 
 def test_write_invalid_filename(tet_ply_txt):
-    with Raises(RuntimeError) as e:
+    with Raises(TypeError) as e:
         tet_ply_txt.write(None)
 
     assert str(e) == "expected open file or filename"
@@ -949,6 +949,6 @@ def test_text_io_bad_read(tet_ply_txt):
     stream0 = BytesIO()
     ply0.write(stream0)
     stream1 = TextIOWrapper(BytesIO(stream0.getvalue()), 'ascii')
-    with Raises(PlyParseError) as e:
+    with Raises(ValueError) as e:
         ply1 = PlyData.read(stream1)
     assert str(e) == "can't read binary-format PLY from text stream"
