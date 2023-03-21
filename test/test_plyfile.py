@@ -16,11 +16,26 @@ from plyfile import (
 
 class Raises(object):
     """
-    Utility: use as a context manager for code that is expected to raise
-    an exception.
+    Context manager for code excpected to raise an exception.
+
+    Exception information is only available after the context has been
+    exited due to a raised exception.
+
+    Attributes
+    ----------
+    exc_type : type
+        The exception type that was raised.
+    exc_val : Exception
+        The raised exception.
+    traceback : traceback
     """
 
     def __init__(self, *exc_types):
+        """
+        Parameters
+        ----------
+        *exc_types : list of type
+        """
         self._exc_types = set(exc_types)
 
     def __enter__(self):
@@ -53,6 +68,15 @@ def normalize_property(prop):
 def verify(ply0, ply1):
     """
     Verify that two PlyData instances describe the same data.
+
+    Parameters
+    ----------
+    ply0 : PlyData
+    ply1 : PlyData
+
+    Raises
+    ------
+    AssertionError
     """
     el0 = ply0.elements
     el1 = ply1.elements
