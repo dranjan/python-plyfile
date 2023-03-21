@@ -15,12 +15,11 @@ from plyfile import (
 
 
 class Raises(object):
-
-    '''
+    """
     Utility: use as a context manager for code that is expected to raise
     an exception.
+    """
 
-    '''
     def __init__(self, *exc_types):
         self._exc_types = set(exc_types)
 
@@ -52,10 +51,9 @@ def normalize_property(prop):
 
 
 def verify(ply0, ply1):
-    '''
+    """
     Verify that two PlyData instances describe the same data.
-
-    '''
+    """
     el0 = ply0.elements
     el1 = ply1.elements
 
@@ -90,11 +88,10 @@ def verify(ply0, ply1):
 
 
 def verify_1d(prop0, prop1):
-    '''
+    """
     Verify that two 1-dimensional arrays (possibly of type object)
     describe the same data.
-
-    '''
+    """
     n = len(prop0)
     assert len(prop1) == n
 
@@ -113,31 +110,28 @@ def verify_1d(prop0, prop1):
 
 
 def verify_comments(comments0, comments1):
-    '''
+    """
     Verify that comment lists are identical.
-
-    '''
+    """
     assert len(comments0) == len(comments1)
     for (comment0, comment1) in zip(comments0, comments1):
         assert comment0 == comment1
 
 
 def write_read(ply, tmpdir, name='test.ply'):
-    '''
+    """
     Utility: serialize/deserialize a PlyData instance through a
     temporary file.
-
-     '''
+    """
     filename = tmpdir.join(name)
     ply.write(str(filename))
     return PlyData.read(str(filename))
 
 
 def read_str(string, tmpdir, name='test.ply'):
-    '''
+    """
     Utility: create a PlyData instance from a string.
-
-    '''
+    """
     filename = tmpdir.join(name)
     with filename.open('wb') as f:
         f.write(string)
