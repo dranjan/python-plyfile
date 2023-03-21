@@ -3,6 +3,12 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- Support for reading ASCII-format PLY files from text streams.
+
+### Fixed
+- Support for reading Mac-style line endings.
+
 ### Removed
 - Python2-specific code paths.
 - `make2d` function (redundant with `numpy.vstack`).
