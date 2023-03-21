@@ -97,7 +97,8 @@ class _PlyHeaderLines(object):
             else:
                 self.chars.append(c)
         elif s[3:] != '\n':
-            raise PlyHeaderParseError("unexpected characters after 'ply'", 1)
+            raise PlyHeaderParseError(
+                "unexpected characters after 'ply'", 1)
         self.stream = stream
         self.len_nl = len(self.nl)
         self.done = False
@@ -115,7 +116,8 @@ class _PlyHeaderLines(object):
             while ''.join(self.chars[-self.len_nl:]) != self.nl:
                 char = self._decode(self.stream.read(1))
                 if not char:
-                    raise PlyHeaderParseError("early end-of-file", self.lines)
+                    raise PlyHeaderParseError("early end-of-file",
+                                              self.lines)
                 self.chars.append(char)
             line = ''.join(self.chars[:-self.len_nl])
             self.chars = []
