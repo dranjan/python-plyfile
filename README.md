@@ -427,6 +427,14 @@ new instances and modifying in place).  For example, a single
 but modifying that instance will then affect all of those containing
 `PlyData` instances.
 
+### Text-mode streams
+
+Input and output on text-mode streams is supported for ASCII-format
+PLY files, but not binary-format PLY files. Input and output on
+binary streams is supported for all valid PLY files. Note that
+`sys.stdout` and `sys.stdin` are text streams, so they can only be
+used directly for ASCII-format PLY files.
+
 # FAQ
 
 ## How do I initialize a list property from two-dimensional array?
@@ -444,19 +452,10 @@ but modifying that instance will then affect all of those containing
 
 ## Can I save a PLY file directly to `sys.stdout`?
 
-On Python 3, you will probably run into issues because `sys.stdout` is a
-text-mode stream and `plyfile` outputs binary data, even for
-ASCII-format PLY files:
-
-```Python Console
->>> import sys
->>> plydata.write(sys.stdout)
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-    File ".../python-plyfile/plyfile.py", line 411, in write
-        stream.write(self.header.encode('ascii'))
-        TypeError: write() argument must be str, not bytes
-```
+Yes, for an ASCII-format PLY file. For binary-format files, it won't
+work directly, since `sys.stdout` is a text-mode stream and binary-format
+files can only be output to binary streams. (ASCII-format files can be
+output to text or binary streams.)
 
 There are a few ways around this.
 - Write to a named file instead. On Linux and some other Unix-likes, you
@@ -473,6 +472,14 @@ There are a few ways around this.
     ```
 
   (source: https://bugs.python.org/issue4571)
+
+## Can I read a PLY file from `sys.stdin`?
+
+The answer is exactly analogous to the situation with writing to
+`sys.stdout`: it works for ASCII-format PLY files but not binary-format
+files. The two workarounds given above also apply: use a named file like
+`/dev/stdin`, or use `sys.stdin.buffer`.
+
 
 # Design philosophy and rationale
 
