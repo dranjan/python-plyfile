@@ -6,6 +6,11 @@ All notable changes to this project will be documented here.
 ### Added
 - Support for reading ASCII-format PLY files from text streams.
 
+### Changed
+- Docstring formatting style:
+  - better PEP-257 compliance;
+  - adoption of NumPy docstring style.
+
 ### Fixed
 - Support for reading Mac-style line endings.
 
