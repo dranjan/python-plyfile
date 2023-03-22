@@ -370,10 +370,10 @@ class PlyData(object):
     """
     PLY file header and data.
 
-    A PlyData instance is created in one of two ways: by the static
-    method PlyData.read (to read a PLY file), or directly from __init__
-    given a sequence of elements (which can then be written to a PLY
-    file).
+    A `PlyData` instance is created in one of two ways: by the static
+    method `PlyData.read` (to read a PLY file), or directly from
+    `__init__` given a sequence of elements (which can then be written
+    to a PLY file).
 
     Attributes
     ----------
@@ -391,15 +391,15 @@ class PlyData(object):
         Parameters
         ----------
         elements : iterable of PlyElement
-        text : bool
+        text : bool, optional
             Whether the resulting PLY file will be text (True) or
             binary (False).
-        byte_order : {'<', '>', '='}
-            '<' for little-endian, '>' for big-endian, or '='
+        byte_order : {'<', '>', '='}, optional
+            `'<'` for little-endian, `'>'` for big-endian, or `'='`
             for native.  This is only relevant if `text` is False.
-        comments : iterable of str
-            Comment lines between 'ply' and 'format' lines.
-        obj_info : iterable of str
+        comments : iterable of str, optional
+            Comment lines between "ply" and "format" lines.
+        obj_info : iterable of str, optional
             like comments, but will be placed in the header with
             "obj_info ..." instead of "comment ...".
         """
@@ -490,6 +490,7 @@ class PlyData(object):
         Raises
         ------
         PlyParseError
+            If the file cannot be parsed for any reason.
         ValueError
             If `stream` is open in text mode but the PLY header
             indicates binary encoding.
@@ -635,7 +636,7 @@ def _open_stream(stream, read_or_write):
     ----------
     stream : str or open file-like object
     read_or_write : str
-        "read" or "write", the method to be used on the stream.
+        `"read"` or `"write"`, the method to be used on the stream.
 
     Returns
     -------
@@ -772,7 +773,7 @@ class PlyElement(object):
 
     def dtype(self, byte_order='='):
         """
-        Return the numpy dtype of the in-memory representation of the
+        Return the `numpy` `dtype` of the in-memory representation of the
         data.  (If there are no list properties, and the PLY format is
         binary, then this also accurately describes the on-disk
         representation of the element.)
@@ -799,14 +800,15 @@ class PlyElement(object):
         data : numpy.ndarray
             Structured `numpy` array.
         len_types : dict, optional
-            Mapping from list property names to type strings (like 'u1',
-            'f4', etc., or 'int8', 'float32', etc.), which will be used
-            to encode the length of the list in binary-format PLY files.
-            Defaults to 'u1' (8-bit integer) for all list properties.
+            Mapping from list property names to type strings
+            (`numpy`-style like `'u1'`, `'f4'`, etc., or PLY-style like
+            `'int8'`, `'float32'`, etc.), which will be used to encode
+            the length of the list in binary-format PLY files.  Defaults
+            to `'u1'` (8-bit integer) for all list properties.
         val_types : dict, optional
             Mapping from list property names to type strings as for `len_types`,
             but is used to encode the list elements in binary-format PLY files.
-            Defaults to 'i4' (32-bit integer) for all list properties.
+            Defaults to `'i4'` (32-bit integer) for all list properties.
         comments : list of str
             Comments between the "element" line and first property definition
             in the header.
@@ -1128,8 +1130,8 @@ class PlyProperty(object):
     """
     PLY property description.
 
-    This class is pure metadata; the data itself is contained in
-    PlyElement instances.
+    This class is pure metadata. The data itself is contained in
+    `PlyElement` instances.
 
     Attributes
     ----------
