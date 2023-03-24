@@ -128,7 +128,7 @@ class PlyData(object):
         )
 
     @staticmethod
-    def read(stream, mmap=True, known_list_len={}):
+    def read(stream, mmap=True, mmap_mode="c", known_list_len={}):
         """
         Read PLY data from a readable file-like object or filename.
 
@@ -171,6 +171,7 @@ class PlyData(object):
                     data_stream = stream
             for elt in data:
                 elt._read(data_stream, data.text, data.byte_order, mmap,
+                          mmap_mode=mmap_mode,
                           known_list_len=known_list_len.get(elt.name, {}))
         finally:
             if must_close:
@@ -497,7 +498,7 @@ class PlyElement(object):
 
         return elt
 
-    def _read(self, stream, text, byte_order, mmap,
+    def _read(self, stream, text, byte_order, mmap, mmap_mode,
               known_list_len={}):
         """
         Read the actual data from a PLY file.
@@ -519,7 +520,7 @@ class PlyElement(object):
             if mmap and _can_mmap(stream) and can_mmap_lists:
                 # Loading the data is straightforward.  We will memory
                 # map the file in copy-on-write mode.
-                self._read_mmap(stream, byte_order, known_list_len)
+                self._read_mmap(stream, byte_order, mmap_mode, known_list_len)
             else:
                 # A simple load is impossible.
                 self._read_bin(stream, byte_order)
@@ -549,7 +550,7 @@ class PlyElement(object):
                 stream.write(self.data.astype(self.dtype(byte_order),
                                               copy=False).data)
 
-    def _read_mmap(self, stream, byte_order, known_list_len):
+    def _read_mmap(self, stream, byte_order, mmap_mode, known_list_len):
         """
         Memory-map an input file as `self.data`.
 
@@ -581,7 +582,7 @@ class PlyElement(object):
         if max_bytes < num_bytes:
             raise PlyElementParseError("early end-of-file", self,
                                        max_bytes // dtype.itemsize)
-        self._data = _np.memmap(stream, dtype, 'c', offset, self.count)
+        self._data = _np.memmap(stream, dtype, mmap_mode, offset, self.count)
         # Fix stream position
         stream.seek(offset + self.count * dtype.itemsize)
         # remove any extra properties added
