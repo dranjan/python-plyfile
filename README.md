@@ -48,7 +48,9 @@ Both deserialization and serialization of PLY file data is done through
 `PlyData` and `PlyElement` instances.
 
 ```Python Console
+>>> import numpy
 >>> from plyfile import PlyData, PlyElement
+>>>
 ```
 
 For the code examples that follow, assume the file `tet.ply` contains
@@ -83,6 +85,7 @@ the following text:
 
 ```Python Console
 >>> plydata = PlyData.read('tet.ply')
+>>>
 ```
 
 or
@@ -90,6 +93,7 @@ or
 ```Python Console
 >>> with open('tet.ply', 'rb') as f:
 ...     plydata = PlyData.read(f)
+>>>
 ```
 
 The static method `PlyData.read` returns a `PlyData` instance, which is
@@ -108,18 +112,20 @@ Concretely:
 >>> plydata.elements[0].name
 'vertex'
 >>> plydata.elements[0].data[0]
-(0.0, 0.0, 0.0)
+(0., 0., 0.)
 >>> plydata.elements[0].data['x']
-array([ 0.,  0.,  1.,  1.], dtype=float32)
+array([0., 0., 1., 1.], dtype=float32)
 >>> plydata['face'].data['vertex_indices'][0]
 array([0, 1, 2], dtype=int32)
+>>>
 ```
 
 For convenience, elements and properties can be looked up by name:
 
 ```Python Console
 >>> plydata['vertex']['x']
-array([ 0.,  0.,  1.,  1.], dtype=float32)
+array([0., 0., 1., 1.], dtype=float32)
+>>>
 ```
 
 and elements can be indexed directly without explicitly going through
@@ -127,7 +133,8 @@ the `data` attribute:
 
 ```Python Console
 >>> plydata['vertex'][0]
-(0.0, 0.0, 0.0)
+(0., 0., 0.)
+>>>
 ```
 
 The above expression is equivalent to `plydata['vertex'].data[0]`.
@@ -136,10 +143,10 @@ The above expression is equivalent to `plydata['vertex'].data[0]`.
 
 ```Python Console
 >>> plydata.elements[0].properties
-(PlyProperty('x', 'float'), PlyProperty('y', 'float'),
- PlyProperty('z', 'float'))
+(PlyProperty('x', 'float'), PlyProperty('y', 'float'), PlyProperty('z', 'float'))
 >>> plydata.elements[0].count
 4
+>>>
 ```
 
 `PlyProperty` and `PlyListProperty` instances are used internally as a
@@ -153,6 +160,7 @@ property metadata of an element can be accessed as a tuple via the
 ```Python Console
 >>> plydata.elements[0].ply_property('x')
 PlyProperty('x', 'float')
+>>>
 ```
 
 Many (but not necessarily all) types of malformed input files will raise
@@ -186,6 +194,7 @@ True
 >>> plydata = PlyData.read('tet_binary.ply', mmap=False)
 >>> isinstance(plydata['vertex'].data, numpy.memmap)
 False
+>>>
 ```
 
 #### Case 2: elements with list properties
@@ -200,6 +209,7 @@ all list properties have fixed and known lengths. In that case, the
 ...                        known_list_len={'face': {'vertex_indices': 3}})
 >>> isinstance(plydata['face'].data, numpy.memmap)
 True
+>>>
 ```
 
 The implementation will validate the data: if any instance of the list
@@ -254,6 +264,7 @@ serialization, we could do (as in `test/test.py`):
 ...                    dtype=[('vertex_indices', 'i4', (3,)),
 ...                           ('red', 'u1'), ('green', 'u1'),
 ...                           ('blue', 'u1')])
+>>>
 ```
 
 Once you have suitably structured array, the static method
@@ -261,15 +272,17 @@ Once you have suitably structured array, the static method
 `PlyElement` instances:
 
 ```Python Console
->>> el = PlyElement.describe(some_array, 'some_name')
+>>> el = PlyElement.describe(vertex, 'vertex')
+>>>
 ```
 
 or
 
 ```Python Console
->>> el = PlyElement.describe(some_array, 'some_name',
+>>> el = PlyElement.describe(vertex, 'vertex',
 ...                          comments=['comment1',
 ...                                    'comment2'])
+>>>
 ```
 
 Note that there's no need to create `PlyProperty` instances explicitly.
@@ -284,9 +297,10 @@ signed integer, which covers the majority of use cases.  Exceptions must
 be stated explicitly:
 
 ```Python Console
->>> el = PlyElement.describe(some_array, 'some_name',
-...                          val_types={'some_property': 'f8'},
-...                          len_types={'some_property': 'u4'})
+>>> el = PlyElement.describe(face, 'face',
+...                          val_types={'vertex_indices': 'u2'},
+...                          len_types={'vertex_indices': 'u4'})
+>>>
 ```
 
 Now you can instantiate `PlyData` and serialize:
@@ -304,6 +318,7 @@ Now you can instantiate `PlyData` and serialize:
 >>> # Unix-style line endings to be written on all systems.
 >>> with open('some_ascii.ply', mode='wb') as f:
 ...     PlyData([el], text=True).write(f)
+>>>
 ```
 
 ## Miscellaneous
@@ -316,6 +331,7 @@ Header comments are supported:
 >>> ply = PlyData([el], comments=['header comment'])
 >>> ply.comments
 ['header comment']
+>>>
 ```
 
 As of version 0.3, "obj_info" comments are supported as well:
@@ -324,6 +340,7 @@ As of version 0.3, "obj_info" comments are supported as well:
 >>> ply = PlyData([el], obj_info=['obj_info1', 'obj_info2'])
 >>> ply.obj_info
 ['obj_info1', 'obj_info2']
+>>>
 ```
 
 When written, they will be placed after regular comments after the
@@ -348,6 +365,7 @@ row length in advance:
 >>> plydata = PlyData.read('tet.ply')
 >>> tri_data = plydata['face'].data['vertex_indices']
 >>> triangles = numpy.vstack(tri_data)
+>>>
 ```
 
 ### Instance mutability
@@ -401,6 +419,7 @@ property to `properties` with the new name by creating a new
 ...                    PlyProperty('r', 'uchar'),
 ...                    PlyProperty('g', 'uchar'),
 ...                    PlyProperty('b', 'uchar'))
+>>>
 ```
 
 Note that it is always safe to create a new `PlyElement` or `PlyData`
@@ -418,6 +437,7 @@ style:
 >>> plydata.byte_order = '<'
 >>> plydata.comments = []
 >>> plydata.obj_info = []
+>>>
 ```
 
 Objects created by this library don't claim ownership of the other
@@ -448,6 +468,7 @@ used directly for ASCII-format PLY files.
 ...                         dtype=[('vertex_indices', 'i4', (3,))])
 >>> ply_faces['vertex_indices'] = face_data
 >>> face = PlyElement.describe(ply_faces, 'face')
+>>>
 ```
 
 ## Can I save a PLY file directly to `sys.stdout`?
@@ -462,13 +483,13 @@ There are a few ways around this.
   can access `stdout` via the named file `/dev/stdout`:
 
     ```Python Console
-    >>> plydata.write('/dev/stdout')
+    >>> plydata.write('/dev/stdout')  # doctest: +SKIP
     ```
 
 - Use `sys.stdout.buffer`:
 
     ```Python Console
-    >>> plydata.write(sys.stdout.buffer)
+    >>> plydata.write(sys.stdout.buffer)  # doctest: +SKIP
     ```
 
   (source: https://bugs.python.org/issue4571)
