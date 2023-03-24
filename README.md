@@ -180,10 +180,10 @@ underlying file object. Memory mapping can be disabled using the
 >>> plydata.write('tet_binary.ply')
 >>>
 >>> # `mmap=True` is the default:
->>> plydata = PlyData.read('tet_binary_ply')
+>>> plydata = PlyData.read('tet_binary.ply')
 >>> isinstance(plydata['vertex'].data, numpy.memmap)
 True
->>> plydata = PlyData.read('tet_binary_ply', mmap=False)
+>>> plydata = PlyData.read('tet_binary.ply', mmap=False)
 >>> isinstance(plydata['vertex'].data, numpy.memmap)
 False
 ```
@@ -285,8 +285,8 @@ be stated explicitly:
 
 ```Python Console
 >>> el = PlyElement.describe(some_array, 'some_name',
-...                          val_dtypes={'some_property': 'f8'},
-...                          len_dtypes={'some_property': 'u4'})
+...                          val_types={'some_property': 'f8'},
+...                          len_types={'some_property': 'u4'})
 ```
 
 Now you can instantiate `PlyData` and serialize:
@@ -300,7 +300,7 @@ Now you can instantiate `PlyData` and serialize:
 >>> PlyData([el],
 ...         byte_order='>').write('some_big_endian_binary.ply')
 >>>
->>> # Use a file object.  Binary mode is used here, which will cause
+>>> # Use a file object. Binary mode is used here, which will cause
 >>> # Unix-style line endings to be written on all systems.
 >>> with open('some_ascii.ply', mode='wb') as f:
 ...     PlyData([el], text=True).write(f)
@@ -444,7 +444,7 @@ used directly for ASCII-format PLY files.
 >>> face_data = numpy.array([[0, 1, 2], [3, 4, 5]], dtype='i4')
 >>>
 >>> # PlyElement.describe requires a one-dimensional structured array.
->>> ply_faces = numpy.empty(len(faces),
+>>> ply_faces = numpy.empty(len(face_data),
 ...                         dtype=[('vertex_indices', 'i4', (3,))])
 >>> ply_faces['vertex_indices'] = face_data
 >>> face = PlyElement.describe(ply_faces, 'face')
