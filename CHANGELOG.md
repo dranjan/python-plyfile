@@ -5,6 +5,7 @@ All notable changes to this project will be documented here.
 ## [Unreleased]
 ### Added
 - Support for reading ASCII-format PLY files from text streams.
+- Doctest runner in unit test suite.
 
 ### Changed
 - Docstring formatting style:
