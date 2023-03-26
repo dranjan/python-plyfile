@@ -225,16 +225,24 @@ end_header\n\
 np_types = ['i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'f4', 'f8']
 
 
-def test_readme(tmpdir):
+@pytest.fixture(scope='function')
+def doctest_fixture(tmpdir):
     with tmpdir.as_cwd():
         with open('tet.ply', 'wb') as f:
             f.write(tet_ply_ascii)
-        with open('tet.ply', 'r') as f:
-            import sys
-            sys.stdout.write(f.read())
-        doctest.testfile('README.md', package=plyfile,
-                         verbose=True,
-                         raise_on_error=True)
+        yield
+
+
+def test_doctest_usage(doctest_fixture):
+    doctest.testfile('doc/usage.md', package=plyfile,
+                     verbose=True,
+                     raise_on_error=True)
+
+
+def test_doctest_faq(doctest_fixture):
+    doctest.testfile('doc/faq.md', package=plyfile,
+                     verbose=True,
+                     raise_on_error=True)
 
 
 def test_str(tet_ply_txt):
