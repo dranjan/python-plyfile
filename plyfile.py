@@ -401,10 +401,10 @@ class PlyElement(object):
 
     def dtype(self, byte_order='='):
         """
-        Return the `numpy` `dtype` of the in-memory representation of the
-        data.  (If there are no list properties, and the PLY format is
-        binary, then this also accurately describes the on-disk
-        representation of the element.)
+        Return the `numpy.dtype` description of the in-memory
+        representation of the data.  (If there are no list properties,
+        and the PLY format is binary, then this also accurately
+        describes the on-disk representation of the element.)
 
         Parameters
         ----------
@@ -739,7 +739,7 @@ class PlyProperty(object):
     ----------
     name : str
     val_dtype : str
-        `numpy` `dtype` string for the property's data.
+        `numpy.dtype` description for the property's data.
     """
 
     def __init__(self, name, val_dtype):
@@ -767,7 +767,7 @@ class PlyProperty(object):
 
     def dtype(self, byte_order='='):
         """
-        Return the `numpy` `dtype` description for this property.
+        Return the `numpy.dtype` description for this property.
 
         Parameters
         ----------
@@ -863,7 +863,7 @@ class PlyListProperty(PlyProperty):
     name
     val_dtype
     len_dtype : str
-        `numpy` `dtype` for the property's length field.
+        `numpy.dtype` description for the property's length field.
     """
 
     def __init__(self, name, len_dtype, val_dtype):
@@ -888,7 +888,7 @@ class PlyListProperty(PlyProperty):
 
     def dtype(self, byte_order='='):
         """
-        `dtype` name for the property's field in the element.
+        `numpy.dtype` name for the property's field in the element.
 
         List properties always have a numpy dtype of "object".
 
