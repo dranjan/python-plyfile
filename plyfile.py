@@ -899,7 +899,7 @@ class PlyListProperty(PlyProperty):
         Returns
         -------
         dtype : str
-        Always `'|O'`.
+            Always `'|O'`.
         """
         return '|O'
 
