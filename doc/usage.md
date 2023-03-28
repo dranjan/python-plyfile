@@ -290,7 +290,7 @@ Header comments are supported:
 >>>
 ```
 
-As of version 0.3, "obj_info" comments are supported as well:
+`obj_info` comments are supported as well:
 
 ```Python Console
 >>> ply = PlyData([el], obj_info=['obj_info1', 'obj_info2'])
