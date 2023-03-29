@@ -9,15 +9,10 @@ extensions = [
     'sphinx.ext.intersphinx',
     'numpydoc',
     'myst_parser',
-    'sphinxcontrib.fulltoc',
 ]
 source_suffix = ['.rst', '.md']
 templates_path = ['_templates']
-html_theme = 'cloud'
-html_theme_options = {
-    'stickysidebar': True,
-    'highlighttoc': True,
-}
+html_theme = 'sphinx_rtd_theme'
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
