@@ -13,7 +13,6 @@ extensions = [
 ]
 source_suffix = ['.rst', '.md']
 templates_path = ['_templates']
-#exclude_patterns = ['build', 'test', '.tox']
 html_theme = 'cloud'
 html_theme_options = {
     'stickysidebar': True,
