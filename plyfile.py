@@ -1269,7 +1269,7 @@ class _PlyHeaderLines(object):
         if s[:3] != 'ply':
             raise PlyHeaderParseError("expected 'ply'", 1)
         self.nl = s[3:]
-        if s[3:] =='\r':
+        if s[3:] == '\r':
             c = self._decode(stream.read(1))
             if c == '\n':
                 self.nl += c
