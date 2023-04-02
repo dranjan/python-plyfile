@@ -434,12 +434,13 @@ class PlyElement(object):
             the length of the list in binary-format PLY files.  Defaults
             to `'u1'` (8-bit integer) for all list properties.
         val_types : dict, optional
-            Mapping from list property names to type strings as for `len_types`,
-            but is used to encode the list elements in binary-format PLY files.
-            Defaults to `'i4'` (32-bit integer) for all list properties.
+            Mapping from list property names to type strings as for
+            `len_types`, but is used to encode the list elements in
+            binary-format PLY files.  Defaults to `'i4'` (32-bit
+            integer) for all list properties.
         comments : list of str
-            Comments between the "element" line and first property definition
-            in the header.
+            Comments between the "element" line and first property
+            definition in the header.
 
         Returns
         -------
