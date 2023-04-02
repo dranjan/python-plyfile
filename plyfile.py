@@ -1446,10 +1446,10 @@ def _can_mmap(stream):
             _np.memmap(stream, 'u1', 'c')
             stream.seek(pos)
             return True
-        except Exception as e:
+        except Exception:
             stream.seek(pos)
             return False
-    except Exception as e:
+    except Exception:
         return False
 
 
