@@ -610,9 +610,9 @@ def test_cast_property(tet_ply_txt, tmpdir, text, byte_order):
     assert ply1['vertex']['y'].dtype.descr[0][1][1:] == 'f4'
     assert ply1['vertex']['z'].dtype.descr[0][1][1:] == 'u1'
 
-    assert(ply1['vertex']['x'] == vertex['x']).all()
-    assert(ply1['vertex']['y'] == vertex['y']).all()
-    assert(ply1['vertex']['z'] == vertex['z']).all()
+    assert (ply1['vertex']['x'] == vertex['x']).all()
+    assert (ply1['vertex']['y'] == vertex['y']).all()
+    assert (ply1['vertex']['z'] == vertex['z']).all()
 
     assert ply1['face'].properties[0].len_dtype == 'i4'
 
@@ -748,6 +748,7 @@ def test_invalid_property_names():
         PlyElement.describe(numpy.zeros(1, dtype=[('a b', 'i4')]),
                             'test')
 
+
 invalid_header_cases = [
     (b'plyy\n', 1),
     (b'ply xxx\n', 1),
@@ -785,7 +786,7 @@ def test_header_parse_error(s, line):
 
 
 invalid_arrays = [
-    numpy.zeros((2,2)),
+    numpy.zeros((2, 2)),
     numpy.array([(0, (0, 0))],
                 dtype=[('x', 'f4'), ('y', [('y0', 'f4'), ('y1', 'f4')])]),
     numpy.array([(0, (0, 0))],
@@ -870,7 +871,7 @@ def test_read_known_list_len_default(tmpdir, tet_ply_txt):
     with test_file.open('wb') as f:
         ply0.write(f)
 
-    list_len = {'face':{'vertex_indices':3}}
+    list_len = {'face': {'vertex_indices': 3}}
     ply1 = PlyData.read(str(test_file))
     verify(ply0, ply1)
     ply2 = PlyData.read(str(test_file), known_list_len=list_len)
@@ -912,8 +913,8 @@ def test_read_known_list_len_two_lists_same(tmpdir, tet_ply_txt):
     with test_file.open('wb') as f:
         ply0.write(f)
 
-    list_len = {'face':{'vertex_indices': 3},
-                'face2':{'vertex_indices2': 4}}
+    list_len = {'face': {'vertex_indices': 3},
+                'face2': {'vertex_indices2': 4}}
     ply1 = PlyData.read(str(test_file))
     verify(ply0, ply1)
     ply2 = PlyData.read(str(test_file), known_list_len=list_len)
