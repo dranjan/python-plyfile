@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import doctest
-import sys
 from io import (BytesIO, StringIO, TextIOWrapper)
 import gzip
 
@@ -12,7 +11,7 @@ import numpy
 import plyfile
 from plyfile import (
     PlyData, PlyElement, PlyProperty,
-    PlyParseError, PlyHeaderParseError, PlyElementParseError,
+    PlyHeaderParseError, PlyElementParseError,
 )
 
 
@@ -990,5 +989,5 @@ def test_text_io_bad_read(tet_ply_txt):
     ply0.write(stream0)
     stream1 = TextIOWrapper(BytesIO(stream0.getvalue()), 'ascii')
     with Raises(ValueError) as e:
-        ply1 = PlyData.read(stream1)
+        PlyData.read(stream1)
     assert str(e) == "can't read binary-format PLY from text stream"
