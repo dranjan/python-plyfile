@@ -42,3 +42,8 @@ Homepage = "https://github.com/dranjan/python-plyfile"
 [build-system]
 requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
+
+[tool.pdm.scripts]
+pytest = "pytest test -v"
+test = "tox -v --skip-missing-interpreters"
+doc = "sphinx-build doc doc/build -b html"
