@@ -11,6 +11,9 @@ doc = [
     "myst-parser>=1.0.0",
     "sphinx-rtd-theme>=1.2.0",
 ]
+lint = [
+    "flake8>=3.9.2",
+]
 
 [project]
 name = "plyfile"
@@ -47,3 +50,4 @@ build-backend = "pdm.pep517.api"
 pytest = "pytest test -v"
 test = "tox -v --skip-missing-interpreters"
 doc = "sphinx-build doc doc/build -b html"
+lint = "flake8 plyfile.py test/test_plyfile.py"
