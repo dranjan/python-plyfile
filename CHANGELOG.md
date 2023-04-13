@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [0.9] - 2023-04-12
 ### Added
 - Support for reading ASCII-format PLY files from text streams.
 - Doctest runner in unit test suite.
@@ -134,7 +136,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.9...HEAD
+[0.9]: https://github.com/dranjan/python-plyfile/compare/v0.8.1...v0.9
 [0.8.1]: https://github.com/dranjan/python-plyfile/compare/v0.8...v0.8.1
 [0.8]: https://github.com/dranjan/python-plyfile/compare/v0.7.4...v0.8
 [0.7.4]: https://github.com/dranjan/python-plyfile/compare/v0.7.3...v0.7.4
