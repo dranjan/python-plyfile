@@ -16,6 +16,8 @@ install.md
 usage.md
 faq.md
 philosophy.md
+developing.md
+maintaining.md
 api.md
 
 ```
