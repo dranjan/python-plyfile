@@ -79,22 +79,33 @@ which should help you if want to know what each action exactly does.
 
 #### Quick
 
-To run the test suite on your default Python version:
+To run the test suite on one Python interpreter and one version of
+NumPy:
 
 ```
-pdm run pytest
+pdm run test-quick
 ```
 
 #### More comprehensive
 
-To run the test suite using all currently supported Python versions you
-have installed:
+To run the full test matrix, skipping unavailable Python versions:
 
 ```
-pdm run test
+pdm run test-matrix
 ```
 
 Test coverage will also be reported.
+
+#### Full
+
+To run the full test matrix:
+
+```
+pdm run test-all
+```
+
+You must have all currently supported Python versions to run this
+successfully.
 
 ### Generating documentation
 

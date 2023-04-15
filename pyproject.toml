@@ -47,7 +47,8 @@ requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
-pytest = "pytest test -v"
-test = "tox -v --skip-missing-interpreters"
+test-quick = "pytest test -v"
+test-matrix = "tox -v --skip-missing-interpreters=true"
+test-all = "tox -v --skip-missing-interpreters=false"
 doc = "sphinx-build doc doc/build -b html"
 lint = "flake8 plyfile.py test/test_plyfile.py"
