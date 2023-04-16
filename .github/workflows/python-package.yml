@@ -36,4 +36,6 @@ jobs:
               python -m pipx install pdm
               pdm install -dG test
         - name: Test with tox
+          # This runs just the selected interpreter, thanks to
+          # the tox-gh-actions plugin we use.
           run: pdm run test-all
