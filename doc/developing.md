@@ -52,13 +52,13 @@ configurations. Thus, the first step is installing PDM using [any of the
 listed methods](https://pdm.fming.dev/latest/#installation).
 For example,
 
-```
+```none
 pip install pdm
 ```
 
 or
 
-```
+```none
 pipx install pdm
 ```
 
@@ -66,7 +66,7 @@ pipx install pdm
 
 From the project root,
 
-```
+```none
 pdm install
 ```
 
@@ -82,7 +82,7 @@ which should help you if want to know what each action exactly does.
 To run the test suite on one Python interpreter and one version of
 NumPy:
 
-```
+```none
 pdm run test-quick
 ```
 
@@ -90,7 +90,7 @@ pdm run test-quick
 
 To run the full test matrix, skipping unavailable Python versions:
 
-```
+```none
 pdm run test-matrix
 ```
 
@@ -100,7 +100,7 @@ Test coverage will also be reported.
 
 To run the full test matrix:
 
-```
+```none
 pdm run test-all
 ```
 
@@ -109,7 +109,7 @@ successfully.
 
 ### Generating documentation
 
-```
+```none
 pdm run doc
 ```
 
@@ -118,7 +118,7 @@ documentation.
 
 ### Running the linter
 
-```
+```none
 pdm run lint
 ```
 
