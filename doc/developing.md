@@ -16,6 +16,12 @@ usual pull request process. This will require a GitHub account.
 3. Make a pull request on the main repository. The base branch should
    be `master`.
 
+A documentation preview link will automatically be edited into the pull
+request description. If you made any changes that could affect the
+documentation, you can follow the link to make sure things look as they
+should. You can also preview the documentation locally as described
+further down.
+
 ## General information
 
 - The implementation of the library is the single file `plyfile.py`.
