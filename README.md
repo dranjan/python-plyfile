@@ -22,7 +22,7 @@ To install from source:
 
 ## Project documentation
 
-[doc](doc/)
+[Link](https://python-plyfile.readthedocs.io)
 
 ## Getting help
 
