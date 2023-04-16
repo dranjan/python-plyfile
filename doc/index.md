@@ -1,5 +1,7 @@
 # plyfile
 
+(inserting some text here to see if it gets picked up)
+
 Welcome to the `plyfile` Python module, which provides a simple facility
 for reading and writing ASCII and binary PLY files.
 
