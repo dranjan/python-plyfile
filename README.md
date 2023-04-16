@@ -1,5 +1,7 @@
 ![Build Status](https://github.com/dranjan/python-plyfile/actions/workflows/python-package.yml/badge.svg)
 
+<!-- This is a comment -->
+
 Welcome to the `plyfile` Python module, which provides a simple facility
 for reading and writing ASCII and binary PLY files.
 
