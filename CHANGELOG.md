@@ -15,6 +15,7 @@ All notable changes to this project will be documented here.
   - documentation moved from `README.md` to `doc/`;
   - Sphinx configuration to render documentation nicely as HTML,
     including API reference via `autodoc`.
+- Reordering of code in `plyfile.py`.
 
 ## [0.9] - 2023-04-12
 ### Added
