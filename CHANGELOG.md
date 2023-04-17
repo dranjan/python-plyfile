@@ -17,6 +17,9 @@ All notable changes to this project will be documented here.
     including API reference via `autodoc`.
 - Reordering of code in `plyfile.py`.
 
+### Removed
+- `examples/plot.py`, which was a bit out of place.
+
 ## [0.9] - 2023-04-12
 ### Added
 - Support for reading ASCII-format PLY files from text streams.
