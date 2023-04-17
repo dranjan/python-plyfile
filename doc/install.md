@@ -2,7 +2,8 @@
 
     pip3 install plyfile
 
-Or clone the repository and run from the project root:
+Or clone the [repository](https://github.com/dranjan/python-plyfile) and
+run from the project root:
 
     pip3 install .
 
