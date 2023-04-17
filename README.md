@@ -35,7 +35,7 @@ Have questions? Feel free to ask in
 
 ## Contributing
 
-[Information for developers](doc/developing.md)
+[Information for developers](https://python-plyfile.readthedocs.io/en/latest/developing.html)
 
 # Copyright and license
 
