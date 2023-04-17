@@ -4,6 +4,18 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+### Added
+- PDM user scripts for common development workflow tasks.
+- New guides for contributing and maintaining.
+- `.readthedocs.yaml` configuration for documentation hosting on
+  readthedocs.io.
+
+### Changed
+- Major documentation overhaul:
+  - documentation moved from `README.md` to `doc/`;
+  - Sphinx configuration to render documentation nicely as HTML,
+    including API reference via `autodoc`.
+
 ## [0.9] - 2023-04-12
 ### Added
 - Support for reading ASCII-format PLY files from text streams.
