@@ -42,6 +42,8 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/dranjan/python-plyfile"
+Documentation = "https://python-plyfile.readthedocs.io"
+Repository = "https://github.com/dranjan/python-plyfile"
 
 [build-system]
 requires = ["pdm-pep517>=1.0.0"]
