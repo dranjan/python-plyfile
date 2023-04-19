@@ -329,8 +329,7 @@ row length in advance:
 A plausible code pattern is to read a PLY file into a `PlyData`
 instance, perform some operations on it, possibly modifying data and
 metadata in place, and write the result to a new file.  This pattern is
-partially supported.  As of version 0.4, the following in-place
-mutations are supported:
+partially supported. The following in-place mutations are possible:
 
 - Modifying numerical array data only.
 - Assigning directly to a `PlyData` instance's `elements`.
