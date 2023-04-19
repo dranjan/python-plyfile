@@ -197,9 +197,8 @@ array of type `'i4'` and length 3.  The reason is simply that the PLY
 format provides no way to find out that each "vertex_indices" field has
 length 3 without actually reading all the data, so `plyfile` has to
 assume that this is a variable-length property.  However, see the
-[FAQ](#faq-list-from-2d)
-for an easy way to recover a two-dimensional array
-from a list property, and also see the notes above about the
+[FAQ](#faq-list-from-2d) for an easy way to recover a two-dimensional
+array from a list property, and also see the notes above about the
 `known_list_len` kwarg to speed up the reading of files with lists of
 fixed, known length.
 
