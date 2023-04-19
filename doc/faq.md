@@ -1,5 +1,6 @@
 # FAQ
 
+(faq-list-from-2d)=
 ## How do I initialize a list property from two-dimensional array?
 
 ```Python Console
