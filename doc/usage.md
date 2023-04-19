@@ -196,8 +196,8 @@ be represented as an `object`-typed field, each of whose values is an
 array of type `'i4'` and length 3.  The reason is simply that the PLY
 format provides no way to find out that each "vertex_indices" field has
 length 3 without actually reading all the data, so `plyfile` has to
-assume that this is a variable-length property.  However, see below (and
-`examples/plot.py`) for an easy way to recover a two-dimensional array
+assume that this is a variable-length property.  However, see the FAQ
+for an easy way to recover a two-dimensional array
 from a list property, and also see the notes above about the
 `known_list_len` kwarg to speed up the reading of files with lists of
 fixed, known length.
