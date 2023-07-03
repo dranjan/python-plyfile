@@ -24,7 +24,7 @@ authors = [
     {name = "Darsh Ranjan", email = "dranjan@berkeley.edu"},
 ]
 dependencies = ["numpy>=1.17"]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 readme = "README.md"
 license = {file = "COPYING"}
 keywords = ["ply", "numpy"]
