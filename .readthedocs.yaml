@@ -9,7 +9,7 @@ build:
         python: "3.8"
     jobs:
         post_install:
-        # Not ideal, since PDM and project dependencies aren't isolated.
-        - pip install --upgrade pdm
+        - python -m pip install pipx
+        - python -m pipx install pdm
         # See https://github.com/pdm-project/pdm/discussions/1365
         - VIRTUAL_ENV=$(dirname $(dirname $(which python))) pdm install -dG doc
