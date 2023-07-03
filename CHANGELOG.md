@@ -9,6 +9,7 @@ All notable changes to this project will be documented here.
 - New guides for contributing and maintaining.
 - `.readthedocs.yaml` configuration for documentation hosting on
   readthedocs.io.
+- Official support for Python 3.11 and `numpy` 1.25.
 
 ### Changed
 - Major documentation overhaul:
@@ -19,6 +20,7 @@ All notable changes to this project will be documented here.
 
 ### Removed
 - `examples/plot.py`, which was a bit out of place.
+- Official support for Python 3.7.
 
 ## [0.9] - 2023-04-12
 ### Added
