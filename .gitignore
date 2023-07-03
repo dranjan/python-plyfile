@@ -10,3 +10,4 @@ dist/
 .pytest_cache
 __pypackages__
 .venv
+.pdm-python
