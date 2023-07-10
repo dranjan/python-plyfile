@@ -1,7 +1,7 @@
 # FAQ
 
 (faq-list-from-2d)=
-## How do I initialize a list property from two-dimensional array?
+## How do I initialize a list property from a two-dimensional array?
 
 ```Python Console
 >>> from plyfile import PlyElement

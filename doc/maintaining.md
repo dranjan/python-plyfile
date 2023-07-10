@@ -29,13 +29,27 @@ doesn't happen very often, so there isn't much impetus to automate it.
 Releases are always made from the `master` branch. Thus, begin by checking
 out the tip of `master` from GitHub.
 
+### Pre-release checks
+
+The following conditions must be met before the release can be made.
+
+- The code is in a releasable state:
+    - unit tests pass,
+    - linting reports no violations, and
+    - the documentation is up to date.
+- The change log (`CHANGELOG.md`) is up to date.
+
+If necessary, make additional commits on `master` until the conditions
+are met. The steps that follow assume that the pre-release conditions
+are satisfied on the tip of `master`.
+
 ### Increment the version
 
 Incrementing the version is done via a small tagged commit. The
 information in this section can be summarized succinctly by looking at
 one of these commits:
 
-```
+```bash
 git show v0.8.1
 ```
 
@@ -140,4 +154,4 @@ The PyPI username and password will be requested.
 git push origin master v0.8.1
 ```
 
-Don't forget to push both the branch and the tag!
+(Don't forget to push both the branch and the tag, as shown above!)

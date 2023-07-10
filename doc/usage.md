@@ -58,9 +58,12 @@ instance has an attribute `elements`, which is a list of `PlyElement`
 instances, each of which has a `data` attribute which is a `numpy`
 structured array containing the numerical data.  PLY file elements map
 onto `numpy` structured arrays in a pretty obvious way.  For a list
-property in an element, the corresponding `numpy` field type
+property in an element, by default, the corresponding `numpy` field type
 is `object`, with the members being `numpy` arrays (see the
-`vertex_indices` example below).
+`vertex_indices` example below).[^list_property_note]
+
+[^list_property_note]: Also see the
+[section on `known_list_len`](#known_list_len).
 
 Concretely:
 
@@ -153,6 +156,7 @@ False
 >>>
 ```
 
+(known_list_len)=
 #### Case 2: elements with list properties
 
 In the general case, elements with list properties cannot be
@@ -186,25 +190,25 @@ types of properties a PLY file element can contain, you can easily
 deduce the restrictions.  For example, PLY files don't contain 64-bit
 integer or complex data, so these aren't allowed.
 
-For convenience, non-scalar fields **are** allowed; they will be
+For convenience, non-scalar fields **are** allowed, and they will be
 serialized as list properties.  For example, when constructing a "face"
 element, if all the faces are triangles (a common occurrence), it's okay
 to have a  "vertex_indices" field of type `'i4'` and shape `(3,)`
 instead of type `object` and shape `()`.  However, if the serialized PLY
 file is read back in using `plyfile`, the "vertex_indices" property will
 be represented as an `object`-typed field, each of whose values is an
-array of type `'i4'` and length 3.  The reason is simply that the PLY
+array of type `'i4'` and length 3. The reason is simply that the PLY
 format provides no way to find out that each "vertex_indices" field has
 length 3 without actually reading all the data, so `plyfile` has to
 assume that this is a variable-length property.  However, see the
 [FAQ](#faq-list-from-2d) for an easy way to recover a two-dimensional
-array from a list property, and also see the notes above about the
-`known_list_len` kwarg to speed up the reading of files with lists of
-fixed, known length.
+array from a list property, and also see the [notes above](#known_list_len)
+about the `known_list_len` parameter to speed up the reading of files with
+lists of fixed, known length.
 
 For example, if we wanted to create the "vertex" and "face" PLY elements
 of the `tet.ply` data directly as `numpy` arrays for the purpose of
-serialization, we could do (as in `test/test.py`):
+serialization, we could do this:
 
 ```Python Console
 >>> vertex = numpy.array([(0, 0, 0),
@@ -314,8 +318,7 @@ occurrence.  For example, all the "vertex_indices" data on a "face"
 element will have length three for a triangular mesh.  In such cases,
 it's usually much more convenient to have the data in a two-dimensional
 array, as opposed to a one-dimensional array of type `object`.  Here's a
-pretty easy way to obtain a two dimensional array, assuming we know the
-row length in advance:
+pretty easy way to obtain a two dimensional array:
 
 ```Python Console
 >>> plydata = PlyData.read('tet.ply')
@@ -323,6 +326,9 @@ row length in advance:
 >>> triangles = numpy.vstack(tri_data)
 >>>
 ```
+
+(If the row lengths of all list properties are known in advance, the
+[`known_list_len` parameter](#known_list_len) can also be used.)
 
 ### Instance mutability
 
@@ -351,7 +357,7 @@ partially supported. The following in-place mutations are possible:
 - Assigning directly to an element's `properties`.  Note that the
   `data` array is not touched, and the previous note regarding the
   relationship between `properties` and `data` still applies: the field
-  names of `data` must be a subset of the property names in
+  names of `data` must be a superset of the property names in
   `properties`, but they can be in a different order and specify
   different types.
 - Changing a `PlyProperty` or `PlyListProperty` instance's `val_dtype`
