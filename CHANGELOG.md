@@ -4,6 +4,8 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [1.0] - 2023-07-09
+
 ### Added
 - PDM user scripts for common development workflow tasks.
 - New guides for contributing and maintaining.
@@ -154,7 +156,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v0.9...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.0...HEAD
+[1.0]: https://github.com/dranjan/python-plyfile/compare/v0.9...v1.0
 [0.9]: https://github.com/dranjan/python-plyfile/compare/v0.8.1...v0.9
 [0.8.1]: https://github.com/dranjan/python-plyfile/compare/v0.8...v0.8.1
 [0.8]: https://github.com/dranjan/python-plyfile/compare/v0.7.4...v0.8
