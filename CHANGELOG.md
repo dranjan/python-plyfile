@@ -4,6 +4,7 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-07-23
 ### Changed
 - Minor change to project metadata.
 
@@ -158,7 +159,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.0...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/dranjan/python-plyfile/compare/v1.0...v1.0.1
 [1.0]: https://github.com/dranjan/python-plyfile/compare/v0.9...v1.0
 [0.9]: https://github.com/dranjan/python-plyfile/compare/v0.8.1...v0.9
 [0.8.1]: https://github.com/dranjan/python-plyfile/compare/v0.8...v0.8.1

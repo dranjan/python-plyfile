@@ -18,7 +18,7 @@ lint = [
 
 [project]
 name = "plyfile"
-version = "1.0"
+version = "1.0.1"
 description = "PLY file reader/writer"
 authors = [
     {name = "Darsh Ranjan", email = "dranjan@berkeley.edu"},
