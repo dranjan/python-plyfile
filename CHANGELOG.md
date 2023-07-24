@@ -4,8 +4,10 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
-## [1.0] - 2023-07-09
+### Changed
+- Minor change to project metadata.
 
+## [1.0] - 2023-07-09
 ### Added
 - PDM user scripts for common development workflow tasks.
 - New guides for contributing and maintaining.
