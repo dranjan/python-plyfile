@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [1.0.2] - 2023-11-13
 ### Added
 - Official support for Python 3.12 and `numpy` 1.26.
 
@@ -161,7 +163,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/dranjan/python-plyfile/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/dranjan/python-plyfile/compare/v1.0...v1.0.1
 [1.0]: https://github.com/dranjan/python-plyfile/compare/v0.9...v1.0
 [0.9]: https://github.com/dranjan/python-plyfile/compare/v0.8.1...v0.9
