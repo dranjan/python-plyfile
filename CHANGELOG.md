@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- Official support for Python 3.12 and `numpy` 1.26.
 
 ## [1.0.1] - 2023-07-23
 ### Changed
