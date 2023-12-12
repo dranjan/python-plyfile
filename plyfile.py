@@ -1479,6 +1479,8 @@ _data_type_relation = [
     ('int', 'i4'),
     ('uint32', 'u4'),
     ('uint', 'u4'),
+    ('float16', 'f2'),
+    ('half', 'f2'),
     ('float32', 'f4'),
     ('float', 'f4'),
     ('float64', 'f8'),
