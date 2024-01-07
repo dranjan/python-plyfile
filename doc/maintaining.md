@@ -142,11 +142,18 @@ See CHANGELOG.md for details.
 
 ### Publish the new version
 
+Prerequisite: generate a API token on PyPI and save it somewhere.
+This example will assume the file is saved as `token.txt`.
+(PyPI no longer supports normal username/password authentication,
+so this step must be performed.)
+
 ```bash
-pdm publish
+pdm run publish -u __token__ -P $(< token.txt)
 ```
 
-The PyPI username and password will be requested.
+To use the test server, add the arguments `-r testpypi`. Note that
+a separate API token will be required, generated from your account
+on the test server.
 
 ### Publish the code to GitHub
 

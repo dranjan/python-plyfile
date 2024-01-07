@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Fixed
+- Maintainers' documentation for publishing.
 
 ## [1.0.2] - 2023-11-13
 ### Added
