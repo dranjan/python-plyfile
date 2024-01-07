@@ -148,7 +148,7 @@ This example will assume the file is saved as `token.txt`.
 so this step must be performed.)
 
 ```bash
-pdm run publish -u __token__ -P $(< token.txt)
+pdm publish -u __token__ -P $(< token.txt)
 ```
 
 To use the test server, add the arguments `-r testpypi`. Note that
