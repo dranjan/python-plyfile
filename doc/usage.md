@@ -138,21 +138,40 @@ two cases to consider.
 
 If an element in a binary PLY file has no list properties, then it will
 be memory-mapped by default, subject to the capabilities of the
-underlying file object. Memory mapping can be disabled using the
-`mmap` argument:
+underlying file object.
+- Memory mapping can be disabled or fine-tuned using the `mmap` argument
+  of `PlyData.read`.
+- To confirm whether a given element has been memory-mapped or not,
+  check the type of `element.data`.
+
+This is all illustrated below:
 
 ```Python Console
 >>> plydata.text = False
 >>> plydata.byte_order = '<'
 >>> plydata.write('tet_binary.ply')
 >>>
->>> # `mmap=True` is the default:
+>>> # Memory-mapping is enabled by default.
 >>> plydata = PlyData.read('tet_binary.ply')
 >>> isinstance(plydata['vertex'].data, numpy.memmap)
 True
+>>> # Any falsy value disables memory-mapping here.
 >>> plydata = PlyData.read('tet_binary.ply', mmap=False)
 >>> isinstance(plydata['vertex'].data, numpy.memmap)
 False
+>>> # Strings can also be given to fine-tune memory-mapping.
+>>> # For example, with 'r+', changes can be written back to the file.
+>>> # In this case, the file must be explicitly opened with read-write
+>>> # access.
+>>> with open('tet_binary.ply', 'r+b') as f:
+...     plydata = PlyData.read(f, mmap='r+')
+>>> isinstance(plydata['vertex'].data, numpy.memmap)
+True
+>>> plydata['vertex']['x'] = 100
+>>> plydata['vertex'].data.flush()
+>>> plydata = PlyData.read('tet_binary.ply')
+>>> all(plydata['vertex']['x'] == 100)
+True
 >>>
 ```
 

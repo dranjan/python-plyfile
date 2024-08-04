@@ -128,18 +128,17 @@ class PlyData(object):
         )
 
     @staticmethod
-    def read(stream, mmap=True, mmap_mode="c", known_list_len={}):
+    def read(stream, mmap='c', known_list_len={}):
         """
         Read PLY data from a readable file-like object or filename.
 
         Parameters
         ----------
         stream : str or readable open file
-        mmap : bool, optional (default=True)
-            Whether to allow element data to be memory-mapped when
-            possible. The default is `True`, which allows memory
-            mapping. Using `False` will prevent memory mapping.
-
+        mmap : {'c', 'r', 'r+'} or bool, optional (default='c')
+            Configures memory-mapping. Any falsy value disables
+            memory mapping, and any non-string truthy value is
+            equivalent to 'c', for copy-on-write mapping.
         known_list_len : dict, optional
             Mapping from element names to mappings from list property
             names to their fixed lengths.  This optional argument is
@@ -171,7 +170,6 @@ class PlyData(object):
                     data_stream = stream
             for elt in data:
                 elt._read(data_stream, data.text, data.byte_order, mmap,
-                          mmap_mode=mmap_mode,
                           known_list_len=known_list_len.get(elt.name, {}))
         finally:
             if must_close:
@@ -498,7 +496,7 @@ class PlyElement(object):
 
         return elt
 
-    def _read(self, stream, text, byte_order, mmap, mmap_mode,
+    def _read(self, stream, text, byte_order, mmap,
               known_list_len={}):
         """
         Read the actual data from a PLY file.
@@ -508,7 +506,7 @@ class PlyElement(object):
         stream : readable open file
         text : bool
         byte_order : {'<', '>', '='}
-        mmap : bool
+        mmap : {'c', 'r', 'r+'} or bool
         known_list_len : dict
         """
         if text:
@@ -520,7 +518,9 @@ class PlyElement(object):
             if mmap and _can_mmap(stream) and can_mmap_lists:
                 # Loading the data is straightforward.  We will memory
                 # map the file in copy-on-write mode.
-                self._read_mmap(stream, byte_order, mmap_mode, known_list_len)
+                mmap_mode = mmap if isinstance(mmap, str) else 'c'
+                self._read_mmap(stream, byte_order, mmap_mode,
+                                known_list_len)
             else:
                 # A simple load is impossible.
                 self._read_bin(stream, byte_order)
@@ -558,6 +558,7 @@ class PlyElement(object):
         ----------
         stream : readable open file
         byte_order : {'<', '>', '='}
+        mmap_mode: str
         known_list_len : dict
         """
         list_len_props = {}

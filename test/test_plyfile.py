@@ -387,6 +387,21 @@ def test_copy_on_write(tmpdir, tet_ply_txt):
     verify(ply0, ply2)
 
 
+def test_memmap_rw(tmpdir, tet_ply_txt):
+    ply0 = tet_ply_txt
+    ply0.text = False
+    filename = str(tmpdir.join('test.ply'))
+    ply0.write(filename)
+    with open(filename, 'r+b') as f:
+        ply1 = PlyData.read(f, mmap='r+')
+    assert isinstance(ply1['vertex'].data, numpy.memmap)
+    ply1['vertex']['x'][:] = 100
+    ply1['vertex'].data.flush()
+    ply2 = PlyData.read(filename)
+
+    assert (ply2['vertex']['x'] == 100).all()
+
+
 def test_write_invalid_filename(tet_ply_txt):
     with Raises(TypeError) as e:
         tet_ply_txt.write(None)
