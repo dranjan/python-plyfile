@@ -70,8 +70,8 @@ Concretely:
 ```Python Console
 >>> plydata.elements[0].name
 'vertex'
->>> plydata.elements[0].data[0]
-(0., 0., 0.)
+>>> plydata.elements[0].data[0].tolist()
+(0.0, 0.0, 0.0)
 >>> plydata.elements[0].data['x']
 array([0., 0., 1., 1.], dtype=float32)
 >>> plydata['face'].data['vertex_indices'][0]
@@ -91,8 +91,8 @@ and elements can be indexed directly without explicitly going through
 the `data` attribute:
 
 ```Python Console
->>> plydata['vertex'][0]
-(0., 0., 0.)
+>>> plydata['vertex'][0].tolist()
+(0.0, 0.0, 0.0)
 >>>
 ```
 
