@@ -376,9 +376,11 @@ def test_memmap(tmpdir, tet_ply_txt):
 
 def test_copy_on_write(tmpdir, tet_ply_txt):
     ply0 = tet_ply_txt
+    ply0.text = False
     filename = str(tmpdir.join('test.ply'))
     ply0.write(filename)
     ply1 = PlyData.read(filename)
+    assert isinstance(ply1['vertex'].data, numpy.memmap)
     ply1['vertex']['x'] += 1
     ply2 = PlyData.read(filename)
 
