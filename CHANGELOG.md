@@ -3,6 +3,17 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- Official support for NumPy 2.0.
+- Support for write-through memory-mapping. Thanks to @nh2 for
+  the original implementation.
+
+### Fixed
+- A small unit test bug.
+
+### Removed
+- Official support for Python 3.8.
+- Official support for NumPy < 1.21.
 
 ## [1.0.3] - 2024-01-06
 ### Fixed
