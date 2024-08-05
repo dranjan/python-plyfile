@@ -6,7 +6,7 @@ sphinx:
 build:
     os: ubuntu-20.04
     tools:
-        python: "3.8"
+        python: "3.12"
     jobs:
         post_install:
         # See https://github.com/pdm-project/pdm/discussions/1365
