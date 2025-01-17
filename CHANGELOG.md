@@ -3,6 +3,9 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Changed
+- Build backend from `pdm-pep517` to `pdm-backend`. Thanks to @bcbnz for
+  the fix.
 
 ## [1.1] - 2024-08-04
 ### Added
