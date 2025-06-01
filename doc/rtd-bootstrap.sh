@@ -8,7 +8,7 @@
 set -euxo pipefail
 
 mkdir -p build/
-curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/2.7.4/install-pdm.py > build/install-pdm.py
+curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/2.22.2/install-pdm.py > build/install-pdm.py
 mkdir -p build/root/
-python build/install-pdm.py --path build/root -v 2.7.4
+python build/install-pdm.py --path build/root -v 2.22.2
 build/root/bin/pdm install -dG doc
