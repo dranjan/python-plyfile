@@ -1,4 +1,4 @@
-#   Copyright 2014-2023 Darsh Ranjan and plyfile authors.
+#   Copyright 2014-2025 Darsh Ranjan and plyfile authors.
 #
 #   This file is part of python-plyfile.
 #

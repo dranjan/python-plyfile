@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Changed
+- Minor metadata updates.
 
 ## [1.1.1] - 2025-06-01
 ### Added

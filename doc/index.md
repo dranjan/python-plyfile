@@ -24,7 +24,7 @@ api.md
 
 ## License
 
-Copyright 2014-2023 Darsh Ranjan and `plyfile` authors.
+Copyright 2014-2025 Darsh Ranjan and `plyfile` authors.
 
 This software is released under the terms of the GNU General Public
 License, version 3.  See the file `COPYING` for details.

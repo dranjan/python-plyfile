@@ -2,7 +2,7 @@ import os
 import sys
 
 project = 'plyfile'
-copyright = '2014-2023, Darsh Ranjan and plyfile authors'
+copyright = '2014-2025, Darsh Ranjan and plyfile authors'
 author = 'Darsh Ranjan'
 extensions = [
     'sphinx.ext.autodoc',
