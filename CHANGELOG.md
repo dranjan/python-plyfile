@@ -3,9 +3,20 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Added
+- Official support for Python 3.13.
+- Official support for NumPy 2.1 and NumPy 2.2.
+
 ### Changed
 - Build backend from `pdm-pep517` to `pdm-backend`. Thanks to @bcbnz for
   the fix.
+
+### Fixed
+- Integer overflow when reading large files. Thanks to @cdcseacave for
+  the fix.
+
+### Removed
+- Official support for NumPy < 1.25.
 
 ## [1.1] - 2024-08-04
 ### Added
