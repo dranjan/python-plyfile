@@ -1149,6 +1149,8 @@ class _PlyHeaderParser(object):
             self._error("early end-of-file")
 
         line = raw_line.strip()
+        if line == '':
+            return
         try:
             keyword = line.split(None, 1)[0]
         except IndexError:
