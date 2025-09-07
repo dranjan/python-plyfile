@@ -1150,7 +1150,10 @@ class _PlyHeaderParser(object):
 
         line = raw_line.strip()
         if line == '':
-            return
+            # We silently skip empty header lines. This isn't strictly
+            # allowed in the spec, but this logic slightly improves
+            # interoperability with other tools.
+            return self._allowed
         try:
             keyword = line.split(None, 1)[0]
         except IndexError:
