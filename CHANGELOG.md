@@ -3,6 +3,9 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Changed
+- Skip empty header lines to improve interoperability. Thanks to @JTvD
+  for the change.
 
 ## [1.1.2] - 2025-06-01
 ### Changed
