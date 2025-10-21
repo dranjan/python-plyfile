@@ -133,3 +133,21 @@ pdm run lint
 
 Generally speaking, there should be no violations reported for the code
 to be considered mergeable.
+
+## NumPy and Python version support
+
+Our rule of thumb is that we support and test against all currently supported
+NumPy versions and all Python versions officially supported by them, and
+the test runner setup (`tox.ini` and
+`.github/workflows/python-package.yml`) should be kept updated to
+reflect this.
+
+The currently supported NumPy versions are stated in
+[NEP 29](https://numpy.org/neps/nep-0029-deprecation_policy.html).
+We look at the package metadata to determine which Python versions they
+officially support, which can be easily checked on PyPI. (Example:
+[Numpy 2.0](https://pypi.org/project/numpy/2.0.0/).)
+
+All that being said, we consider missing a NumPy or Python release to
+be pretty low-risk, so at any given moment, our official test matrix
+may be lagging the latest releases by a little bit.
