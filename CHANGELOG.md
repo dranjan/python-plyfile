@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented here.
 
-## [Unreleased]
+## [1.1.3] - 2025-10-21
 ### Changed
 - Skip empty header lines to improve interoperability. Thanks to @JTvD
   for the change.
@@ -203,9 +203,10 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.1.2...HEAD
-[1.1]: https://github.com/dranjan/python-plyfile/compare/v1.1.1...v1.1.2
-[1.1]: https://github.com/dranjan/python-plyfile/compare/v1.1...v1.1.1
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/dranjan/python-plyfile/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/dranjan/python-plyfile/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/dranjan/python-plyfile/compare/v1.1...v1.1.1
 [1.1]: https://github.com/dranjan/python-plyfile/compare/v1.0.3...v1.1
 [1.0.3]: https://github.com/dranjan/python-plyfile/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/dranjan/python-plyfile/compare/v1.0.1...v1.0.2
