@@ -3,6 +3,11 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Fixed
+- Fix by @nh2: when determining whether a PLY element can be
+  memory-mapped, probe with the user's mode rather than `'c'`
+  (copy-on-write). Due to system memory limits, this avoids false
+  negatives with huge files.
 
 ## [1.1.4 - 2026-05-28
 ### Added
