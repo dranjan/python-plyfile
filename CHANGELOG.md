@@ -3,6 +3,8 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+
+## [1.1.5] - 2026-07-25
 ### Fixed
 - Fix by @nh2: when determining whether a PLY element can be
   memory-mapped, probe with the user's mode rather than `'c'`
@@ -218,7 +220,8 @@ All notable changes to this project will be documented here.
 - Rudimentary test setup.
 - Basic installation script.
 
-[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/dranjan/python-plyfile/compare/v1.1.5...HEAD
+[1.1.4]: https://github.com/dranjan/python-plyfile/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/dranjan/python-plyfile/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/dranjan/python-plyfile/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/dranjan/python-plyfile/compare/v1.1.1...v1.1.2
