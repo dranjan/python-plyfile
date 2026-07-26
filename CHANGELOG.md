@@ -9,7 +9,7 @@ All notable changes to this project will be documented here.
   (copy-on-write). Due to system memory limits, this avoids false
   negatives with huge files.
 
-## [1.1.4 - 2026-05-28
+## [1.1.4] - 2026-05-28
 ### Added
 - Official suppot for Python 3.14.
 - Official support for NumPy 2.4.
