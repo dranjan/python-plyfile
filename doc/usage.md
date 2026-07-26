@@ -201,6 +201,38 @@ Note that in order to enable memory mapping for a given element,
 length given in `known_list_len`, then memory mapping will not be
 attempted, and no error will be raised.
 
+#### Memory-mapping very large files
+
+Depending on the operating system's configuration, copy-on-write
+memory mapping of very large PLY elements can fail when another mode might
+succeed. If you run into this, you could try using a read-only mapping with
+`mmap='r'` or a write-through mapping with `mmap='r+'`, if your use case
+allows:
+
+```Python Console
+>>> # tet_binary.ply isn't a huge file, but just pretend it is for this
+>>> # example.
+>>> plydata = PlyData.read('tet_binary.ply',
+...                        known_list_len={'face': {'vertex_indices': 3}},
+...                        mmap='r')
+>>> isinstance(plydata['face'].data, numpy.memmap)
+True
+>>> plydata['face'].data.mode
+'r'
+>>>
+```
+
+```{caution}
+Read-only and write-through
+memory mappings behave very differently from `plyfile`'s default.
+
+- Read-only mappings (`mmap='r'`) disallow in-place modification entirely.
+- Write-through mappings (`mmap='r+'`) transparently mirror all
+  modifications back to the original file.
+
+Thus, these modes must be used with caution.
+```
+
 ## Creating a PLY file
 
 The first step is to get your data into `numpy` structured arrays.  Note
