@@ -704,7 +704,22 @@ invalid_cases = [
      "row 0: property 'a': early end-of-file"),
 
     (ply_abc('binary_little_endian', 2, b'\x01\x02\x03'),
-     "row 1: early end-of-file")
+     "row 1: early end-of-file"),
+
+    (b'ply\nformat binary_little_endian 1.0\nelement test 1\n'
+     b'property list int8 int8 a\nend_header\n'
+     b'\xff\x01\x02\x03',
+     "row 0: property 'a': negative array length -1"),
+
+    (b'ply\nformat binary_little_endian 1.0\nelement test 1\n'
+     b'property list int32 int a\nend_header\n'
+     b'\xfd\xff\xff\xff\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00',
+     "row 0: property 'a': negative array length -3"),
+
+    (b'ply\nformat ascii 1.0\nelement test 1\n'
+     b'property list int8 int8 a\nend_header\n'
+     b'-3 1 2 3\n',
+     "row 0: property 'a': negative list length -3"),
 ]
 
 
@@ -769,7 +784,9 @@ def test_invalid_property_names():
 invalid_header_cases = [
     (b'plyy\n', 1),
     (b'ply xxx\n', 1),
-    (b'ply\n\n', 2),
+    # A blank header line is skipped, so the error is reported at the
+    # following line, where the file actually ends.
+    (b'ply\n\n', 3),
     (b'ply\nformat\n', 2),
     (b'ply\nelement vertex 0\n', 2),
     (b'ply\nformat asciii 1.0\n', 2),
@@ -788,7 +805,11 @@ invalid_header_cases = [
     (b'ply\nformat ascii 1.0\nelement vertex 0\n'
      b'property list ucharr int extra\n', 4),
     (b'ply\nformat ascii 1.0\nelement vertex 0\n'
-     b'property float x\nend_header xxx\n', 5)
+     b'property float x\nend_header xxx\n', 5),
+    (b'ply\nformat ascii 1.0\nelement vertex -1\nproperty float x\n'
+     b'end_header\n', 3),
+    (b'ply\nformat binary_little_endian 1.0\nelement vertex -1\n'
+     b'property float x\nend_header\n', 3),
 ]
 
 
@@ -800,6 +821,52 @@ def test_header_parse_error(s, line):
     with Raises(PlyHeaderParseError) as e:
         PlyData.read(BytesIO(s))
     assert e.exc_val.line == line
+
+
+def test_negative_element_count():
+    with Raises(PlyHeaderParseError) as e:
+        PlyData.read(BytesIO(b'ply\nformat ascii 1.0\nelement vertex -1\n'
+                             b'property float x\nend_header\n'))
+    assert e.exc_val.line == 3
+    assert e.exc_val.message == "expected non-negative integer count"
+
+
+def test_negative_list_count(tmpdir):
+    # A negative binary list count must be rejected on every stream type
+    # with the same message, not silently read as the rest of the file.
+    string = (b'ply\nformat binary_little_endian 1.0\nelement test 1\n'
+              b'property list int8 int8 a\nend_header\n'
+              b'\xff\x01\x02\x03')
+    filename = tmpdir.join('test.ply')
+    with filename.open('wb') as f:
+        f.write(string)
+    for s in (BytesIO(string), str(filename)):
+        with Raises(PlyElementParseError) as e:
+            PlyData.read(s)
+        assert str(e) == ("element 'test': row 0: property 'a': "
+                          "negative array length -1")
+
+
+def test_blank_header_lines():
+    # Empty header lines are skipped (CHANGELOG 1.1.3).
+    string = (b'ply\n\nformat ascii 1.0\n\nelement vertex 1\n'
+              b'property float x\n\nend_header\n0\n')
+    ply = PlyData.read(BytesIO(string))
+    assert ply['vertex'].count == 1
+    assert ply['vertex']['x'][0] == 0.0
+
+
+def test_zero_list_count():
+    string = (b'ply\nformat binary_little_endian 1.0\nelement test 1\n'
+              b'property list int8 int8 a\nend_header\n\x00')
+    ply = PlyData.read(BytesIO(string))
+    assert len(ply['test']['a'][0]) == 0
+
+
+def test_zero_element_count():
+    ply = PlyData.read(BytesIO(b'ply\nformat ascii 1.0\nelement vertex 0\n'
+                               b'property float x\nend_header\n'))
+    assert ply['vertex'].count == 0
 
 
 invalid_arrays = [

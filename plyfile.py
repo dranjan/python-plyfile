@@ -615,9 +615,10 @@ class PlyElement(object):
             for prop in self.properties:
                 try:
                     self._data[prop.name][k] = prop._from_fields(fields)
-                except StopIteration:
-                    raise PlyElementParseError("early end-of-line",
-                                               self, k, prop)
+                except StopIteration as exc:
+                    raise PlyElementParseError(
+                        exc.value if exc.value else "early end-of-line",
+                        self, k, prop)
                 except ValueError:
                     raise PlyElementParseError("malformed input",
                                                self, k, prop)
@@ -667,9 +668,10 @@ class PlyElement(object):
                 try:
                     self._data[prop.name][k] = \
                         prop._read_bin(stream, byte_order)
-                except StopIteration:
-                    raise PlyElementParseError("early end-of-file",
-                                               self, k, prop)
+                except StopIteration as exc:
+                    raise PlyElementParseError(
+                        exc.value if exc.value else "early end-of-file",
+                        self, k, prop)
 
     def _write_bin(self, stream, byte_order):
         """
@@ -944,6 +946,8 @@ class PlyListProperty(PlyProperty):
         (len_t, val_t) = self.list_dtype()
 
         n = int(_np.dtype(len_t).type(next(fields)))
+        if n < 0:
+            raise StopIteration("negative list length %d" % n)
 
         data = _np.loadtxt(list(_islice(fields, n)), val_t, ndmin=1)
         if len(data) < n:
@@ -1145,8 +1149,6 @@ class _PlyHeaderParser(object):
         Parse and internalize one line of input.
         """
         self.lines += 1
-        if not raw_line:
-            self._error("early end-of-file")
 
         line = raw_line.strip()
         if line == '':
@@ -1215,6 +1217,8 @@ class _PlyHeaderParser(object):
             count = int(fields[1])
         except ValueError:
             self._error("expected integer count")
+        if count < 0:
+            self._error("expected non-negative integer count")
 
         self.elements.append((name, [], count, []))
         self._allowed = ['element', 'comment', 'property', 'end_header']
@@ -1415,6 +1419,8 @@ def _read_array(stream, dtype, n):
     StopIteration
         If `n` elements could not be read.
     """
+    if n < 0:
+        raise StopIteration("negative array length %d" % int(n))
     try:
         size = int(_np.dtype(dtype).itemsize) * int(n)
         return _np.frombuffer(stream.read(size), dtype)

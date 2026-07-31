@@ -3,6 +3,11 @@
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
+### Fixed
+- Reject negative list counts instead of silently reading the rest of
+  the file or raising a misleading "early end-of-file".
+- Reject negative element counts with a `PlyParseError`.
+- Skip empty header lines, as documented in 1.1.3.
 
 ## [1.1.5] - 2026-07-25
 ### Fixed
