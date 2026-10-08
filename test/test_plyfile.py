@@ -802,6 +802,13 @@ def test_header_parse_error(s, line):
     assert e.exc_val.line == line
 
 
+def test_header_non_ascii_bytes():
+    # a non-PLY binary file (e.g. a PNG) should raise PlyHeaderParseError,
+    # not a raw UnicodeDecodeError from the non-ASCII header bytes
+    with Raises(PlyHeaderParseError):
+        PlyData.read(BytesIO(b'\x89PNG\r\n\x1a\n' + b'\x00' * 40))
+
+
 invalid_arrays = [
     numpy.zeros((2, 2)),
     numpy.array([(0, (0, 0))],

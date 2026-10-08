@@ -1298,7 +1298,11 @@ class _PlyHeaderLines(object):
         """
         if isinstance(s, str):
             return s
-        return s.decode('ascii')
+        try:
+            return s.decode('ascii')
+        except UnicodeDecodeError:
+            raise PlyHeaderParseError(
+                "header contains non-ASCII characters")
 
     def __iter__(self):
         """
