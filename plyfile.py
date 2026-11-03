@@ -155,6 +155,7 @@ class PlyData(object):
             indicates binary encoding.
         """
         (must_close, stream) = _open_stream(stream, 'read')
+        text_wrapper = None
         try:
             data = PlyData._parse_header(stream)
             if isinstance(stream.read(0), str):
@@ -165,13 +166,16 @@ class PlyData(object):
                                      "from text stream")
             else:
                 if data.text:
-                    data_stream = _io.TextIOWrapper(stream, 'ascii')
+                    text_wrapper = _io.TextIOWrapper(stream, 'ascii')
+                    data_stream = text_wrapper
                 else:
                     data_stream = stream
             for elt in data:
                 elt._read(data_stream, data.text, data.byte_order, mmap,
                           known_list_len=known_list_len.get(elt.name, {}))
         finally:
+            if text_wrapper is not None:
+                text_wrapper.detach()
             if must_close:
                 stream.close()
 
