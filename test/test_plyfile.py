@@ -492,16 +492,48 @@ def test_comment_spaces(tmpdir):
     assert ply1.comments[0] == '  test comment'
 
 
-def test_assign_comments(tet_ply_txt):
+@pytest.mark.parametrize('text', [False, True])
+def test_comment_generators(tet_ply_txt, tmpdir, text):
+    comments = ['first comment', '  second comment']
+    element = PlyElement.describe(
+        tet_ply_txt['vertex'].data, 'vertex',
+        comments=(comment for comment in comments)
+    )
+    ply = PlyData(
+        [element], text=text,
+        comments=(comment for comment in comments),
+        obj_info=(comment for comment in comments)
+    )
+
+    assert ply.comments == comments
+    assert ply.obj_info == comments
+    assert element.comments == comments
+    verify(ply, write_read(ply, tmpdir))
+
+
+@pytest.mark.parametrize('comments_type', [list, tuple, iter])
+def test_assign_comments(tet_ply_txt, tmpdir, comments_type):
     ply0 = tet_ply_txt
 
-    ply0.comments = ['comment1', 'comment2']
-    ply0.obj_info = ['obj_info1', 'obj_info2']
+    ply0.comments = comments_type(['comment1', 'comment2'])
+    ply0.obj_info = comments_type(['obj_info1', 'obj_info2'])
     verify_comments(ply0.comments, ['comment1', 'comment2'])
     verify_comments(ply0.obj_info, ['obj_info1', 'obj_info2'])
 
-    ply0['face'].comments = ['comment1']
+    ply0['face'].comments = comments_type(['comment1'])
     verify_comments(ply0['face'].comments, ['comment1'])
+    verify(ply0, write_read(ply0, tmpdir))
+
+
+@pytest.mark.parametrize('invalid', ['comment1\ncomment2', '\xb0'])
+def test_invalid_comment_iterators_preserve_metadata(tet_ply_txt, invalid):
+    for target, attribute in [(tet_ply_txt, 'comments'),
+                              (tet_ply_txt, 'obj_info'),
+                              (tet_ply_txt['vertex'], 'comments')]:
+        original = getattr(target, attribute)
+        with pytest.raises(ValueError):
+            setattr(target, attribute, iter(['valid comment', invalid]))
+        assert getattr(target, attribute) == original
 
 
 def test_assign_comments_newline(tet_ply_txt):

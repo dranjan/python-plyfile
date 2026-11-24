@@ -102,8 +102,9 @@ class PlyData(object):
         return list(self._comments)
 
     def _set_comments(self, comments):
+        comments = list(comments)
         _check_comments(comments)
-        self._comments = list(comments)
+        self._comments = comments
 
     comments = property(_get_comments, _set_comments)
 
@@ -111,8 +112,9 @@ class PlyData(object):
         return list(self._obj_info)
 
     def _set_obj_info(self, obj_info):
+        obj_info = list(obj_info)
         _check_comments(obj_info)
-        self._obj_info = list(obj_info)
+        self._obj_info = obj_info
 
     obj_info = property(_get_obj_info, _set_obj_info)
 
@@ -364,8 +366,9 @@ class PlyElement(object):
         return list(self._comments)
 
     def _set_comments(self, comments):
+        comments = list(comments)
         _check_comments(comments)
-        self._comments = list(comments)
+        self._comments = comments
 
     comments = property(_get_comments, _set_comments)
 
